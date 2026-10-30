@@ -1,13 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package datastructures;
+import controllers.*;
+import models.*;
+import repositories.*;
+import view.*;
 
-/**
- *
- * @author eunle
- */
 public class Queue {
-    
+    Node front;
+    Node rear;
+    int count;
 }
