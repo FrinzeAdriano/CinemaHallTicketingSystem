@@ -1,13 +1,16 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package models;
 
-/**
- *
- * @author eunle
- */
+package models;
+import datastructures.*;
+import repositories.*;
+import view.*;
+import controllers.*;
+
 public class CinemaRoom {
-    
+    private String roomID;
+    private String roomName;
+    private int rows;
+    private int seatsPerRow;
+    boolean status;
+    private int [][] seatLayout;
+    private Queue showing = new Queue();
 }
