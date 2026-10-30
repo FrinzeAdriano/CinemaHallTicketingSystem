@@ -1,13 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package models;
 
-/**
- *
- * @author eunle
- */
+import java.time.LocalDate;
+
+
 public class Sales {
+    private String salesID;
+    private LocalDate  date;
+    private double  ticketRevenue;
+    private double  productRevenue;
+    private int  transactionCount;
     
 }

@@ -1,13 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package models;
 
-/**
- *
- * @author eunle
- */
+
 public class Schedule {
-    
+    private String  scheduleID;
+    private String screeningDate;
+    private String screeningTime;
+    private Movie movie;
+    private boolean active;
 }
