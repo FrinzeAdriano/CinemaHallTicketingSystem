@@ -4,6 +4,6 @@ import models.*;
 import datastructures.*;
 import view.*;
 
-public class Inventory {
-    private LinkedList inventoryRepository = new LinkedList();
+public class InventoryRepository {
+    private LinkedList inventory = new LinkedList();
 }

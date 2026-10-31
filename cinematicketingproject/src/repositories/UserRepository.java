@@ -5,5 +5,5 @@ import datastructures.*;
 import view.*;
 
 public class UserRepository {
-    private LinkedList userRepository = new LinkedList();
+    private LinkedList users = new LinkedList();
 }
