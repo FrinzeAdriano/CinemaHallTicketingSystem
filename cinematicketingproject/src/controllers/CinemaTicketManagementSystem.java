@@ -56,7 +56,16 @@ public class CinemaTicketManagementSystem {
 
     // Prints its own error message when it fails.
     public boolean login(String username, String password) {
-        User user = userRepo.findByUsername(username);
+        User user = null;
+        Node n = userRepo.viewUsers().getHead();
+        while (n != null) {
+            User candidate = (User) n.getData();
+            if (candidate.getUserName().equalsIgnoreCase(username)) {
+                user = candidate;
+                break;
+            }
+            n = n.getNext();
+        }
         if (user == null || !user.getPassword().equals(password)) {
             view.showError("Invalid username or password.");
             return false;
@@ -67,8 +76,7 @@ public class CinemaTicketManagementSystem {
         }
         currentUser = user;
         view.showMessage("Welcome, " + user.getFullName() + " (" + user.getRole() + ")!");
-        return true;
-    }
+        return true;}
 
     public boolean logout() {
         if (currentUser == null) {
@@ -91,6 +99,8 @@ public class CinemaTicketManagementSystem {
         }
     }
 
+    // Demo data so the system is usable on first run.
+    // Logins:  admin / admin123    cashier1 / cash123    customer1 / cust123
     // Demo data so the system is usable on first run.
     // Logins:  admin / admin123    cashier1 / cash123    customer1 / cust123
     public void loadSampleData() {
@@ -155,9 +165,9 @@ public class CinemaTicketManagementSystem {
                 "Active", "Regular", false));
  
         // Vouchers
-        voucherRepo.addVoucher(new Voucher("WELCOME10", "10% off for new customers", Voucher.PERCENT, 10,
+        voucherRepo.addVoucher(new Voucher("WELCOME10", "10% off for new customers", "PERCENT", 10,
                 LocalDate.now().plusYears(1), 100, 0, true));
-        voucherRepo.addVoucher(new Voucher("SAVE50", "50 off any purchase", Voucher.FIXED, 50,
+        voucherRepo.addVoucher(new Voucher("SAVE50", "50 off any purchase", "FIXED", 50,
                 LocalDate.now().plusMonths(6), 50, 0, true));
     }
  
