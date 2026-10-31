@@ -19,7 +19,7 @@ public class Cashier extends User{
      
     @Override
       public String getRole(){
-         return " ";}
+         return "Cashier";}
       
       
 // Setters===================================

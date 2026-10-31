@@ -26,8 +26,16 @@ public abstract class User {
    
    public abstract String getRole();
    
+   // Returns false if the old password is wrong or the new one is invalid.
    public boolean changePassword(String oldPass, String newPass){
-       return false;}
+       if (oldPass == null || !password.equals(oldPass)) {
+           return false;
+       }
+       if (!InputValidator.isValidPassword(newPass)) {
+           return false;
+       }
+       this.password = newPass;
+       return true;}
 
 
 // Setters =====================================   
