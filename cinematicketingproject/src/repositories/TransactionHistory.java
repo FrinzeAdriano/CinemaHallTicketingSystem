@@ -12,48 +12,141 @@ public class TransactionHistory {
     private LinkedList  transactionHistory = new LinkedList();
 
 
-    // Transaction Management Methods
-
+     // Adds a transaction
     public void addTransaction(Transaction transaction) {
 
+        if (transaction != null) {
+            transactionHistory.insertAtEnd(transaction);
+        }
     }
 
+    // Returns all transactions
     public LinkedList viewTransactionHistory() {
-         return null;}
+        return transactionHistory;
+    }
 
-    public Transaction findByID(String id) {
-         return null;}
+     // Finds a transaction using its ID
+    public Transaction findByID(String transactionID) {
+
+        for (int i = 0; i < transactionHistory.size(); i++) {
+
+            Transaction transaction = (Transaction)transactionHistory.get(i);
+
+            if (transaction.getTransactionID().equalsIgnoreCase(transactionID)) {
+                return transaction;
+            }
+        }
+
+        return null;
+    }
 
 
-    // Transaction Filtering Methods
+    // Filters transactions using a field and value
+    public LinkedList filterTransactionHistory(
+            String field, String value) {
 
-    public LinkedList  filterTransactionHistory(String field, String value) {
-         return null;}
+        LinkedList filtered =  new LinkedList();
 
-    public LinkedList  getByCashier(String cashierID) {
-         return null;}
+        for (int i = 0; i < transactionHistory.size(); i++) {
 
-    public LinkedList  getByCustomer(String customerID) {
-         return null;}
+            Transaction transaction =  (Transaction)transactionHistory.get(i);
+            boolean matched = false;
 
-    public LinkedList  filterByDateRange(LocalDate from, LocalDate to) {
-         return null;}
+            if (field.equalsIgnoreCase("status")) {
+                matched = transaction.getStatus().equalsIgnoreCase(value);
+            } else if (field.equalsIgnoreCase("bookingType")) {
+                matched = transaction.getBookingType().equalsIgnoreCase(value);
+            } else if (field.equalsIgnoreCase("customerID")) {
+                matched = transaction.getCustomerID() != null
+                    && transaction.getCustomerID().equalsIgnoreCase(value);
+            } else if (field.equalsIgnoreCase("cashierID")) {
+                matched = transaction.getCashierID() != null
+                    && transaction.getCashierID().equalsIgnoreCase(value);
+            }
 
+            if (matched) {
+                filtered.insertAtEnd(transaction);
+            }
+        }
+
+        return filtered;
+    }
+
+
+    // Retrieves transactions belonging to a cashier
+    public LinkedList getByCashier(String cashierID) {
+
+        return filterTransactionHistory("cashierID", cashierID);
+    }
+
+    // Retrieves transactions belonging to a customer
+    public LinkedList getByCustomer(String customerID) {
+
+        return filterTransactionHistory("customerID", customerID);
+    }
+
+    public LinkedList filterByDateRange(
+            LocalDate startDate, LocalDate endDate) {
+
+        LinkedList filtered =
+            new LinkedList();
+
+        for (int i = 0; i < transactionHistory.size(); i++) {
+
+            Transaction transaction = (Transaction) transactionHistory.get(i);
+
+            LocalDate transactionDate =
+                transaction.getDateTime().toLocalDate();
+
+            if (!transactionDate.isBefore(startDate)
+                    && !transactionDate.isAfter(endDate)) {
+
+                filtered.insertAtEnd(transaction);
+            }
+        }
+
+        return filtered;
+    }
+
+
+    // Filters by booking type
     public LinkedList filterByBookingType(String bookingType) {
-         return null;}
 
-    public LinkedList  filterByStatus(String status) {
-         return null;}
+        return filterTransactionHistory("bookingType", bookingType);
+    }
+
+    // Filters by transaction status
+    public LinkedList filterByStatus(String status) {
+
+        return filterTransactionHistory("status", status);
+    }
 
 
-    // Validation Method
-
+    // Checks whether a user has transactions
     public boolean hasTransactionsBy(String userID) {
-         return false;}
+
+        for (int i = 0; i < transactionHistory.size(); i++) {
+
+            Transaction transaction = (Transaction) transactionHistory.get(i);
+
+            if ((transaction.getCustomerID() != null
+                    && transaction.getCustomerID().equalsIgnoreCase(userID))
+                || (transaction.getCashierID() != null
+                    && transaction.getCashierID().equalsIgnoreCase(userID))) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 
-    // ID Generation Method
-
+    // Generates a transaction ID
     public String generateTransactionID() {
-         return " ";}
+
+        int nextNumber = transactionHistory.size() + 1;
+
+        return String.format("TR%04d", nextNumber);
+    }
 }

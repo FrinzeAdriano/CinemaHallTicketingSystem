@@ -13,31 +13,50 @@ public class OrderProduct {
     private int  quantity;
     private double  price;
     
-    public OrderProduct(Product product, int quantity, double price) {
-    this.product = product;
-    this.quantity = quantity;
-    this.price = price;
-}
+     public OrderProduct(Product product, int quantity, double price) {
+
+        if (!InputValidator.isPositiveInt(String.valueOf(quantity))) {
+            throw new IllegalArgumentException(
+                "Quantity must be greater than zero."
+            );
+        }
+
+        this.product = product;
+        this.quantity = quantity;
+        this.price = price;
+    }
+
+
+    // Calculates the subtotal
     public double getSubtotal() {
-    return 0;}
-    
+        return price * quantity;
+    }
+
+
     // Setter
     public void setQuantity(int quantity) {
-    this.quantity = quantity;}
-    
+
+        if (!InputValidator.isPositiveInt(String.valueOf(quantity))) {
+            throw new IllegalArgumentException(
+                "Quantity must be greater than zero."
+            );
+        }
+
+        this.quantity = quantity;
+    }
+
+
     // Getters
     public Product getProduct() {
-    return product;}
+        return product;
+    }
 
     public int getQuantity() {
-    return quantity;}
+        return quantity;
+    }
 
     public double getPrice() {
-    return price;}
-
-
-
-
-
+        return price;
+    }
 
 }

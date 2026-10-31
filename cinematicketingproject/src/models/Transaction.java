@@ -60,142 +60,300 @@ public class Transaction {
         }
 
 
-    // Ticket Methods
-
-    public void addTicket(Ticket t) {
-
+    // Adds a ticket
+    public void addTicket(Ticket ticket) {
+        tickets.insertAtEnd(ticket);
     }
 
-    public boolean removeTicket(String ticketID) {
-         return false;}
 
+    // Removes a ticket using its ID
+    public void removeTicket(String ticketID) {
 
-    // Product Methods
+        int i = 0;
 
-    public void addProduct(Product p, int qty) {
+        while (i < tickets.size()) {
 
+            Ticket ticket = (Ticket) tickets.get(i);
+
+            if (ticket.getTicketID().equals(ticketID)) {
+                tickets.delete(i);
+                return;
+            }
+
+            i++;
+        }
     }
 
-    public boolean removeProduct(String productID) {
-         return false;}
+
+    // Adds a product to the transaction
+    public void addProduct(Product product, int quantity) {
+
+        OrderProduct orderProduct =
+            new OrderProduct(product, quantity, product.getPrice());
+
+        products.insertAtEnd(orderProduct);
+    }
 
 
-    // Computation Methods
+    // Removes a product using its name
+    public void removeProduct(String productName) {
 
+        int i = 0;
+
+        while (i < products.size()) {
+
+            OrderProduct orderProduct = (OrderProduct) products.get(i);
+
+            if (orderProduct.getProduct().getName().equalsIgnoreCase(productName)) {
+                products.delete(i);
+                return;
+            }
+
+            i++;
+        }
+    }
+
+
+    // Calculates the subtotal
     public double getSubtotal() {
-         return 0;}
 
+        double subtotal = 0;
+
+        for (int i = 0; i < tickets.size(); i++) {
+            subtotal += ((Ticket) tickets.get(i)).getPrice();
+        }
+
+        for (int i = 0; i < products.size(); i++) {
+            subtotal += ((OrderProduct) products.get(i)).getSubtotal();
+        }
+
+        return subtotal;
+    }
+
+
+    // Calculates the discount
     public double getDiscountAmount() {
-         return 0;}
 
+        double discount = 0;
+
+        if (discountRate > 0) {
+            discount = getSubtotal() * discountRate;
+        } else {
+            discount = discountFixed;
+        }
+
+        if (discount > getSubtotal()) {
+            discount = getSubtotal();
+        }
+
+        return discount;
+    }
+
+
+    // Calculates the tax
     public double getTaxAmount() {
-         return 0;}
 
+        double taxableAmount = getSubtotal() - getDiscountAmount();
+
+        return taxableAmount * taxRate;
+    }
+
+
+    // Calculates the final amount
     public double getTotalAmount() {
-         return 0;}
 
+        return getSubtotal()
+             - getDiscountAmount()
+             + getTaxAmount();
+    }
+
+
+    // Calculates the change
     public double getChange() {
-         return 0;}
+
+        double change = amountPaid - getTotalAmount();
+
+        if (change < 0) {
+            return 0;
+        }
+
+        return change;
+    }
 
 
-    // Transaction Methods
+    // Confirms the transaction
+    public void confirm() {
 
-    public boolean confirm() {
-         return false;}
+        if (status.equalsIgnoreCase("CANCELLED")) {
+            throw new IllegalStateException(
+                "Cancelled transaction cannot be confirmed."
+            );
+        }
 
-    public boolean cancel() {
-         return false;}
+        if (status.equalsIgnoreCase("COMPLETED")) {
+            throw new IllegalStateException(
+                "Transaction is already completed."
+            );
+        }
+
+        if (getSubtotal() <= 0) {
+            throw new IllegalStateException(
+                "Transaction has no items."
+            );
+        }
+
+        if (amountPaid < getTotalAmount()) {
+            throw new IllegalStateException(
+                "Insufficient payment."
+            );
+        }
+
+        status = "COMPLETED";
+    }
+
+
+    // Cancels the transaction
+    public void cancel() {
+        status = "CANCELLED";
+    }
 
 
     // Setters
-
     public void setDiscountType(String discountType) {
         this.discountType = discountType;
-        }
+    }
 
     public void setDiscountRate(double discountRate) {
-        this.discountRate = discountRate;
+
+        if (discountRate < 0 || discountRate > 1) {
+            throw new IllegalArgumentException(
+                "Discount rate must be between 0 and 1."
+            );
         }
+
+        this.discountRate = discountRate;
+    }
 
     public void setDiscountFixed(double discountFixed) {
         this.discountFixed = discountFixed;
-        }
+    }
 
     public void setVoucherCode(String voucherCode) {
         this.voucherCode = voucherCode;
-        }
+    }
 
     public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+
+        if (paymentMethod == null) {
+            throw new IllegalArgumentException(
+                "Payment method is required."
+            );
         }
 
-    public void setAmountPaid(double amountPaid) {
-        this.amountPaid = amountPaid;
+        if (paymentMethod.equalsIgnoreCase("Cash")) {
+            this.paymentMethod = "Cash";
+        } else if (paymentMethod.equalsIgnoreCase("E-wallet")) {
+            this.paymentMethod = "E-wallet";
+        } else if (paymentMethod.equalsIgnoreCase("Card")) {
+            this.paymentMethod = "Card";
+        } else {
+            throw new IllegalArgumentException(
+                "Invalid payment method."
+            );
         }
+    }
+
+    public void setAmountPaid(double amountPaid) {
+
+        if (!InputValidator.isPositiveDouble(String.valueOf(amountPaid))) {
+            throw new IllegalArgumentException(
+                "Amount paid must be greater than zero."
+            );
+        }
+
+        this.amountPaid = amountPaid;
+    }
 
     public void setApprovedBy(String approvedBy) {
         this.approvedBy = approvedBy;
-        }
+    }
 
     public void setReceiptNo(String receiptNo) {
         this.receiptNo = receiptNo;
-        }
+    }
 
 
     // Getters
-
     public String getTransactionID() {
-         return transactionID;}
+        return transactionID;
+    }
 
     public String getBookingType() {
-         return bookingType;}
+        return bookingType;
+    }
 
     public String getCustomerID() {
-         return customerID;}
+        return customerID;
+    }
 
     public String getCashierID() {
-         return cashierID;}
+        return cashierID;
+    }
 
     public LocalDateTime getDateTime() {
-         return dateTime;}
+        return dateTime;
+    }
 
-    public LinkedList getTickets() {
-         return tickets;}
+    public LinkedList<Ticket> getTickets() {
+        return tickets;
+    }
 
-    public LinkedList getProducts() {
-         return products;}
+    public LinkedList<OrderProduct> getProducts() {
+        return products;
+    }
 
     public String getDiscountType() {
-         return discountType;}
+        return discountType;
+    }
 
     public double getDiscountRate() {
-         return discountRate;}
+        return discountRate;
+    }
 
     public double getDiscountFixed() {
-         return discountFixed;}
+        return discountFixed;
+    }
 
     public String getVoucherCode() {
-         return voucherCode;}
+        return voucherCode;
+    }
 
     public double getTaxRate() {
-         return taxRate;}
+        return taxRate;
+    }
 
     public String getPaymentMethod() {
-         return paymentMethod;}
+        return paymentMethod;
+    }
 
     public double getAmountPaid() {
-         return amountPaid;}
+        return amountPaid;
+    }
 
     public String getStatus() {
-         return status;}
+        return status;
+    }
 
     public String getBookingCode() {
-         return bookingCode;}
+        return bookingCode;
+    }
 
     public String getApprovedBy() {
-         return approvedBy;}
+        return approvedBy;
+    }
 
     public String getReceiptNo() {
-         return receiptNo;}
+        return receiptNo;
+    }
 
 }

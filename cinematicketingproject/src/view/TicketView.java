@@ -8,20 +8,51 @@ import service.*;
 public class TicketView extends BaseView {
 
 
-    // Ticket Input Methods
-
+    // Requests the number of tickets
     public int promptTicketCount() {
-         return 0;}
+
+        while (true) {
+
+            String input = readString("Enter ticket quantity: ");
+
+            if (InputValidator.isPositiveInt(input)) {
+                return Integer.parseInt(input.trim());
+            }
+
+            showError("Please enter a valid positive whole number.");
+        }
+    }
 
 
-    // Display Methods
 
+    // Displays one ticket
     public void displayTicket(Ticket ticket) {
 
+        if (ticket == null) {
+            showError("Ticket not found.");
+            return;
+        }
+
+        showMessage("Ticket ID: " + ticket.getTicketID());
+        showMessage("Schedule: " + ticket.getSchedule().getScheduleID());
+        showMessage("Seat: " + ticket.getSeat().getSeatID());
+        showMessage("Price: " + ticket.getPrice());
+        showMessage("Status: " + ticket.getStatus());
     }
 
-    public void displayTickets(LinkedList list) {
 
+    // Displays multiple tickets
+    public void displayTickets(LinkedList<Ticket> tickets) {
+
+        if (tickets == null || tickets.size() == 0) {
+            showMessage("No tickets found.");
+            return;
+        }
+
+        for (int i = 0; i < tickets.size(); i++) {
+            displayTicket(tickets.get(i));
+        }
     }
+
 
 }
