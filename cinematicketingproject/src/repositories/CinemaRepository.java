@@ -5,5 +5,5 @@ import datastructures.*;
 import view.*;
 
 public class CinemaRepository {
-    private LinkedList CinemaRepository = new LinkedList();   
+    private LinkedList cinemas = new LinkedList();   
 }
