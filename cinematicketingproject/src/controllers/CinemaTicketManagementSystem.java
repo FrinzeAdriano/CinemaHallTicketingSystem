@@ -19,7 +19,6 @@ public class CinemaTicketManagementSystem {
     private VoucherRepository voucherRepo;
     private CheckoutService checkoutService;
     private AdminController adminController;
-    private CashierController cashierController;
     private CustomerController customerController;
     private CinemaTicketManagementSystemView view;
     private User currentUser;

@@ -41,6 +41,7 @@ public class Customer extends User{
       }
  
       public String getDateRegistered(){
+
  
          if (!InputValidator.isNotBlank(dateRegistered)) {
              throw new IllegalStateException(
@@ -51,3 +52,4 @@ public class Customer extends User{
          return dateRegistered;
       }
 }
+

@@ -109,6 +109,7 @@ public abstract class User {
    }
  
    public String getStatus(){
+
  
        if (!InputValidator.isNotBlank(status)) {
            throw new IllegalStateException(
@@ -119,4 +120,6 @@ public abstract class User {
        return status;
    }
 }
+
+
 
