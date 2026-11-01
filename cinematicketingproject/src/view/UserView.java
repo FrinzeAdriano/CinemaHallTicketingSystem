@@ -187,17 +187,13 @@ public class UserView extends BaseView {
  
     private String promptCustomerType() {
         System.out.println("Customer type:");
-        System.out.println("1. Regular");
-        System.out.println("2. Student");
-        System.out.println("3. Senior");
-        int choice = readInt("Choose a type: ", 1, 3);
+        System.out.println("1. Walk-in");
+        System.out.println("2. Online");
+        int choice = readInt("Choose a type: ", 1, 2);
         if (choice == 1) {
-            return "Regular";
+            return "Walk-in";
         }
-        if (choice == 2) {
-            return "Student";
-        }
-        return "Senior";
+        return "Online";
     }
  
 }

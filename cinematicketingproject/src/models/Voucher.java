@@ -21,8 +21,17 @@ public class Voucher {
     
     
     public Voucher(String voucherCode) {
-        this.voucherCode = voucherCode;
+ 
+        if (!InputValidator.isNotBlank(voucherCode)
+                || !voucherCode.trim().toUpperCase().matches("[A-Z0-9]{3,15}")) {
+            throw new IllegalArgumentException(
+                "Invalid input. Voucher code must be 3-15 letters or digits."
+            );
+        }
+ 
+        this.voucherCode = voucherCode.trim().toUpperCase();
     }
+
     
     // Setters
 
@@ -34,7 +43,13 @@ public class Voucher {
             );
         }
  
-        this.description = description;
+        if (description.trim().length() > 100) {
+            throw new IllegalArgumentException(
+                "Invalid input. Voucher description cannot be longer than 100 characters."
+            );
+        }
+ 
+        this.description = description.trim();
     }
  
     public void setValue(double value) {
@@ -62,6 +77,12 @@ public class Voucher {
             );
         }
  
+        if (expiryDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                "Invalid input. Voucher expiry date cannot be in the past."
+            );
+        }
+ 
         this.expiryDate = expiryDate;
     }
  
@@ -73,14 +94,32 @@ public class Voucher {
             );
         }
  
+        if (maxUses > 100000) {
+            throw new IllegalArgumentException(
+                "Invalid input. Maximum uses cannot be more than 100000."
+            );
+        }
+ 
+        if (maxUses < timesUsed) {
+            throw new IllegalArgumentException(
+                "Invalid input. Maximum uses cannot be lower than the times already used."
+            );
+        }
+ 
         this.maxUses = maxUses;
     }
- 
-    public void setTimesUsed(int timesUsed) {
+    
+        public void setTimesUsed(int timesUsed) {
  
         if (timesUsed < 0) {
             throw new IllegalArgumentException(
                 "Invalid input. Times used cannot be negative."
+            );
+        }
+ 
+        if (maxUses > 0 && timesUsed > maxUses) {
+            throw new IllegalArgumentException(
+                "Invalid input. Times used cannot be more than the maximum uses."
             );
         }
  

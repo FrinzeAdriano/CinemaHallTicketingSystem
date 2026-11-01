@@ -25,7 +25,18 @@ public class Customer extends User{
              );
          }
  
-         this.customerType = customerType;
+         // Only two types exist: Walk-in or Online (case, spaces and hyphens are ignored).
+         String normalized = customerType.trim().toLowerCase().replace("-", "").replace(" ", "").replace("_", "");
+ 
+         if (normalized.equals("walkin")) {
+             this.customerType = "Walk-in";
+         } else if (normalized.equals("online")) {
+             this.customerType = "Online";
+         } else {
+             throw new IllegalArgumentException(
+                 "Invalid input. Customer type must be Walk-in or Online."
+             );
+         }
       }
  
  //Getters====================================

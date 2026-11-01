@@ -30,7 +30,19 @@ public class Cashier extends User{
              );
          }
  
-         this.shift = shift;
+         String formatted = shift.trim();
+ 
+         if (formatted.equalsIgnoreCase("Morning")) {
+             this.shift = "Morning";
+         } else if (formatted.equalsIgnoreCase("Afternoon")) {
+             this.shift = "Afternoon";
+         } else if (formatted.equalsIgnoreCase("Evening")) {
+             this.shift = "Evening";
+         } else {
+             throw new IllegalArgumentException(
+                 "Invalid input. Shift must be Morning, Afternoon, or Evening."
+             );
+         }
      }
      
 //Getters====================================

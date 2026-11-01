@@ -66,7 +66,17 @@ public abstract class User {
            );
        }
  
-       this.status = status;
+       String formatted = status.trim();
+ 
+       if (formatted.equalsIgnoreCase("Active")) {
+           this.status = "Active";
+       } else if (formatted.equalsIgnoreCase("Inactive")) {
+           this.status = "Inactive";
+       } else {
+           throw new IllegalArgumentException(
+               "Invalid input. User status must be Active or Inactive."
+           );
+       }
    }
    
  
