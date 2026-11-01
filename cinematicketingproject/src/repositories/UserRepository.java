@@ -21,9 +21,16 @@ public class UserRepository {
         if (findUser(user.getUserID()) != null) {
             return false;
         }
+        Node<User> n = users.getHead();
+        while (n != null) {
+            if (n.getData().getUserName().equalsIgnoreCase(user.getUserName())) {
+                return false;
+            }
+            n = n.getNext();
+        }
         users.insertAtEnd(user);
         return true;}
-
+ 
     public LinkedList viewUsers() {
         return users;
     }
@@ -41,7 +48,7 @@ public class UserRepository {
         }
         return null;
     }
-
+ 
     public LinkedList filterByRole(String role) {
         LinkedList<User> result = new LinkedList<User>();
         if (role == null) {
@@ -56,7 +63,7 @@ public class UserRepository {
         }
         return result;
     }
-
+ 
     // Returns true only if the user exists and was Active.
     public boolean deactivateUser(String userID) {
         User user = findUser(userID);
@@ -66,7 +73,7 @@ public class UserRepository {
         user.setStatus("Inactive");
         return true;
     }
-
+ 
     // Returns true only if the user exists and was Inactive.
     public boolean reactivateUser(String userID) {
         User user = findUser(userID);
@@ -76,7 +83,7 @@ public class UserRepository {
         user.setStatus("Active");
         return true;
     }
-
+ 
     // The controller should check history.hasTransactionsBy(userID) before calling this.
     public boolean deleteUser(String userID) {
         User user = findUser(userID);
@@ -84,7 +91,7 @@ public class UserRepository {
             return false;
         }
         return users.remove(user);}
-
+ 
     // ADM001, CSH001, CUS001, ... (next free number for that role's prefix)
     public String generateUserID(String role) {
         String prefix = prefixFor(role);

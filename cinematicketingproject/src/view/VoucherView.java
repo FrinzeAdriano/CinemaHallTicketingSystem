@@ -13,7 +13,7 @@ public class VoucherView extends BaseView {
 
 
     // Menu Methods
-
+ 
     public int showVoucherMenu() {
         System.out.println("\n===== VOUCHER MANAGEMENT =====");
         System.out.println("1. Add voucher");
@@ -23,9 +23,9 @@ public class VoucherView extends BaseView {
         System.out.println("5. Remove voucher");
         System.out.println("0. Back");
         return readInt("Choose an option: ", 0, 5);}
-
+ 
     // Voucher Input Methods
-
+ 
     public Voucher promptNewVoucher() {
         String code;
         while (true) {
@@ -64,13 +64,21 @@ public class VoucherView extends BaseView {
  
         int maxUses = readInt("Maximum number of uses (1-100000): ", 1, 100000);
  
-        return new Voucher(code, description, mode, value, expiry, maxUses, 0, true);
+        Voucher voucher = new Voucher(code);
+        voucher.setDescription(description);
+        // voucher.setDiscountMode(mode);   // Voucher has no setDiscountMode yet
+        voucher.setValue(value);
+        voucher.setExpiryDate(expiry);
+        voucher.setMaxUses(maxUses);
+        voucher.setTimesUsed(0);
+        voucher.setActive(true);
+        return voucher;
     }
-
+ 
     public String promptVoucherCode() {
         return readString("Enter voucher code: ").toUpperCase();
     }
-
+ 
     // Shows the voucher and asks which field to change. 0 = cancel.
     // 1 = description, 2 = value, 3 = expiry date, 4 = maximum uses.
     public int showEditVoucherMenu(Voucher voucher) {
@@ -82,18 +90,18 @@ public class VoucherView extends BaseView {
         System.out.println("4. Maximum uses");
         System.out.println("0. Cancel");
         return readInt("Choose an option: ", 0, 4);}
-
-
+ 
+ 
     // Display Methods
-
+ 
     public void displayVoucher(Voucher voucher) {
         System.out.println("\n===== VOUCHER " + voucher.getVoucherCode() + " =====");
         System.out.println("Description : " + voucher.getDescription());
-        System.out.println("Discount    : " + voucher.getDiscountMode());
+        System.out.println("Discount    : " + voucher.getDiscountMode() + " " + voucher.getValue());
         System.out.println("Expires     : " + voucher.getExpiryDate());
         System.out.println("Uses        : " + voucher.getTimesUsed() + " / " + voucher.getMaxUses());
-        System.out.println("Status      : " + voucher.isActive());}
-
+        System.out.println("Status      : " + (voucher.isActive() ? "Active" : "Inactive"));}
+ 
     public void displayVouchers(LinkedList list) {
         if (list == null || list.getHead() == null) {
             System.out.println("No vouchers found.");
@@ -106,9 +114,9 @@ public class VoucherView extends BaseView {
         Node n = list.getHead();
         while (n != null) {
             Voucher v = (Voucher) n.getData();
-            System.out.printf(row, v.getVoucherCode(), v.getDiscountMode(), v.getExpiryDate(),
-                    v.getTimesUsed() + "/" + v.getMaxUses(), v.isActive(), v.getDescription());
+            System.out.printf(row, v.getVoucherCode(), v.getDiscountMode() + " " + v.getValue(), v.getExpiryDate(),
+                    v.getTimesUsed() + "/" + v.getMaxUses(), v.isActive() ? "Active" : "Inactive", v.getDescription());
             n = n.getNext();
         }}
-
+ 
 }

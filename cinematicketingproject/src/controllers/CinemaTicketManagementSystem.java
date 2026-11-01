@@ -77,7 +77,7 @@ public class CinemaTicketManagementSystem {
         currentUser = user;
         view.showMessage("Welcome, " + user.getFullName() + " (" + user.getRole() + ")!");
         return true;}
-
+ 
     public boolean logout() {
         if (currentUser == null) {
             return false;
@@ -86,7 +86,7 @@ public class CinemaTicketManagementSystem {
         currentUser = null;
         return true;
     }
-
+ 
     public void route(User user) {
         if (user instanceof Admin) {
             adminController.start((Admin) user);
@@ -101,17 +101,31 @@ public class CinemaTicketManagementSystem {
 
     // Demo data so the system is usable on first run.
     // Logins:  admin / admin123    cashier1 / cash123    customer1 / cust123
-    // Demo data so the system is usable on first run.
-    // Logins:  admin / admin123    cashier1 / cash123    customer1 / cust123
     public void loadSampleData() {
  
         // Users
-        userRepo.addUser(new Admin(userRepo.generateUserID("Admin"), "admin", "admin123",
-                "System Admin", "Active"));
-        userRepo.addUser(new Cashier(userRepo.generateUserID("Cashier"), "cashier1", "cash123",
-                "Sam Cashier", "Active", "Morning"));
-        userRepo.addUser(new Customer(userRepo.generateUserID("Customer"), "customer1", "cust123",
-                "Chris Customer", "Active", "Regular", LocalDate.now().toString()));
+        Admin admin = new Admin(userRepo.generateUserID("Admin"));
+        admin.setUserName("admin");
+        admin.changePassword(null, "admin123");
+        admin.setFullName("System Admin");
+        admin.setStatus("Active");
+        userRepo.addUser(admin);
+ 
+        Cashier cashier = new Cashier(userRepo.generateUserID("Cashier"));
+        cashier.setUserName("cashier1");
+        cashier.changePassword(null, "cash123");
+        cashier.setFullName("Sam Cashier");
+        cashier.setStatus("Active");
+        cashier.setShift("Morning");
+        userRepo.addUser(cashier);
+ 
+        Customer customer = new Customer(userRepo.generateUserID("Customer"));
+        customer.setUserName("customer1");
+        customer.changePassword(null, "cust123");
+        customer.setFullName("Chris Customer");
+        customer.setStatus("Active");
+        customer.setCustomerType("Regular");
+        userRepo.addUser(customer);
  
         // Movies (release dates are relative to today so the data never goes stale)
         Movie starfall = new Movie(movieRepo.generateMovieID(), "Starfall Odyssey", "Sci-Fi", 128, "PG-13",
@@ -164,11 +178,26 @@ public class CinemaTicketManagementSystem {
         inventoryRepo.addProduct(new Drink(inventoryRepo.generateProductID(), "Hot Coffee", 85.0, 40,
                 "Active", "Regular", false));
  
-        // Vouchers
-        voucherRepo.addVoucher(new Voucher("WELCOME10", "10% off for new customers", "PERCENT", 10,
-                LocalDate.now().plusYears(1), 100, 0, true));
-        voucherRepo.addVoucher(new Voucher("SAVE50", "50 off any purchase", "FIXED", 50,
-                LocalDate.now().plusMonths(6), 50, 0, true));
+        // Vouchers (discount mode can't be set until Voucher has a setDiscountMode)
+        Voucher welcome = new Voucher("WELCOME10");
+        welcome.setDescription("10% off for new customers");
+        // welcome.setDiscountMode("PERCENT");
+        welcome.setValue(10);
+        welcome.setExpiryDate(LocalDate.now().plusYears(1));
+        welcome.setMaxUses(100);
+        welcome.setTimesUsed(0);
+        welcome.setActive(true);
+        voucherRepo.addVoucher(welcome);
+ 
+        Voucher save50 = new Voucher("SAVE50");
+        save50.setDescription("50 off any purchase");
+        // save50.setDiscountMode("FIXED");
+        save50.setValue(50);
+        save50.setExpiryDate(LocalDate.now().plusMonths(6));
+        save50.setMaxUses(50);
+        save50.setTimesUsed(0);
+        save50.setActive(true);
+        voucherRepo.addVoucher(save50);
     }
  
 }

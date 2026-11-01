@@ -12,21 +12,21 @@ public class UserView extends BaseView {
 
 
     // Menu Methods
-
+ 
     public int showProfileMenu() {
         System.out.println("\n===== MY PROFILE =====");
         System.out.println("1. Edit profile");
         System.out.println("2. Change password");
         System.out.println("0. Back");
         return readInt("Choose an option: ", 0, 2);}
-
+ 
     public int showEditProfileMenu(User user) {
         System.out.println("\n===== EDIT PROFILE (" + user.getUserID() + ") =====");
         System.out.println("1. Full name (" + user.getFullName() + ")");
         System.out.println("2. Username (" + user.getUserName() + ")");
         System.out.println("0. Back");
         return readInt("Choose an option: ", 0, 2);}
-
+ 
     public int showUserManagementMenu() {
         System.out.println("\n===== USER MANAGEMENT =====");
         System.out.println("1. Add user");
@@ -37,10 +37,10 @@ public class UserView extends BaseView {
         System.out.println("6. Delete user");
         System.out.println("0. Back");
         return readInt("Choose an option: ", 0, 6);}
-
-
+ 
+ 
     // User Input Methods
-
+ 
     // The role is read from the ID prefix (ADM / CSH / CUS) that
     // UserRepository.generateUserID produced. Unknown prefix: ask for the role.
     public User promptNewUser(String userID) {
@@ -49,20 +49,28 @@ public class UserView extends BaseView {
             role = promptRole();
         }
  
-        String username = promptUsername();
-        String password = promptNewPassword();
-        String fullName = promptFullName();
- 
+        User user;
         if (role.equals("Admin")) {
-            return new Admin(userID);
+            user = new Admin(userID);
+        } else if (role.equals("Cashier")) {
+            user = new Cashier(userID);
+        } else {
+            user = new Customer(userID);
         }
-        if (role.equals("Cashier")) {
-            return new Cashier(userID);
+ 
+        user.setUserName(promptUsername());
+        user.changePassword(null, promptNewPassword());
+        user.setFullName(promptFullName());
+        user.setStatus("Active");
+ 
+        if (user instanceof Cashier) {
+            ((Cashier) user).setShift(promptShift());
+        } else if (user instanceof Customer) {
+            ((Customer) user).setCustomerType(promptCustomerType());
         }
-        return new Customer(userID, username, password, fullName, "Active",
-                promptCustomerType(), LocalDate.now().toString());}
-    
-        // Asks which kind of account to create. Returns Admin, Cashier or Customer.
+        return user;}
+ 
+    // Asks which kind of account to create. Returns Admin, Cashier or Customer.
     private String promptRole() {
         System.out.println("Role:");
         System.out.println("1. Admin");
@@ -76,13 +84,13 @@ public class UserView extends BaseView {
             return "Cashier";
         }
         return "Customer";}
-
+ 
     public String promptUserID() {
         return readString("Enter user ID: ");}
-
+ 
     public String promptFullName() {
         return readString("Full name: ");}
-
+ 
     public String promptUsername() {
         while (true) {
             String username = readString("Username (4-20 letters or digits): ");
@@ -91,10 +99,10 @@ public class UserView extends BaseView {
             }
             showError("Username must be 4-20 letters or digits, no spaces or symbols.");
         }}
-
+ 
     public String promptOldPassword() {
         return readString("Current password: ");}
-
+ 
     public String promptNewPassword() {
         while (true) {
             String password = readString("New password (at least 6 characters): ");
@@ -108,10 +116,8 @@ public class UserView extends BaseView {
             }
             showError("Passwords do not match. Try again.");
         }}
-
-
-    // Display Methods
-
+ 
+ 
     // Display Methods
  
     public void displayProfile(User user) {
@@ -193,5 +199,5 @@ public class UserView extends BaseView {
         }
         return "Senior";
     }
-
+ 
 }

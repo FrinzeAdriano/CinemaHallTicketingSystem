@@ -15,15 +15,15 @@ public abstract class BaseView {
   
   
     // Message Methods
-
+ 
     public void showMessage(String msg) {
         System.out.println(msg);
     }
-
+ 
     public void showError(String msg) {
         System.out.println("[Error] " + msg);
     }
-
+ 
     public boolean confirm(String prompt) {
         while (true) {
             String input = readString(prompt + " (y/n): ");
@@ -36,20 +36,22 @@ public abstract class BaseView {
             showError("Please answer y or n.");
         }
     }
-
-
+ 
+ 
     // Input Methods
-
-    protected String readString(String prompt) {
+ 
+    // Keeps asking until the user types something that is not blank.
+    public String readString(String prompt) {
         while (true) {
-            String input = readString(prompt);
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
             if (InputValidator.isNotBlank(input)) {
                 return input;
             }
             showError("This field cannot be empty.");
         }
     }
-
+ 
     public int readInt(String prompt, int min, int max) {
         while (true) {
             String input = readString(prompt);
@@ -64,7 +66,7 @@ public abstract class BaseView {
             }
         }
     }
-
+ 
     // Keeps asking until a positive number is entered.
     public double readDouble(String prompt) {
         while (true) {

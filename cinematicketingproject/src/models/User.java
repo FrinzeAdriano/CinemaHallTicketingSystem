@@ -23,8 +23,9 @@ public abstract class User {
    public abstract String getRole();
    
    // Returns false if the old password is wrong or the new one is invalid.
+   // First-time setup: while no password is set yet, pass null as oldPass.
    public boolean changePassword(String oldPass, String newPass){
-       if (oldPass == null || !password.equals(oldPass)) {
+       if (password != null && !password.equals(oldPass)) {
            return false;
        }
        if (!InputValidator.isValidPassword(newPass)) {
@@ -32,8 +33,8 @@ public abstract class User {
        }
        this.password = newPass;
        return true;}
-
-
+ 
+ 
 // Setters =====================================   
    public void setUserName(String userName){
  
@@ -68,7 +69,7 @@ public abstract class User {
        this.status = status;
    }
    
-
+ 
  // Getters =====================================  
    public String getUserID(){
        return userID;
