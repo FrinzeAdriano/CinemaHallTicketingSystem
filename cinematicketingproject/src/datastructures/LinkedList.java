@@ -76,17 +76,6 @@ public class LinkedList<T> {
         return (n == null) ? null : n.getData();
     }
 
-    public boolean contains(T data) {
-        Node<T> n = head;
-        while (n != null) {
-            if (n.getData().equals(data)) {
-                return true;
-            }
-            n = n.getNext();
-        }
-        return false;
-    }
-
     public boolean remove(T data) {
         Node<T> prev = null;
         Node<T> n = head;
@@ -104,7 +93,18 @@ public class LinkedList<T> {
         }
         return false;
     }
-
+    
+    public boolean contains(T data) {
+        Node<T> n = head;
+        while (n != null) {
+            if (n.getData().equals(data)) {
+                return true;
+            }
+            n = n.getNext();
+        }
+        return false;
+    }
+    
     public void display() {
         Node<T> n = head;
         while (n != null) {
