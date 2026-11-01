@@ -13,31 +13,89 @@ public class OrderProduct {
     private int  quantity;
     private double  price;
     
+       // Constructor
     public OrderProduct(Product product, int quantity, double price) {
-    this.product = product;
-    this.quantity = quantity;
-    this.price = price;
-}
+
+        // Product validation
+        if (product == null) {
+            throw new IllegalArgumentException(
+                "Invalid input. No product was provided."
+            );
+        }
+
+        // Quantity validation
+        if (!InputValidator.isPositiveInt(String.valueOf(quantity))) {
+            throw new IllegalArgumentException(
+                "Invalid input. Quantity must be greater than zero."
+            );
+        }
+
+        // Product price validation
+        if (!Double.isFinite(price) || price < 0) {
+            throw new IllegalArgumentException(
+                "Invalid input. Product price must be a finite amount equal to or greater than zero."
+            );
+        }
+
+        // Check whether the order price matches the actual product price
+        if (Double.compare(price, product.getPrice()) != 0) {
+            throw new IllegalArgumentException(
+                "Invalid input. Order price must match the current product price."
+            );
+        }
+
+        // Subtotal validation
+        if (!Double.isFinite(price * quantity)) {
+            throw new IllegalArgumentException(
+                "Invalid input. Order subtotal exceeds the supported numeric range."
+            );
+        }
+
+        this.product = product;
+        this.quantity = quantity;
+        this.price = price;
+    }
+
+
+    // Calculates the subtotal
     public double getSubtotal() {
-    return 0;}
-    
+
+        double subtotal = price * quantity;
+
+        return subtotal;
+    }
+
     // Setter
     public void setQuantity(int quantity) {
-    this.quantity = quantity;}
-    
+
+        if (!InputValidator.isPositiveInt(String.valueOf(quantity))) {
+            throw new IllegalArgumentException(
+                "Invalid input. Quantity must be greater than zero."
+            );
+        }
+
+        // Check subtotal after changing quantity
+        if (!Double.isFinite(price * quantity)) {
+            throw new IllegalArgumentException(
+                "Invalid input. Order subtotal exceeds the supported numeric range."
+            );
+        }
+
+        this.quantity = quantity;
+    }
+
+
     // Getters
     public Product getProduct() {
-    return product;}
+        return product;
+    }
 
     public int getQuantity() {
-    return quantity;}
+        return quantity;
+    }
 
     public double getPrice() {
-    return price;}
-
-
-
-
-
+        return price;
+    }
 
 }
