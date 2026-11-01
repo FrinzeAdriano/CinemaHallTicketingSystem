@@ -54,10 +54,10 @@ public class UserView extends BaseView {
         String fullName = promptFullName();
  
         if (role.equals("Admin")) {
-            return new Admin(userID, username, password, fullName, "Active");
+            return new Admin(userID);
         }
         if (role.equals("Cashier")) {
-            return new Cashier(userID, username, password, fullName, "Active", promptShift());
+            return new Cashier(userID);
         }
         return new Customer(userID, username, password, fullName, "Active",
                 promptCustomerType(), LocalDate.now().toString());}

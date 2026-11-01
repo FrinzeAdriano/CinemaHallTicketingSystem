@@ -12,9 +12,8 @@ public class Cashier extends User{
     
     private String shift;
     
-      public Cashier(String userID, String userName,String password, String fullName, String status, String shift){
-          super(userID, userName, password, fullName,status);
-          this.shift = shift;
+      public Cashier(String userID){
+          super(userID);
        }
      
     @Override
@@ -24,11 +23,25 @@ public class Cashier extends User{
       
 // Setters===================================
      public void setShift(String shift){
-         this.shift = shift;}
+ 
+         if (!InputValidator.isNotBlank(shift)) {
+             throw new IllegalArgumentException(
+                 "Invalid input. No cashier shift was provided."
+             );
+         }
+ 
+         this.shift = shift;
+     }
      
 //Getters====================================
      public String getShift(){
-         return shift;}
-     
-     
+ 
+         if (!InputValidator.isNotBlank(shift)) {
+             throw new IllegalStateException(
+                 "Cashier shift has not been set."
+             );
+         }
+ 
+         return shift;
+     }  
 }

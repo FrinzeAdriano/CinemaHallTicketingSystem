@@ -9,8 +9,8 @@ import service.*;
 
 public class Admin extends User{
     
-    public Admin(String userID, String userName,String password, String fullName, String status){
-       super(userID, userName, password, fullName, status);
+    public Admin(String userID){
+       super(userID);
        }
     
     @Override
