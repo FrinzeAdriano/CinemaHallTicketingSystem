@@ -3,36 +3,78 @@ import controllers.*;
 import models.*;
 import datastructures.*;
 import java.time.LocalDate;
+import java.util.Locale;
 import view.*;
 import utility.*;
 import service.*;
 
 public class TransactionHistory {
 
-    private LinkedList  transactionHistory = new LinkedList();
+     private final LinkedList<Transaction> transactionHistory =
+        new LinkedList<Transaction>();
 
 
-     // Adds a transaction
+   
+    // Adds a transaction
+
     public void addTransaction(Transaction transaction) {
 
-        if (transaction != null) {
-            transactionHistory.insertAtEnd(transaction);
+        if (transaction == null) {
+            throw new IllegalArgumentException(
+                "Invalid input. Transaction cannot be null."
+            );
         }
+
+        // Prevent duplicate transaction IDs
+        for (int i = 0; i < transactionHistory.size(); i++) {
+
+            Transaction existingTransaction =
+                transactionHistory.get(i);
+
+            if (existingTransaction.getTransactionID()
+                    .equalsIgnoreCase(transaction.getTransactionID())) {
+
+                throw new IllegalArgumentException(
+                    "Invalid input. Transaction ID already exists."
+                );
+            }
+        }
+
+        transactionHistory.insertAtEnd(transaction);
     }
 
     // Returns all transactions
-    public LinkedList viewTransactionHistory() {
-        return transactionHistory;
+     public LinkedList<Transaction> viewTransactionHistory() {
+
+        LinkedList<Transaction> copy =
+            new LinkedList<Transaction>();
+
+        for (int i = 0; i < transactionHistory.size(); i++) {
+            copy.insertAtEnd(transactionHistory.get(i));
+        }
+
+        return copy;
     }
+
 
      // Finds a transaction using its ID
     public Transaction findByID(String transactionID) {
 
+        if (!InputValidator.isNotBlank(transactionID)) {
+            throw new IllegalArgumentException(
+                "Invalid input. Transaction ID cannot be blank."
+            );
+        }
+
+        String formattedID = transactionID.trim();
+
         for (int i = 0; i < transactionHistory.size(); i++) {
 
-            Transaction transaction = (Transaction)transactionHistory.get(i);
+            Transaction transaction = transactionHistory.get(i);
 
-            if (transaction.getTransactionID().equalsIgnoreCase(transactionID)) {
+            if (transaction.getTransactionID()
+                    .equalsIgnoreCase(formattedID)) {
+
                 return transaction;
             }
         }
@@ -42,26 +84,65 @@ public class TransactionHistory {
 
 
     // Filters transactions using a field and value
-    public LinkedList filterTransactionHistory(
+    public LinkedList<Transaction> filterTransactionHistory(
             String field, String value) {
 
-        LinkedList filtered =  new LinkedList();
+        if (!InputValidator.isNotBlank(field)) {
+            throw new IllegalArgumentException(
+                "Invalid input. Filter field cannot be blank."
+            );
+        }
+
+        if (!InputValidator.isNotBlank(value)) {
+            throw new IllegalArgumentException(
+                "Invalid input. Filter value cannot be blank."
+            );
+        }
+
+        String formattedField = field.trim().toLowerCase(Locale.ROOT);
+        String formattedValue = value.trim();
+
+        // Validate supported filter fields
+        if (!formattedField.equals("status") &&
+            !formattedField.equals("bookingtype") &&
+            !formattedField.equals("customerid") &&
+            !formattedField.equals("cashierid")) {
+
+            throw new IllegalArgumentException(
+                "Invalid input. Filter field must be status, bookingType, customerID, or cashierID."
+            );
+        }
+
+        LinkedList<Transaction> filtered =
+            new LinkedList<Transaction>();
 
         for (int i = 0; i < transactionHistory.size(); i++) {
 
-            Transaction transaction =  (Transaction)transactionHistory.get(i);
+            Transaction transaction = transactionHistory.get(i);
+
             boolean matched = false;
 
-            if (field.equalsIgnoreCase("status")) {
-                matched = transaction.getStatus().equalsIgnoreCase(value);
-            } else if (field.equalsIgnoreCase("bookingType")) {
-                matched = transaction.getBookingType().equalsIgnoreCase(value);
-            } else if (field.equalsIgnoreCase("customerID")) {
+            if (formattedField.equals("status")) {
+
+                matched = transaction.getStatus()
+                    .equalsIgnoreCase(formattedValue);
+
+            } else if (formattedField.equals("bookingtype")) {
+
+                matched = transaction.getBookingType()
+                    .equalsIgnoreCase(formattedValue);
+
+            } else if (formattedField.equals("customerid")) {
+
                 matched = transaction.getCustomerID() != null
-                    && transaction.getCustomerID().equalsIgnoreCase(value);
-            } else if (field.equalsIgnoreCase("cashierID")) {
+                    && transaction.getCustomerID()
+                        .equalsIgnoreCase(formattedValue);
+
+            } else if (formattedField.equals("cashierid")) {
+
                 matched = transaction.getCashierID() != null
-                    && transaction.getCashierID().equalsIgnoreCase(value);
+                    && transaction.getCashierID()
+                        .equalsIgnoreCase(formattedValue);
             }
 
             if (matched) {
@@ -74,26 +155,39 @@ public class TransactionHistory {
 
 
     // Retrieves transactions belonging to a cashier
-    public LinkedList getByCashier(String cashierID) {
+   
+    public LinkedList<Transaction> getByCashier(String cashierID) {
 
         return filterTransactionHistory("cashierID", cashierID);
     }
 
     // Retrieves transactions belonging to a customer
-    public LinkedList getByCustomer(String customerID) {
+     public LinkedList<Transaction> getByCustomer(String customerID) {
 
         return filterTransactionHistory("customerID", customerID);
     }
 
-    public LinkedList filterByDateRange(
+     public LinkedList<Transaction> filterByDateRange(
             LocalDate startDate, LocalDate endDate) {
 
-        LinkedList filtered =
-            new LinkedList();
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException(
+                "Invalid input. Start date and end date cannot be null."
+            );
+        }
+
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException(
+                "Invalid input. End date cannot be before start date."
+            );
+        }
+
+        LinkedList<Transaction> filtered =
+            new LinkedList<Transaction>();
 
         for (int i = 0; i < transactionHistory.size(); i++) {
 
-            Transaction transaction = (Transaction) transactionHistory.get(i);
+            Transaction transaction = transactionHistory.get(i);
 
             LocalDate transactionDate =
                 transaction.getDateTime().toLocalDate();
@@ -109,30 +203,41 @@ public class TransactionHistory {
     }
 
 
+
     // Filters by booking type
-    public LinkedList filterByBookingType(String bookingType) {
+     public LinkedList<Transaction> filterByBookingType(String bookingType) {
 
         return filterTransactionHistory("bookingType", bookingType);
     }
 
     // Filters by transaction status
-    public LinkedList filterByStatus(String status) {
+    public LinkedList<Transaction> filterByStatus(String status) {
 
         return filterTransactionHistory("status", status);
     }
 
 
     // Checks whether a user has transactions
-    public boolean hasTransactionsBy(String userID) {
+     public boolean hasTransactionsBy(String userID) {
+
+        if (!InputValidator.isNotBlank(userID)) {
+            throw new IllegalArgumentException(
+                "Invalid input. User ID cannot be blank."
+            );
+        }
+
+        String formattedID = userID.trim();
 
         for (int i = 0; i < transactionHistory.size(); i++) {
 
-            Transaction transaction = (Transaction) transactionHistory.get(i);
+            Transaction transaction = transactionHistory.get(i);
 
             if ((transaction.getCustomerID() != null
-                    && transaction.getCustomerID().equalsIgnoreCase(userID))
+                    && transaction.getCustomerID()
+                        .equalsIgnoreCase(formattedID))
                 || (transaction.getCashierID() != null
-                    && transaction.getCashierID().equalsIgnoreCase(userID))) {
+                    && transaction.getCashierID()
+                        .equalsIgnoreCase(formattedID))) {
 
                 return true;
             }
@@ -142,11 +247,39 @@ public class TransactionHistory {
     }
 
 
+
     // Generates a transaction ID
     public String generateTransactionID() {
 
-        int nextNumber = transactionHistory.size() + 1;
+        int highestNumber = 0;
 
-        return String.format("TR%04d", nextNumber);
+        // Find the highest existing transaction ID number
+        for (int i = 0; i < transactionHistory.size(); i++) {
+
+            Transaction transaction = transactionHistory.get(i);
+
+            int currentNumber = Integer.parseInt(
+                transaction.getTransactionID().substring(1)
+            );
+
+            if (currentNumber > highestNumber) {
+                highestNumber = currentNumber;
+            }
+        }
+
+        if (highestNumber >= 999) {
+            throw new IllegalStateException(
+                "Operation cannot be completed. Transaction ID limit reached."
+            );
+        }
+
+        int nextNumber = highestNumber + 1;
+
+        return String.format(
+            Locale.ROOT,
+            "T%03d",
+            nextNumber
+        );
     }
+
 }

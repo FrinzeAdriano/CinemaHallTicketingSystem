@@ -3,13 +3,15 @@ import controllers.*;
 import models.*;
 import datastructures.*;
 import java.time.LocalDate;
+import java.util.Locale;
 import repositories.*;
 import utility.*;
 import service.*;
 public class SalesView extends BaseView {
 
 
-    /// Displays the sales menu
+    // Displays the sales menu
+
     public int showSalesMenu() {
 
         showMessage("========== SALES REPORTS ==========");
@@ -23,8 +25,8 @@ public class SalesView extends BaseView {
     }
 
 
-
     // Requests a valid date
+
     public LocalDate promptDate() {
 
         while (true) {
@@ -41,20 +43,27 @@ public class SalesView extends BaseView {
 
 
     // Displays a list of sales records
-    public void displaySales(LinkedList sales) {
+
+    public void displaySales(LinkedList<Sales> sales) {
 
         if (sales == null || sales.size() == 0) {
             showMessage("No sales records found.");
             return;
         }
 
+        showMessage("========== SALES RECORDS ==========");
+
         for (int i = 0; i < sales.size(); i++) {
-            displaySalesSummary((Sales) sales.get(i));
+
+            displaySalesSummary(sales.get(i));
         }
+
+        showMessage("========== END OF SALES RECORDS ==========");
     }
 
 
     // Displays one sales summary
+
     public void displaySalesSummary(Sales sales) {
 
         if (sales == null) {
@@ -62,16 +71,25 @@ public class SalesView extends BaseView {
             return;
         }
 
-        showMessage("-----------------------------");
+        showMessage("----------------------------------------");
         showMessage("Sales ID: " + sales.getSalesID());
         showMessage("Date: " + sales.getDate());
-        showMessage("Ticket Revenue: " + sales.getTicketRevenue());
-        showMessage("Product Revenue: " + sales.getProductRevenue());
-        showMessage("Discount Total: " + sales.getDiscountTotal());
-        showMessage("Transactions: " + sales.getTransactionCount());
-        showMessage("Total Revenue: " + sales.getTotalRevenue());
-        showMessage("-----------------------------");
-    }
 
+        showMessage("Ticket Revenue: " +
+            String.format(Locale.ROOT, "%.2f", sales.getTicketRevenue()));
+
+        showMessage("Product Revenue: " +
+            String.format(Locale.ROOT, "%.2f", sales.getProductRevenue()));
+
+        showMessage("Discount Total: " +
+            String.format(Locale.ROOT, "%.2f", sales.getDiscountTotal()));
+
+        showMessage("Transactions: " + sales.getTransactionCount());
+
+        showMessage("Total Revenue: " +
+            String.format(Locale.ROOT, "%.2f", sales.getTotalRevenue()));
+
+        showMessage("----------------------------------------");
+    }
 
 }

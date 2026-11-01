@@ -9,6 +9,7 @@ public class TicketView extends BaseView {
 
 
     // Requests the number of tickets
+
     public int promptTicketCount() {
 
         while (true) {
@@ -19,13 +20,15 @@ public class TicketView extends BaseView {
                 return Integer.parseInt(input.trim());
             }
 
-            showError("Please enter a valid positive whole number.");
+            showError(
+                "Please enter a valid positive whole number."
+            );
         }
     }
 
 
-
     // Displays one ticket
+
     public void displayTicket(Ticket ticket) {
 
         if (ticket == null) {
@@ -34,14 +37,30 @@ public class TicketView extends BaseView {
         }
 
         showMessage("Ticket ID: " + ticket.getTicketID());
-        showMessage("Schedule: " + ticket.getSchedule().getScheduleID());
-        showMessage("Seat: " + ticket.getSeat().getSeatID());
+
+        if (ticket.getSchedule() != null) {
+            showMessage(
+                "Schedule: " + ticket.getSchedule().getScheduleID()
+            );
+        } else {
+            showMessage("Schedule: Not available.");
+        }
+
+        if (ticket.getSeat() != null) {
+            showMessage(
+                "Seat: " + ticket.getSeat().getSeatID()
+            );
+        } else {
+            showMessage("Seat: Not available.");
+        }
+
         showMessage("Price: " + ticket.getPrice());
         showMessage("Status: " + ticket.getStatus());
     }
 
 
     // Displays multiple tickets
+
     public void displayTickets(LinkedList<Ticket> tickets) {
 
         if (tickets == null || tickets.size() == 0) {
@@ -53,6 +72,5 @@ public class TicketView extends BaseView {
             displayTicket(tickets.get(i));
         }
     }
-
 
 }

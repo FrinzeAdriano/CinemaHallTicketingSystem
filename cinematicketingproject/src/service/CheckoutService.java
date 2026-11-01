@@ -17,32 +17,134 @@ public class CheckoutService {
     private VoucherRepository voucherRepo;
     private int receiptCounter;
 
-public CheckoutService(TransactionHistory history, SalesRepository salesRepo, InventoryRepository inventoryRepo,
-                       VoucherRepository voucherRepo, int receiptCounter) {
-    this.history = history;
-    this.salesRepo = salesRepo;
-    this.inventoryRepo = inventoryRepo;
-    this.voucherRepo = voucherRepo;
-    this.receiptCounter = receiptCounter;
-    }
-    // Completes checkout and creates a receipt
-    public Receipt checkout(Transaction transaction) {
+ public CheckoutService(TransactionHistory history,
+                           SalesRepository salesRepo,
+                           InventoryRepository inventoryRepo,
+                           VoucherRepository voucherRepo,
+                           int receiptCounter) {
 
-        if (transaction == null) {
-            throw new IllegalArgumentException("Transaction is required.");
+        if (history == null || salesRepo == null ||
+            inventoryRepo == null || voucherRepo == null) {
+
+            throw new IllegalArgumentException(
+                "Invalid input. Checkout service repositories cannot be null."
+            );
         }
 
-        transaction.confirm();
+        if (receiptCounter < 0) {
+            throw new IllegalArgumentException(
+                "Invalid input. Receipt counter cannot be negative."
+            );
+        }
 
-        receiptCounter++;
+        this.history = history;
+        this.salesRepo = salesRepo;
+        this.inventoryRepo = inventoryRepo;
+        this.voucherRepo = voucherRepo;
+        this.receiptCounter = receiptCounter;
+    }
+ 
+ 
+    // Completes checkout and creates a receipt
+   public Receipt checkout(Transaction transaction) {
 
-        String receiptNo = String.format("RCP%04d", receiptCounter);
+        if (transaction == null) {
+            throw new IllegalArgumentException(
+                "Invalid input. Transaction cannot be null."
+            );
+        }
+
+        if (!transaction.getStatus().equalsIgnoreCase("PENDING")) {
+            throw new IllegalStateException(
+                "Only pending transactions can proceed to checkout."
+            );
+        }
+
+        if (receiptCounter == Integer.MAX_VALUE) {
+            throw new IllegalStateException(
+                "Operation cannot be completed. Receipt number limit reached."
+            );
+        }
+
+        LinkedList<OrderProduct> products =
+            transaction.getProducts();
+
+
+        // Deduct product stock
+        for (int i = 0; i < products.size(); i++) {
+
+            OrderProduct orderProduct = products.get(i);
+
+            boolean deducted =
+                orderProduct.getProduct().deductStock(
+                    orderProduct.getQuantity()
+                );
+
+            if (!deducted) {
+
+                // Restore previously deducted stock
+                for (int j = 0; j < i; j++) {
+
+                    OrderProduct previousProduct = products.get(j);
+
+                    previousProduct.getProduct().addStock(
+                        previousProduct.getQuantity()
+                    );
+                }
+
+                throw new IllegalStateException(
+                    "Operation cannot be completed. Insufficient product stock."
+                );
+            }
+        }
+
+
+        // Confirm transaction
+        try {
+
+            if (!transaction.confirm()) {
+
+                throw new IllegalStateException(
+                    "Operation cannot be completed. Transaction confirmation failed."
+                );
+            }
+
+        } catch (RuntimeException e) {
+
+            // Restore all deducted product stock
+            for (int i = 0; i < products.size(); i++) {
+
+                OrderProduct orderProduct = products.get(i);
+
+                orderProduct.getProduct().addStock(
+                    orderProduct.getQuantity()
+                );
+            }
+
+            throw e;
+        }
+
+
+        // Generate receipt number
+        int nextReceiptCounter = receiptCounter + 1;
+
+        String receiptNo = String.format(
+            Locale.ROOT,
+            "RCP%04d",
+            nextReceiptCounter
+        );
 
         transaction.setReceiptNo(receiptNo);
 
+
+        // Save transaction and record sales
         history.addTransaction(transaction);
         salesRepo.recordSale(transaction);
 
+        receiptCounter = nextReceiptCounter;
+
+
+        // Create receipt
         return new Receipt(
             receiptNo,
             LocalDateTime.now(),
@@ -65,25 +167,29 @@ public CheckoutService(TransactionHistory history, SalesRepository salesRepo, In
         boolean wasCompleted =
             transaction.getStatus().equalsIgnoreCase("COMPLETED");
 
+        boolean wasPending =
+            transaction.getStatus().equalsIgnoreCase("PENDING");
 
-        // Releases seats reserved by this transaction
-        LinkedList tickets = transaction.getTickets();
-
-        for (int i = 0; i < tickets.size(); i++) {
-
-            Ticket ticket = (Ticket) tickets.get(i);
-
-            ticket.getSchedule().getBookedSeatIDs().remove(
-                ticket.getSeat().getSeatID()
+        if (!wasCompleted && !wasPending) {
+            throw new IllegalStateException(
+                "Only pending or completed transactions can be cancelled."
             );
-
-            ticket.setStatus("CANCELLED");
         }
 
 
-        // Restores product stock if the transaction was completed
+        // Cancels tickets and releases booked seats
+        if (!transaction.cancel()) {
+            return false;
+        }
+
+
+        // Reverse sales and restore stock
         if (wasCompleted) {
 
+            // Reverse the recorded sales
+            salesRepo.reverseSale(transaction);
+
+            // Restore product stock
             LinkedList<OrderProduct> products =
                 transaction.getProducts();
 
@@ -91,15 +197,18 @@ public CheckoutService(TransactionHistory history, SalesRepository salesRepo, In
 
                 OrderProduct orderProduct = products.get(i);
 
-                orderProduct.getProduct().addStock(
-                    orderProduct.getQuantity()
-                );
+                boolean restored =
+                    orderProduct.getProduct().addStock(
+                        orderProduct.getQuantity()
+                    );
+
+                if (!restored) {
+                    throw new IllegalStateException(
+                        "Operation cannot be completed. Unable to restore product stock."
+                    );
+                }
             }
-
-            salesRepo.reverseSale(transaction);
         }
-
-        transaction.cancel();
 
         return true;
     }

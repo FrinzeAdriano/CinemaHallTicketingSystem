@@ -10,6 +10,7 @@ public class ReceiptView extends BaseView {
 
 
     // Displays a receipt
+
     public void displayReceipt(Receipt receipt) {
 
         if (receipt == null) {
@@ -30,13 +31,29 @@ public class ReceiptView extends BaseView {
         showMessage("Transaction ID: " + transaction.getTransactionID());
         showMessage("Booking Type: " + transaction.getBookingType());
 
+
+        // Displays tickets
+
         showMessage("\n--- TICKETS ---");
 
-        LinkedList tickets = transaction.getTickets();
+        LinkedList<Ticket> tickets = transaction.getTickets();
+
+        if (tickets.size() == 0) {
+            showMessage("No tickets.");
+        }
 
         for (int i = 0; i < tickets.size(); i++) {
 
-            Ticket ticket = (Ticket) tickets.get(i);
+            Ticket ticket = tickets.get(i);
+
+            if (ticket == null) {
+                continue;
+            }
+
+            if (ticket.getSeat() == null) {
+                showMessage("Ticket seat information unavailable.");
+                continue;
+            }
 
             showMessage(
                 ticket.getSeat().getSeatID()
@@ -44,13 +61,29 @@ public class ReceiptView extends BaseView {
             );
         }
 
+
+        // Displays products
+
         showMessage("\n--- PRODUCTS ---");
 
-        LinkedList products = transaction.getProducts();
+        LinkedList<OrderProduct> products = transaction.getProducts();
+
+        if (products.size() == 0) {
+            showMessage("No products.");
+        }
 
         for (int i = 0; i < products.size(); i++) {
 
-            OrderProduct product = (OrderProduct)products.get(i);
+            OrderProduct product = products.get(i);
+
+            if (product == null) {
+                continue;
+            }
+
+            if (product.getProduct() == null) {
+                showMessage("Product information unavailable.");
+                continue;
+            }
 
             showMessage(
                 product.getProduct().getName()
@@ -58,6 +91,9 @@ public class ReceiptView extends BaseView {
                 + " = " + product.getSubtotal()
             );
         }
+
+
+        // Displays transaction summary
 
         showMessage("-----------------------------");
         showMessage("Subtotal: " + transaction.getSubtotal());
@@ -71,11 +107,19 @@ public class ReceiptView extends BaseView {
         showMessage("=============================");
     }
 
+
     // Displays a reprinted receipt
+
     public void displayReprint(Receipt receipt) {
+
+        if (receipt == null) {
+            showError("Receipt not found.");
+            return;
+        }
 
         showMessage("========== REPRINTED RECEIPT ==========");
 
         displayReceipt(receipt);
     }
+
 }

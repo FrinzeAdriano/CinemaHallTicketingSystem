@@ -10,7 +10,8 @@ import service.*;
 public class TransactionHistoryView extends BaseView {
 
 
-    // Displays the transaction history menu
+   // Displays the transaction history menu
+
     public int showHistoryMenu() {
 
         showMessage("========== TRANSACTION HISTORY ==========");
@@ -22,7 +23,9 @@ public class TransactionHistoryView extends BaseView {
         return readInt("Choose an option: ", 0, 3);
     }
 
+
     // Requests a filter option
+
     public int promptFilterOption() {
 
         showMessage("========== FILTER TRANSACTIONS ==========");
@@ -31,26 +34,35 @@ public class TransactionHistoryView extends BaseView {
         showMessage("[3] Customer ID");
         showMessage("[4] Cashier ID");
         showMessage("[5] Date Range");
+        showMessage("[0] Back");
 
-        return readInt("Choose a filter: ", 1, 5);
+        return readInt("Choose a filter: ", 0, 5);
     }
 
 
     // Displays a list of transactions
-    public void displayTransactions(LinkedList<Transaction> transactions) {
+
+    public void displayTransactions(
+            LinkedList<Transaction> transactions) {
 
         if (transactions == null || transactions.size() == 0) {
             showMessage("No transactions found.");
             return;
         }
 
+        showMessage("========== TRANSACTIONS ==========");
+
         for (int i = 0; i < transactions.size(); i++) {
+
             displayTransactionDetails(transactions.get(i));
         }
+
+        showMessage("========== END OF TRANSACTIONS ==========");
     }
 
 
-     // Displays one transaction's details
+    // Displays one transaction's details
+
     public void displayTransactionDetails(Transaction transaction) {
 
         if (transaction == null) {
@@ -58,15 +70,50 @@ public class TransactionHistoryView extends BaseView {
             return;
         }
 
-        showMessage("-----------------------------");
+        showMessage("----------------------------------------");
         showMessage("Transaction ID: " + transaction.getTransactionID());
         showMessage("Booking Type: " + transaction.getBookingType());
-        showMessage("Customer ID: " + transaction.getCustomerID());
-        showMessage("Cashier ID: " + transaction.getCashierID());
+
+        showMessage(
+            "Customer ID: " +
+            (transaction.getCustomerID() == null
+                ? "N/A" : transaction.getCustomerID())
+        );
+
+        showMessage(
+            "Cashier ID: " +
+            (transaction.getCashierID() == null
+                ? "N/A" : transaction.getCashierID())
+        );
+
         showMessage("Date: " + transaction.getDateTime());
+
+        showMessage("Ticket Count: " + transaction.getTickets().size());
+        showMessage("Product Count: " + transaction.getProducts().size());
+
+        showMessage("Subtotal: " + transaction.getSubtotal());
+        showMessage("Discount: " + transaction.getDiscountAmount());
+        showMessage("Tax: " + transaction.getTaxAmount());
         showMessage("Total: " + transaction.getTotalAmount());
+
+        showMessage("Amount Paid: " + transaction.getAmountPaid());
+        showMessage("Change: " + transaction.getChange());
+
+        showMessage(
+            "Payment Method: " +
+            (transaction.getPaymentMethod() == null
+                ? "N/A" : transaction.getPaymentMethod())
+        );
+
         showMessage("Status: " + transaction.getStatus());
-        showMessage("-----------------------------");
+
+        showMessage(
+            "Receipt No.: " +
+            (transaction.getReceiptNo() == null
+                ? "N/A" : transaction.getReceiptNo())
+        );
+
+        showMessage("----------------------------------------");
     }
 
 }

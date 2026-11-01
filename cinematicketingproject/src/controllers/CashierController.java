@@ -52,7 +52,7 @@ public class CashierController {
     // Sells tickets for a walk-in customer
     public void sellTickets(Cashier cashier) {
 
-        LinkedList<Schedule> schedules =
+        LinkedList schedules =
             cinemaRepo.getAllSchedules();
 
         if (schedules == null || schedules.size() == 0) {
@@ -69,9 +69,9 @@ public class CashierController {
         // Gets the cinema room
         CinemaRoom room = schedule.getRoom();
 
-        LinkedList<Seat> seats = room.getSeats();
+        LinkedList seats = room.getSeats();
 
-        LinkedList<String> bookedSeatIDs =
+        LinkedList bookedSeatIDs =
             schedule.getBookedSeatIDs();
 
         // Counts available seats
@@ -79,7 +79,7 @@ public class CashierController {
 
         for (int i = 0; i < seats.size(); i++) {
 
-            Seat seat = seats.get(i);
+            Seat seat = (Seat) seats.get(i);
 
             if (!bookedSeatIDs.contains(seat.getSeatID())) {
                 availableSeats++;
@@ -103,8 +103,8 @@ public class CashierController {
             return;
         }
 
-        LinkedList<Ticket> selectedTickets =
-            new LinkedList<Ticket>();
+        LinkedList selectedTickets =
+            new LinkedList();
 
         int ticketNumber = 1;
 
@@ -122,7 +122,7 @@ public class CashierController {
 
             for (int i = 0; i < seats.size(); i++) {
 
-                Seat seat = seats.get(i);
+                Seat seat = (Seat)seats.get(i);
 
                 if (seat.getSeatID().equalsIgnoreCase(seatID)) {
                     selectedSeat = seat;
@@ -140,17 +140,24 @@ public class CashierController {
                 continue;
             }
 
-            boolean alreadySelected = false;
+             boolean alreadySelected = false;
 
             for (int i = 0; i < selectedTickets.size(); i++) {
 
-                if (selectedTickets.get(i).getSeat().getSeatID()
-                        .equalsIgnoreCase(selectedSeat.getSeatID())) {
+                Ticket selectedTicket =
+                    (Ticket) selectedTickets.get(i);
+
+                String previouslySelectedSeatID =
+                    selectedTicket.getSeat().getSeatID();
+
+                if (previouslySelectedSeatID.equalsIgnoreCase(
+                        selectedSeat.getSeatID())) {
 
                     alreadySelected = true;
                     break;
                 }
             }
+
 
             if (alreadySelected) {
                 seatView.showError("You already selected that seat.");
@@ -178,26 +185,26 @@ public class CashierController {
 
 
         // Creates the transaction
-        Transaction transaction = new Transaction(
-            history.generateTransactionID(),
-            "WALK_IN",
-            null,
-            cashier.getUserID(),
-            LocalDateTime.now(),
-            selectedTickets,
-            new LinkedList<OrderProduct>(),
-            null,
-            0,
-            0,
-            null,
-            0,
-            null,
-            0,
-            "PENDING",
-            null,
-            null,
-            null
-        );
+Transaction transaction = new Transaction(
+    history.generateTransactionID(),
+    "WALK_IN",
+    null,
+    cashier.getUserID(),
+    LocalDateTime.now(),
+    selectedTickets,
+    new LinkedList<OrderProduct>(),
+    null,
+    0,
+    0,
+    null,
+    0,
+    null,
+    0,
+    "PENDING",
+    null,
+    null,
+    null
+);
 
 
         // Selects the payment method
@@ -253,7 +260,7 @@ public class CashierController {
             // Reserves selected seats after successful checkout
             for (int i = 0; i < selectedTickets.size(); i++) {
 
-                Ticket ticket = selectedTickets.get(i);
+                Ticket ticket = (Ticket) selectedTickets.get(i);
 
                 bookedSeatIDs.insertAtEnd(
                     ticket.getSeat().getSeatID()
