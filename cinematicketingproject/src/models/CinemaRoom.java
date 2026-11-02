@@ -75,10 +75,11 @@ public class CinemaRoom {
         }
     }
 
-    // Rules: the seat ID must not be blank and must be a valid format (like A1).
-    // Returns the seat, or null if the room has no seat with that ID (case-insensitive).
-    // Throws IllegalArgumentException for a blank or badly formatted ID.
+    // Throws for an empty room, a blank or badly formatted ID, and when no seat matches (case-insensitive).
     public Seat findSeat(String seatID) {
+        if (seats.size() == 0) {
+            throw new IllegalArgumentException("Invalid input. Room " + roomID + " has no seats yet.");
+        }
         if (!InputValidator.isNotBlank(seatID)) {
             throw new IllegalArgumentException("Invalid input. Seat ID cannot be blank.");
         }
@@ -93,9 +94,8 @@ public class CinemaRoom {
             }
             node = node.getNext();
         }
-        return null;
+        throw new IllegalArgumentException("Invalid input. Seat " + key + " was not found in this room.");
     }
-
 
     // Categories: "ROW" (e.g. A), "TYPE" (e.g. VIP), "STATUS" (true or false).
     // Throws if the room has no seats, for an unknown category, or when nothing matches.
@@ -138,8 +138,12 @@ public class CinemaRoom {
         if (seat == null) {
             throw new IllegalArgumentException("Invalid input. No seat was provided.");
         }
-        if (findSeat(seat.getSeatID()) != null) {
-            throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " already exists in this room.");
+        Node<Seat> node = seats.getHead();
+        while (node != null) {
+            if (node.getData().getSeatID().equalsIgnoreCase(seat.getSeatID())) {
+                throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " already exists in this room.");
+            }
+            node = node.getNext();
         }
         seats.insertAtEnd(seat);
         return true;

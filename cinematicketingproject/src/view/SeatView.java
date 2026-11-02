@@ -14,16 +14,40 @@ public class SeatView extends BaseView {
 
     // Menus and prompts
 
-    public int showSeatMenu() {
+    public String showSeatMenu() {
         System.out.println();
-        System.out.println("===== SEAT MANAGEMENT =====");
+        System.out.println("=========== SEAT MANAGEMENT ============");
         System.out.println("1. View room layout");
         System.out.println("2. Add seat");
         System.out.println("3. Remove seat");
-        System.out.println("4. Change seat type");
+        System.out.println("4. Edit seat");
         System.out.println("5. Filter seats");
         System.out.println("0. Back");
-        return readInt("Choose an option: ", 0, 5);
+        System.out.println("----------------------------------------");
+        return readString("Choice (0 to go back): ");
+    }
+
+    public String showSeatFilterMenu() {
+        System.out.println();
+        System.out.println("============= FILTER SEATS =============");
+        System.out.println("1. By row");
+        System.out.println("2. By type");
+        System.out.println("3. By status");
+        System.out.println("0. Back");
+        System.out.println("----------------------------------------");
+        return readString("Choice (0 to go back): ");
+    }
+
+    public String showEditSeatMenu(Seat seat) {
+        displaySeat(seat);
+        System.out.println();
+        System.out.println("============== EDIT SEAT ===============");
+        System.out.println("1. Seat type");
+        System.out.println("2. Seat status");
+        System.out.println("3. Price modifier");
+        System.out.println("0. Back");
+        System.out.println("----------------------------------------");
+        return readString("Choice (0 to go back): ");
     }
 
     public String promptSeatID() {
@@ -32,6 +56,14 @@ public class SeatView extends BaseView {
 
     public String promptSeatType() {
         return readString("Enter seat type (e.g. Regular, VIP): ");
+    }
+
+    public String promptSearchValue() {
+        return readString("Enter search value (0 to go back): ");
+    }
+
+    public String promptPriceModifier() {
+        return readString("Enter price modifier (0 to go back): ");
     }
 
     // Display methods
@@ -59,7 +91,7 @@ public class SeatView extends BaseView {
         String title = "SEATS FOR SCHEDULE " + schedule.getScheduleID();
         int labelWidth = "Row X".length() + 3;
         int cellWidth = Math.max(longestCell, ("Seat " + maxPerRow).length()) + 2;
-        int width = Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4));
+        int width = Math.max(40, Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4)));
         String equalsLine = "=".repeat(width);
         String dashLine = "-".repeat(width);
         String labelFormat = "%-" + labelWidth + "s";
@@ -129,7 +161,7 @@ public class SeatView extends BaseView {
         String title = "LAYOUT OF " + room.getRoomName() + " (" + room.getRoomID() + ")";
         int labelWidth = "Row X".length() + 3;
         int cellWidth = Math.max(longestCell, ("Seat " + maxPerRow).length()) + 2;
-        int width = Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4));
+        int width = Math.max(40, Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4)));
         String equalsLine = "=".repeat(width);
         String dashLine = "-".repeat(width);
         String labelFormat = "%-" + labelWidth + "s";
@@ -173,12 +205,13 @@ public class SeatView extends BaseView {
 
     public void displaySeat(Seat seat) {
         System.out.println();
-        System.out.println("----- SEAT DETAILS -----");
+        System.out.println("============= SEAT DETAILS =============");
         System.out.println("ID             : " + seat.getSeatID());
         System.out.println("Row            : " + seat.getSeatRow());
         System.out.println("Number         : " + seat.getSeatNumber());
         System.out.println("Type           : " + seat.getSeatType());
         System.out.println("Status         : " + seat.getStatus());
         System.out.println("Price modifier : " + seat.getPriceModifier());
+        System.out.println("----------------------------------------");
     }
 }

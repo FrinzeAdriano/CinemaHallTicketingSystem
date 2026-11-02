@@ -215,6 +215,126 @@ public class CinemaManagementController {
     }
 
     public void manageSeats() {
+        Cinema cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaName,
+                cinemaRepo::findCinema, cinemaView::showError, "0");
+        if (cinema == null) {
+            return;
+        }
+        CinemaRoom room = LoopUtility.retryUntilValidResult(roomView::promptRoomID,
+                cinema::findRoom, roomView::showError, "0");
+        if (room == null) {
+            return;
+        }
+
+        while (LoopUtility.retryUntilValid(seatView::showSeatMenu, choice -> {
+            try {
+                switch (choice.trim()) {
+                    case "1":
+                        seatView.displayRoomLayout(room);
+                        break;
+                    case "2":
+                        if (LoopUtility.retryUntilValid(seatView::promptSeatID,
+                                id -> room.addSeat(new Seat(id)), seatView::showError, "0")) {
+                            seatView.showMessage("Seat added.");
+                        }
+                        break;
+                    case "3": {
+                        seatView.displayRoomLayout(room);
+                        Boolean removed = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
+                                id -> seatView.confirm("Remove seat " + id.trim() + "?") && room.removeSeat(id),
+                                seatView::showError, "0");
+                        if (removed != null && removed) {
+                            seatView.showMessage("Seat removed.");
+                        }
+                        break;
+                    }
+                    case "4": {
+                        Seat seat = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
+                                room::findSeat, seatView::showError, "0");
+                        if (seat != null) {
+                            while (LoopUtility.retryUntilValid(() -> seatView.showEditSeatMenu(seat), editChoice -> {
+                                switch (editChoice.trim()) {
+                                    case "1":
+                                        if (LoopUtility.retryUntilValid(seatView::promptSeatType,
+                                                seat::setSeatType, seatView::showError, "0")) {
+                                            seatView.showMessage("Seat type updated.");
+                                        }
+                                        break;
+                                    case "2":
+                                        seat.setStatus(seatView.confirm("Is this seat available? (No = unavailable)"));
+                                        seatView.showMessage("Seat status updated.");
+                                        break;
+                                    case "3":
+                                        if (LoopUtility.retryUntilValid(seatView::promptPriceModifier,
+                                                seat::setPriceModifier, seatView::showError, "0")) {
+                                            seatView.showMessage("Seat price modifier updated.");
+                                        }
+                                        break;
+                                    default:
+                                        throw new IllegalArgumentException("Invalid input. Choose a number from 0 to 3.");
+                                }
+                            }, seatView::showError, "0")) {
+                                // edit menu repeats until the user types 0
+                            }
+                        }
+                        break;
+                    }
+                    case "5": {
+                        while (LoopUtility.retryUntilValid(seatView::showSeatFilterMenu, filterChoice -> {
+                            switch (filterChoice.trim()) {
+                                case "1": {
+                                    LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
+                                            value -> room.filterSeat("ROW", value), seatView::showError, "0");
+                                    if (found != null) {
+                                        Node<Seat> node = found.getHead();
+                                        while (node != null) {
+                                            seatView.displaySeat(node.getData());
+                                            node = node.getNext();
+                                        }
+                                    }
+                                    break;
+                                }
+                                case "2": {
+                                    LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
+                                            value -> room.filterSeat("TYPE", value), seatView::showError, "0");
+                                    if (found != null) {
+                                        Node<Seat> node = found.getHead();
+                                        while (node != null) {
+                                            seatView.displaySeat(node.getData());
+                                            node = node.getNext();
+                                        }
+                                    }
+                                    break;
+                                }
+                                case "3": {
+                                    LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
+                                            value -> room.filterSeat("STATUS", value), seatView::showError, "0");
+                                    if (found != null) {
+                                        Node<Seat> node = found.getHead();
+                                        while (node != null) {
+                                            seatView.displaySeat(node.getData());
+                                            node = node.getNext();
+                                        }
+                                    }
+                                    break;
+                                }
+                                default:
+                                    throw new IllegalArgumentException("Invalid input. Choose a number from 0 to 3.");
+                            }
+                        }, seatView::showError, "0")) {
+                            // filter menu repeats until the user types 0
+                        }
+                        break;
+                    }
+                    default:
+                        throw new IllegalArgumentException("Invalid input. Choose a number from 0 to 5.");
+                }
+            } catch (IllegalStateException e) {
+                seatView.showError(e.getMessage());
+            }
+        }, seatView::showError, "0")) {
+            // seat menu repeats until the user types 0
+        }
     }
 
     public void manageSchedules() {
