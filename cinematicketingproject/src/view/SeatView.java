@@ -91,44 +91,40 @@ public class SeatView extends BaseView {
         String title = "SEATS FOR SCHEDULE " + schedule.getScheduleID();
         int labelWidth = "Row X".length() + 3;
         int cellWidth = Math.max(longestCell, ("Seat " + maxPerRow).length()) + 2;
-        int width = Math.max(40, Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4)));
+        int width = Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4));
         String equalsLine = "=".repeat(width);
         String dashLine = "-".repeat(width);
         String labelFormat = "%-" + labelWidth + "s";
         String cellFormat = "%-" + cellWidth + "s";
-        int screenPadding = (width - "SCREEN".length()) / 2;
+        // The seats sit to the right of the row label; the screen is centered over them.
+        int screenPadding = labelWidth + (maxPerRow * cellWidth - "SCREEN".length()) / 2;
 
         System.out.println();
         System.out.println(title);
         System.out.println(equalsLine);
-        System.out.print(String.format(labelFormat, ""));
-        for (int n = 1; n <= maxPerRow; n++) {
-            System.out.print(String.format(cellFormat, "Seat " + n));
-        }
-        System.out.println();
         Node<Seat> node = room.getSeats().getHead();
-        char currentRow = 0;
         while (node != null) {
-            Seat seat = node.getData();
-            if (seat.getSeatRow() != currentRow) {
-                if (currentRow != 0) {
-                    System.out.println();
+            // Collect one row, then center it under the widest row.
+            char rowLetter = node.getData().getSeatRow();
+            StringBuilder cells = new StringBuilder();
+            int count = 0;
+            while (node != null && node.getData().getSeatRow() == rowLetter) {
+                Seat seat = node.getData();
+                String cell;
+                if (schedule.getBookedSeatIDs().contains(seat.getSeatID())) {
+                    cell = "[XX]";
+                } else if (!seat.getStatus()) {
+                    cell = "[--]";
+                } else {
+                    cell = "[" + seat.getSeatID() + "]";
                 }
-                currentRow = seat.getSeatRow();
-                System.out.print(String.format(labelFormat, "Row " + currentRow));
+                cells.append(String.format(cellFormat, cell));
+                count++;
+                node = node.getNext();
             }
-            String cell;
-            if (schedule.getBookedSeatIDs().contains(seat.getSeatID())) {
-                cell = "[XX]";
-            } else if (!seat.getStatus()) {
-                cell = "[--]";
-            } else {
-                cell = "[" + seat.getSeatID() + "]";
-            }
-            System.out.print(String.format(cellFormat, cell));
-            node = node.getNext();
+            int indent = (maxPerRow - count) * cellWidth / 2;
+            System.out.println(String.format(labelFormat, "Row " + rowLetter) + " ".repeat(indent) + cells);
         }
-        System.out.println();
         System.out.println(dashLine);
         System.out.println();
         System.out.println(equalsLine);
@@ -161,37 +157,33 @@ public class SeatView extends BaseView {
         String title = "LAYOUT OF " + room.getRoomName() + " (" + room.getRoomID() + ")";
         int labelWidth = "Row X".length() + 3;
         int cellWidth = Math.max(longestCell, ("Seat " + maxPerRow).length()) + 2;
-        int width = Math.max(40, Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4)));
+        int width = Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4));
         String equalsLine = "=".repeat(width);
         String dashLine = "-".repeat(width);
         String labelFormat = "%-" + labelWidth + "s";
         String cellFormat = "%-" + cellWidth + "s";
-        int screenPadding = (width - "SCREEN".length()) / 2;
+        // The seats sit to the right of the row label; the screen is centered over them.
+        int screenPadding = labelWidth + (maxPerRow * cellWidth - "SCREEN".length()) / 2;
 
         System.out.println();
         System.out.println(title);
         System.out.println(equalsLine);
-        System.out.print(String.format(labelFormat, ""));
-        for (int n = 1; n <= maxPerRow; n++) {
-            System.out.print(String.format(cellFormat, "Seat " + n));
-        }
-        System.out.println();
         Node<Seat> node = room.getSeats().getHead();
-        char currentRow = 0;
         while (node != null) {
-            Seat seat = node.getData();
-            if (seat.getSeatRow() != currentRow) {
-                if (currentRow != 0) {
-                    System.out.println();
-                }
-                currentRow = seat.getSeatRow();
-                System.out.print(String.format(labelFormat, "Row " + currentRow));
+            // Collect one row, then center it under the widest row.
+            char rowLetter = node.getData().getSeatRow();
+            StringBuilder cells = new StringBuilder();
+            int count = 0;
+            while (node != null && node.getData().getSeatRow() == rowLetter) {
+                Seat seat = node.getData();
+                String cell = seat.getStatus() ? "[" + seat.getSeatID() + "]" : "[--]";
+                cells.append(String.format(cellFormat, cell));
+                count++;
+                node = node.getNext();
             }
-            String cell = seat.getStatus() ? "[" + seat.getSeatID() + "]" : "[--]";
-            System.out.print(String.format(cellFormat, cell));
-            node = node.getNext();
+            int indent = (maxPerRow - count) * cellWidth / 2;
+            System.out.println(String.format(labelFormat, "Row " + rowLetter) + " ".repeat(indent) + cells);
         }
-        System.out.println();
         System.out.println(dashLine);
         System.out.println();
         System.out.println(equalsLine);

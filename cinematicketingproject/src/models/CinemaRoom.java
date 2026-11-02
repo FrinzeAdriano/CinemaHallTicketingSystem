@@ -1,18 +1,18 @@
 package models;
-
+ 
 import java.time.LocalDateTime;
 import datastructures.LinkedList;
 import datastructures.Node;
 import datastructures.Queue;
 import utility.InputValidator;
-
+ 
 public class CinemaRoom {
     private static final int MIN_NAME_LENGTH = 2;
     private static final int MAX_NAME_LENGTH = 30;
     private static final int MIN_ROWS = 1;
     private static final int MAX_ROWS = 26;              // one letter per row (A-Z)
     private static final int MIN_SEATS_PER_ROW = 1;      // a row must have at least one seat
-
+ 
     private final String roomID;
     private String roomName;
     private int rows;
@@ -21,7 +21,7 @@ public class CinemaRoom {
     private Cinema cinema;
     private LinkedList<Seat> seats;
     private Queue<Schedule> schedules;
-
+ 
     // Constructor (ID is required because the table has no setter for it)
     public CinemaRoom(String roomID) {
         this.roomID = roomID;
@@ -53,9 +53,9 @@ public class CinemaRoom {
         }
         return String.format("ROM%03d", highest + 1);
     }
-
+ 
     // Behavior methods
-
+ 
     // Rules: rows and seats per row must be set first, and the layout cannot be
     // regenerated while the room has schedules. Replaces any existing seats with
     // rows x seatsPerRow seats named A1, A2, ... B1, B2, ...
@@ -74,12 +74,11 @@ public class CinemaRoom {
             }
         }
     }
-
-    // Throws for an empty room, a blank or badly formatted ID, and when no seat matches (case-insensitive).
+ 
+    // Rules: the seat ID must not be blank and must be a valid format (like A1).
+    // Returns the seat, or null if the room has no seat with that ID (case-insensitive).
+    // Throws IllegalArgumentException for a blank or badly formatted ID.
     public Seat findSeat(String seatID) {
-        if (seats.size() == 0) {
-            throw new IllegalArgumentException("Invalid input. Room " + roomID + " has no seats yet.");
-        }
         if (!InputValidator.isNotBlank(seatID)) {
             throw new IllegalArgumentException("Invalid input. Seat ID cannot be blank.");
         }
@@ -94,9 +93,10 @@ public class CinemaRoom {
             }
             node = node.getNext();
         }
-        throw new IllegalArgumentException("Invalid input. Seat " + key + " was not found in this room.");
+        return null;
     }
-
+ 
+ 
     // Categories: "ROW" (e.g. A), "TYPE" (e.g. VIP), "STATUS" (true or false).
     // Throws if the room has no seats, for an unknown category, or when nothing matches.
     public LinkedList<Seat> filterSeat(String category, String value) {
@@ -131,24 +131,32 @@ public class CinemaRoom {
         }
         return result;
     }
-
+ 
     // Rules: seat must not be null and its ID must not already exist in this room.
+    // Rows and seats per row only drive generateSeatLayout, so they do not limit manually added
+    // seats (not every cinema is a perfect grid).
+    // The seat is inserted in order (row, then number) so it joins its own row in the layout.
     // Returns true when added; throws IllegalArgumentException otherwise.
     public boolean addSeat(Seat seat) {
         if (seat == null) {
             throw new IllegalArgumentException("Invalid input. No seat was provided.");
         }
-        Node<Seat> node = seats.getHead();
-        while (node != null) {
-            if (node.getData().getSeatID().equalsIgnoreCase(seat.getSeatID())) {
-                throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " already exists in this room.");
-            }
-            node = node.getNext();
+        if (findSeat(seat.getSeatID()) != null) {
+            throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " already exists in this room.");
         }
-        seats.insertAtEnd(seat);
+        int index = 0;
+        while (index < seats.size()) {
+            Seat existing = seats.get(index);
+            if (existing.getSeatRow() > seat.getSeatRow()
+                    || (existing.getSeatRow() == seat.getSeatRow() && existing.getSeatNumber() > seat.getSeatNumber())) {
+                break;
+            }
+            index++;
+        }
+        seats.insertAtIndex(index, seat);
         return true;
     }
-
+ 
     // Rules: the room must have seats, the seat must exist, and it must not be booked
     // in any schedule of this room.
     // Returns true when removed; throws IllegalArgumentException otherwise.
@@ -170,7 +178,7 @@ public class CinemaRoom {
         seats.remove(seat);
         return true;
     }
-
+ 
     // Categories: "MOVIE" (title contains value), "DATE" (yyyy-MM-dd), "ACTIVE" (true or false).
     // Throws if the room has no schedules, for an unknown category or bad value, or when nothing matches.
     public LinkedList<Schedule> filterSchedule(String category, String value) {
@@ -210,7 +218,7 @@ public class CinemaRoom {
         }
         return result;
     }
-
+ 
     // Rules: schedule must not be null, must belong to this room, the room must be open
     // and have seats, the ID must be unique, and the showtime must not overlap another schedule.
     // Returns true when added; throws IllegalArgumentException otherwise.
@@ -246,7 +254,7 @@ public class CinemaRoom {
         schedules.enqueue(schedule);
         return true;
     }
-
+ 
     // Rules: the room must have schedules, the schedule must exist, and it must have no booked seats.
     // Rebuilds the queue without it. Returns true when removed; throws otherwise.
     public boolean removeSchedule(String scheduleID) {
@@ -270,7 +278,7 @@ public class CinemaRoom {
         schedules = rebuilt;
         return true;
     }
-
+ 
     // Returns null if no schedule with that ID exists.
     public Schedule findSchedule(String scheduleID) {
         if (scheduleID == null) {
@@ -285,11 +293,11 @@ public class CinemaRoom {
         }
         return null;
     }
-
+ 
     // Setters (business rules live here).
     // An invalid value throws IllegalArgumentException with the error message;
     // the controller catches it and passes e.getMessage() to the view.
-
+ 
     // Room name: 2 to 30 characters after trimming.
     public void setRoomName(String name) {
         if (!InputValidator.isNotBlank(name)) {
@@ -302,7 +310,7 @@ public class CinemaRoom {
         }
         this.roomName = cleaned;
     }
-
+ 
     // Rows (added setter): whole number from 1 to 26, one letter per row.
     public void setRows(String rows) {
         if (!InputValidator.isPositiveInt(rows)) {
@@ -315,7 +323,7 @@ public class CinemaRoom {
         }
         this.rows = value;
     }
-
+ 
     // Seats per row (added setter): whole number of at least 1, no upper limit.
     public void setSeatsPerRow(String seatsPerRow) {
         if (!InputValidator.isPositiveInt(seatsPerRow)) {
@@ -328,7 +336,7 @@ public class CinemaRoom {
         }
         this.seatsPerRow = value;
     }
-
+ 
     // Status: true = open, false = closed. A room with schedules cannot be closed.
     public void setStatus(boolean status) {
         if (!status && !schedules.isEmpty()) {
@@ -336,41 +344,41 @@ public class CinemaRoom {
         }
         this.status = status;
     }
-
+ 
     // Cinema: null is allowed because Cinema.removeRoom detaches the room with setCinema(null).
     public void setCinema(Cinema cinema) {
         this.cinema = cinema;
     }
-
+ 
     // Getters
     public String getRoomID() {
         return roomID;
     }
-
+ 
     public String getRoomName() {
         return roomName;
     }
-
+ 
     public int getRows() {
         return rows;
     }
-
+ 
     public int getSeatsPerRow() {
         return seatsPerRow;
     }
-
+ 
     public boolean getStatus() {
         return status;
     }
-
+ 
     public Cinema getCinema() {
         return cinema;
     }
-
+ 
     public LinkedList<Seat> getSeats() {
         return seats;
     }
-
+ 
     public Queue<Schedule> getSchedules() {
         return schedules;
     }
