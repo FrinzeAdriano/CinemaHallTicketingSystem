@@ -31,76 +31,96 @@ public class TransactionController {
     public void manageTransactionHistory() {
         if (history == null || historyView == null) return;
 
-        while (true) {
-            int choice = historyView.showHistoryMenu();
+        int choice = -1;
+        while (choice != 0) {
+            choice = historyView.showHistoryMenu();
+
+            // Every option needs at least one transaction.
+            if (choice >= 1 && choice <= 3 && history.viewTransactionHistory().size() == 0) {
+                historyView.showError("Invalid input. There are no transactions yet.");
+                continue;
+            }
 
             switch (choice) {
-                case 0:
-                    return;
-
                 case 1:
                     historyView.displayTransactions(history.viewTransactionHistory());
                     break;
 
                 case 2: {
+                    // Show the table first so the admin can see what to filter.
+                    historyView.displayTransactions(history.viewTransactionHistory());
                     int filterChoice = historyView.promptFilterOption();
                     if (filterChoice == 0) break;
 
                     if (filterChoice == 5) {
-                        LocalDate startDate = historyView.readDate("Enter start date (yyyy-MM-dd): ");
-                        LocalDate endDate;
+                        // Date range (0 to go back at either prompt)
+                        LocalDate startDate = LoopUtility.retryUntilValidResult(
+                            () -> historyView.readString("Start date, yyyy-MM-dd (0 to go back): "),
+                            input -> {
+                                if (!InputValidator.isValidDate(input)) {
+                                    throw new IllegalArgumentException(
+                                        "Invalid input. Start date must be a real date as yyyy-MM-dd.");
+                                }
+                                return LocalDate.parse(input.trim());
+                            }, historyView::showError, "0");
+                        if (startDate == null) break;
 
-                        while (true) {
-                            endDate = historyView.readDate("Enter end date (yyyy-MM-dd): ");
-                            if (!endDate.isBefore(startDate)) break;
-                            historyView.showError("End date cannot be earlier than start date.");
-                        }
+                        LocalDate endDate = LoopUtility.retryUntilValidResult(
+                            () -> historyView.readString("End date, yyyy-MM-dd (0 to go back): "),
+                            input -> {
+                                if (!InputValidator.isValidDate(input)) {
+                                    throw new IllegalArgumentException(
+                                        "Invalid input. End date must be a real date as yyyy-MM-dd.");
+                                }
+                                LocalDate parsed = LocalDate.parse(input.trim());
+                                if (parsed.isBefore(startDate)) {
+                                    throw new IllegalArgumentException(
+                                        "Invalid input. End date cannot be earlier than start date.");
+                                }
+                                return parsed;
+                            }, historyView::showError, "0");
 
-                        historyView.displayTransactions(history.filterByDateRange(startDate, endDate));
-
-                    } else {
-                        String field = filterChoice == 1 ? "status"
-                            : filterChoice == 2 ? "bookingType"
-                            : filterChoice == 3 ? "customerID" : "cashierID";
-
-                        while (true) {
-                            String value = historyView.readString("Enter filter value: ");
-
-                            try {
-                                historyView.displayTransactions(history.filterTransactionHistory(field, value.trim()));
-                                break;
-                            } catch (IllegalArgumentException e) {
-                                historyView.showError(e.getMessage());
-                            }
+                        if (endDate != null) {
+                            historyView.displayTransactions(history.filterByDateRange(startDate, endDate));
                         }
                         break;
                     }
+
+                    final String field = filterChoice == 1 ? "status"
+                        : filterChoice == 2 ? "bookingType"
+                        : filterChoice == 3 ? "customerID" : "cashierID";
+
+                    LoopUtility.retryUntilValidResult(
+                        () -> historyView.readString("Filter value (0 to go back): "),
+                        value -> {
+                            historyView.displayTransactions(history.filterTransactionHistory(field, value.trim()));
+                            return true;
+                        }, historyView::showError, "0");
                     break;
                 }
 
-                // Search transaction
-                case 3: {
-                    while (true) {
-                        String transactionID = historyView.readString("Enter transaction ID: ");
-                        Transaction transaction = history.findByID(transactionID.trim());
-
-                        if (transaction == null) {
-                            historyView.showError("Transaction not found. Please try again.");
-                            continue;
-                        }
-
-                        historyView.displayTransactionDetails(transaction);
-                        break;
-                    }
+                case 3:
+                    // Show the table first so the admin can see the IDs.
+                    historyView.displayTransactions(history.viewTransactionHistory());
+                    LoopUtility.retryUntilValidResult(
+                        () -> historyView.readString("Transaction ID (0 to go back): "),
+                        id -> {
+                            Transaction found = history.findByID(id);
+                            if (found == null) {
+                                throw new IllegalArgumentException(
+                                    "Invalid input. Transaction " + id.trim() + " was not found.");
+                            }
+                            historyView.displayTransactionDetails(found);
+                            return true;
+                        }, historyView::showError, "0");
                     break;
 
-                
-            }
                 default:
-                    historyView.showError("Invalid menu option. Please try again.");
+                    break;   // 0 exits the loop
+            }
         }
     }
-    }
+
     // Cashier: reprint a receipt
     public void reprintReceipt(Cashier cashier) {
         if (cashier == null || history == null || receiptView == null || historyView == null) return;
@@ -143,24 +163,34 @@ public class TransactionController {
     public void voidTransaction() {
         if (history == null || historyView == null || checkoutService == null) return;
 
-        historyView.displayTransactions(history.viewTransactionHistory());
-
-        Transaction transaction;
-
-        while (true) {
-            String id = historyView.readString("Enter transaction ID to void: ");
-            transaction = history.findByID(id.trim());
-
-            if (transaction == null) {
-                historyView.showError("Transaction not found. Please try again.");
-            } else if ("CANCELLED".equalsIgnoreCase(transaction.getStatus())) {
-                historyView.showError("This transaction has already been voided.");
-            } else {
-                break;
-            }
+        if (history.viewTransactionHistory().size() == 0) {
+            historyView.showError("Invalid input. There are no transactions yet.");
+            return;
         }
 
-        if (!historyView.confirm("Are you sure you want to void this transaction?")) return;
+        historyView.displayTransactions(history.viewTransactionHistory());
+
+        Transaction transaction = LoopUtility.retryUntilValidResult(
+            () -> historyView.readString("Transaction ID to void (0 to go back): "),
+            id -> {
+                Transaction found = history.findByID(id);
+                if (found == null) {
+                    throw new IllegalArgumentException(
+                        "Invalid input. Transaction " + id.trim() + " was not found.");
+                }
+                if ("CANCELLED".equalsIgnoreCase(found.getStatus())) {
+                    throw new IllegalArgumentException(
+                        "Invalid input. This transaction has already been voided.");
+                }
+                return found;
+            }, historyView::showError, "0");
+
+        if (transaction == null) return;
+
+        if (!historyView.confirm("Are you sure you want to void this transaction?")) {
+            historyView.showMessage("Transaction void cancelled.");
+            return;
+        }
 
         voidAndReport(transaction);
     }
