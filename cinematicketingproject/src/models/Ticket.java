@@ -172,6 +172,4 @@ private static final double DISCOUNT_RATE = 0.20;
 
     public String getStatus() {
     return status;}
-
-
 }

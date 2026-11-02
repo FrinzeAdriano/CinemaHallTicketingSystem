@@ -18,7 +18,7 @@ public class TicketView extends BaseView {
             showMessage("----------------------------------------");
 
             String input = readString(
-                "Enter seat quantity (0 to go back): "
+                "Enter ticket quantity (0 to go back): "
             );
 
             if (input.equals("0")) {
@@ -34,7 +34,36 @@ public class TicketView extends BaseView {
             );
         }
     }
+ public String promptPaymentProvider(String paymentMethod) {
 
+        String[] providers;
+
+        System.out.println();
+
+        if (paymentMethod.equalsIgnoreCase("E-wallet")) {
+            System.out.println("=========== E-WALLET PROVIDER ============");
+            providers = new String[] {"GCash", "Maya", "GrabPay"};
+        } else {
+            System.out.println("============= CARD PROVIDER ==============");
+            providers = new String[] {"BDO Unibank", "BPI", "Metrobank",
+                "UnionBank", "Security Bank", "LandBank"};
+        }
+
+        for (int i = 0; i < providers.length; i++) {
+            System.out.println("[" + (i + 1) + "] " + providers[i]);
+        }
+
+        System.out.println("[0] Go back");
+        System.out.println("------------------------------------------");
+
+        int choice = readInt("Choose a provider (0 to go back): ", 0, providers.length);
+
+        if (choice == 0) {
+            return null;
+        }
+
+        return providers[choice - 1];
+    }
     public int promptWalkInDiscount(Ticket ticket) {
     showMessage("\nTicket ID: " + ticket.getTicketID());
     showMessage("Seat: " + ticket.getSeat().getSeatID());

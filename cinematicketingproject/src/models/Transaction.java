@@ -31,7 +31,7 @@ public class Transaction {
     private String bookingCode;
     private String approvedBy;
     private String receiptNo;
-
+    private String paymentProvider;
      // Constructor
 
 // Constructor
@@ -754,8 +754,21 @@ public class Transaction {
         this.receiptNo = receiptNo == null ? null : receiptNo.trim().toUpperCase();
     }
 
+public void setPaymentProvider(String paymentProvider) {
 
+    if (paymentProvider != null && !InputValidator.isNotBlank(paymentProvider)) {
+        throw new IllegalArgumentException(
+            "Invalid input. Payment provider cannot be blank."
+        );
+    }
+
+    this.paymentProvider = paymentProvider == null ? null : paymentProvider.trim();
+}
     // Getters
+
+        public String getPaymentProvider() {
+            return paymentProvider;
+        }
    public String getTransactionID() {
         return transactionID;
     }
@@ -838,6 +851,4 @@ public class Transaction {
     public String getReceiptNo() {
         return receiptNo;
     }
-
-
 }
