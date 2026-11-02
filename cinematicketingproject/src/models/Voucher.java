@@ -32,7 +32,31 @@ public class Voucher {
     // An invalid value throws IllegalArgumentException with the error message;
     // the controller catches it and passes e.getMessage() to the view.
 
-    // Description: 1 to 100 characters after trimming.
+    public void setDiscountMode(String discountMode) {
+
+    if (!InputValidator.isNotBlank(discountMode)) {
+        throw new IllegalArgumentException(
+            "Invalid input. Discount mode cannot be blank."
+        );
+    }
+
+    String mode = discountMode.trim().toUpperCase();
+
+    if (!mode.equals("PERCENT") && !mode.equals("FIXED")) {
+        throw new IllegalArgumentException(
+            "Invalid input. Discount mode must be PERCENT or FIXED."
+        );
+    }
+
+    if (mode.equals("PERCENT") && value > 100) {
+        throw new IllegalArgumentException(
+            "Invalid input. A percent discount cannot be more than 100."
+        );
+    }
+
+    this.discountMode = mode;
+}
+    
     public void setDescription(String description) {
         if (!InputValidator.isNotBlank(description)) {
             throw new IllegalArgumentException("Invalid input. Voucher description cannot be blank.");

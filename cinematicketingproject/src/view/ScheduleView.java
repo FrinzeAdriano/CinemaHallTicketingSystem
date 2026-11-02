@@ -6,7 +6,7 @@ import datastructures.Queue;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import models.Schedule;
-
+import utility.InputValidator;
 public class ScheduleView extends BaseView {
 
     // Constructor (no ID needed, inherits the scanner from BaseView)
@@ -50,10 +50,41 @@ public class ScheduleView extends BaseView {
         return readString("Choose a filter (0 to go back): ").trim();
     }
     public Schedule selectSchedule(LinkedList<Schedule> list) {
-        displaySchedules(list);
-        int choice = readInt("Select a schedule number: ", 1, list.size());
-        return list.get(choice - 1);
+
+    if (list == null || list.size() == 0) {
+        throw new IllegalArgumentException("No schedules available.");
     }
+
+    while (true) {
+
+       displayBookingSchedules(list);
+        showMessage("----------------------------------------");
+
+        String input = readString("Enter schedule ID (0 to go back): ");
+
+        if (input.equals("0")) {
+            return null;
+        }
+
+        if (!InputValidator.isNotBlank(input)) {
+            showError("Schedule ID cannot be blank.");
+            continue;
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+
+            Schedule schedule = list.get(i);
+
+            if (schedule != null
+                    && schedule.getScheduleID().equalsIgnoreCase(input.trim())) {
+                return schedule;
+            }
+        }
+
+        showError("Schedule ID not found. Please try again.");
+    }
+}
+    
     public String promptScheduleID() {
         return readString("Enter schedule ID (0 to go back): ");
     }
@@ -99,11 +130,13 @@ public class ScheduleView extends BaseView {
             node = node.getNext();
         }
         printTable("SCHEDULES", headers, rows);
-        System.out.println("Legend:");
-        System.out.println("  Removable Yes  No booked seats, the schedule can be removed");
-        System.out.println("  Removable No   Has booked seats, the schedule cannot be removed");
-        System.out.println("  Status Open    Open for booking");
-        System.out.println("  Status Closed  Closed for booking");
+        System.out.println("\nLegend:");
+    System.out.println("  Removable");
+    System.out.println("    Yes    - No booked seats; schedule can be removed.");
+    System.out.println("    No     - Has booked seats; schedule cannot be removed.");
+    System.out.println("  Status");
+    System.out.println("    Open   - Available for booking.");
+    System.out.println("    Closed - Not available for booking.");
     }
 
     // Shows a filtered list of schedules as the same table.
@@ -129,10 +162,65 @@ public class ScheduleView extends BaseView {
             node = node.getNext();
         }
         printTable("SCHEDULES", headers, rows);
-        System.out.println("Legend:");
-        System.out.println("  Removable Yes  No booked seats, the schedule can be removed");
-        System.out.println("  Removable No   Has booked seats, the schedule cannot be removed");
-        System.out.println("  Status Open    Open for booking");
-        System.out.println("  Status Closed  Closed for booking");
+        System.out.println("\nLegend:");
+System.out.println("  REMOVABLE");
+System.out.println("    Yes - No booked seats; schedule can be removed.");
+System.out.println("    No  - Has booked seats; schedule cannot be removed.");
+System.out.println("  STATUS");
+System.out.println("    Open   - Available for booking.");
+System.out.println("    Closed - Not available for booking.");
     }
+    
+    public void displayBookingSchedules(LinkedList<Schedule> list) {
+    if (list == null || list.size() == 0) {
+        showMessage("No available schedules.");
+        return;
+    }
+
+    System.out.println("\n======================================== SCHEDULES ========================================");
+    System.out.println("+--------+------------+---------------+------------+--------+--------+--------+");
+    System.out.println("| ID     | Date       | Time          | Movie      | Price  | Booked | Status |");
+    System.out.println("+--------+------------+---------------+------------+--------+--------+--------+");
+
+    for (int i = 0; i < list.size(); i++) {
+        Schedule schedule = list.get(i);
+
+        String date = schedule.getShowDateTime().format(
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        );
+
+        String startTime = schedule.getShowDateTime().format(
+            java.time.format.DateTimeFormatter.ofPattern("HH:mm")
+        );
+
+        String endTime = schedule.getShowDateTime()
+            .plusMinutes(schedule.getMovie().getDuration())
+            .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+
+        String movieTitle = schedule.getMovie().getTitle();
+
+        if (movieTitle.length() > 10) {
+            movieTitle = movieTitle.substring(0, 10);
+        }
+
+        int booked = schedule.getBookedSeatIDs().size();
+        String status = schedule.isActive() ? "Open" : "Closed";
+
+        System.out.printf(
+            "| %-6s | %-10s | %-13s | %-10s | %6.2f | %-6d | %-6s |%n",
+            schedule.getScheduleID(),
+            date,
+            startTime + " - " + endTime,
+            movieTitle,
+            schedule.getPrice(),
+            booked,
+            status
+        );
+    }
+
+    System.out.println("+--------+------------+---------------+------------+--------+--------+--------+");
+    System.out.println("\nLegend:");
+    System.out.println("  Open   - Available for booking.");
+    System.out.println("  Closed - Not available for booking.");
+}
 }

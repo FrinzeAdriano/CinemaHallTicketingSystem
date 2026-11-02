@@ -1,20 +1,15 @@
 package view;
-import controllers.*;
+
 import models.*;
 import datastructures.*;
-import repositories.*;
-import utility.*;
-import service.*;
-
+import java.time.format.DateTimeFormatter;
 
 public class TransactionHistoryView extends BaseView {
 
+    private static final DateTimeFormatter DATE_FORMAT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-   // Displays the transaction history menu
-
-   
     public int showHistoryMenu() {
-
         showMessage("========== TRANSACTION HISTORY ==========");
         showMessage("[1] View All Transactions");
         showMessage("[2] Filter Transactions");
@@ -25,12 +20,7 @@ public class TransactionHistoryView extends BaseView {
         return readInt("Choice: ", 0, 3);
     }
 
-
-
-    // Requests a filter option
-
-     public int promptFilterOption() {
-
+    public int promptFilterOption() {
         showMessage("========== FILTER TRANSACTIONS ==========");
         showMessage("[1] Status");
         showMessage("[2] Booking Type");
@@ -43,13 +33,7 @@ public class TransactionHistoryView extends BaseView {
         return readInt("Choice: ", 0, 5);
     }
 
-
-
-    // Displays a list of transactions
-
-     public void displayTransactions(
-            LinkedList<Transaction> transactions) {
-
+    public void displayTransactions(LinkedList<Transaction> transactions) {
         if (transactions == null || transactions.size() == 0) {
             showMessage("No transactions found.");
             return;
@@ -64,12 +48,7 @@ public class TransactionHistoryView extends BaseView {
         showMessage("========== END OF TRANSACTIONS ==========");
     }
 
-
-
-    // Displays one transaction's details
-
     public void displayTransactionDetails(Transaction transaction) {
-
         if (transaction == null) {
             showError("Transaction not found.");
             return;
@@ -91,7 +70,11 @@ public class TransactionHistoryView extends BaseView {
                 ? "N/A" : transaction.getCashierID())
         );
 
-        showMessage("Date: " + transaction.getDateTime());
+        showMessage(
+            "Date: " +
+            (transaction.getDateTime() == null
+                ? "N/A" : transaction.getDateTime().format(DATE_FORMAT))
+        );
 
         showMessage("Ticket Count: " + transaction.getTickets().size());
         showMessage("Product Count: " + transaction.getProducts().size());

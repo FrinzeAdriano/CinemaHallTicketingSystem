@@ -7,6 +7,7 @@ import utility.*;
 import service.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class CinemaTicketManagementSystem {
 
@@ -22,21 +23,17 @@ public class CinemaTicketManagementSystem {
     private CustomerController customerController;
     private CinemaTicketManagementSystemView view;
     private User currentUser;
-
+    private BookingController bookingController;
+    private TransactionController transactionController;
+    private ProfileController profileController;
+    private MovieRepositoryView movieListView;
+    private InventoryView inventoryView;
+    
  
     // System Methods
-    public static void main(String[]ARGS){
-        UserManagementController ucontrol = new UserManagementController(new UserRepository(), new UserView());
-        
-        ucontrol.manageUsers();
-        
-        VoucherController vcontrol = new VoucherController(new VoucherRepository(), new VoucherView());
-        CinemaTicketManagementSystem s = new CinemaTicketManagementSystem();
-        s.start();
-        
-        
-        
-    }
+    public static void main(String[] args) {
+    new CinemaTicketManagementSystem().start();
+}
     
     public void start() {
         // Build the shared repositories once.
@@ -47,38 +44,55 @@ public class CinemaTicketManagementSystem {
         history = new TransactionHistory();
         salesRepo = new SalesRepository();
         voucherRepo = new VoucherRepository();
-        checkoutService = new CheckoutService(history, salesRepo, inventoryRepo, voucherRepo, 1);
+        checkoutService = new CheckoutService(history, salesRepo, inventoryRepo, voucherRepo, 0);
  
         // Views
-        view = new CinemaTicketManagementSystemView();
-        UserView userView = new UserView();
-        MovieView movieView = new MovieView();
-        MovieRepositoryView movieListView = new MovieRepositoryView();
-        CinemaView cinemaView = new CinemaView();
-        CinemaRoomListView roomView = new CinemaRoomListView();
-        SeatView seatView = new SeatView();
-        ScheduleView scheduleView = new ScheduleView();
-        TicketView ticketView = new TicketView();
-        InventoryView inventoryView = new InventoryView();
-        VoucherView voucherView = new VoucherView();
-        TransactionHistoryView historyView = new TransactionHistoryView();
-        ReceiptView receiptView = new ReceiptView();
-        SalesView salesView = new SalesView();
+       view = new CinemaTicketManagementSystemView();
+    UserView userView = new UserView();
+    MovieView movieView = new MovieView();
+    movieListView = new MovieRepositoryView();
+    CinemaView cinemaView = new CinemaView();
+    CinemaRoomListView roomView = new CinemaRoomListView();
+    SeatView seatView = new SeatView();
+    ScheduleView scheduleView = new ScheduleView();
+    TicketView ticketView = new TicketView();
+    inventoryView = new InventoryView();
+    VoucherView voucherView = new VoucherView();
+    TransactionHistoryView historyView = new TransactionHistoryView();
+    ReceiptView receiptView = new ReceiptView();
+    SalesView salesView = new SalesView();
  
         // Feature controllers
-        ProfileController profileController = new ProfileController(userRepo, userView);
-        UserManagementController userController = new UserManagementController(userRepo, userView);
-        MovieManagementController movieController = new MovieManagementController(movieRepo, movieView, movieListView);
-        CinemaManagementController cinemaController = new CinemaManagementController(cinemaRepo, movieRepo,
+        profileController = new ProfileController(userRepo, userView);
+
+        UserManagementController userController =
+            new UserManagementController(userRepo, userView);
+
+        MovieManagementController movieController =
+            new MovieManagementController(movieRepo, movieView);
+
+        CinemaManagementController cinemaController =
+            new CinemaManagementController(cinemaRepo, movieRepo,
                 cinemaView, roomView, seatView, scheduleView);
-        InventoryController inventoryController = new InventoryController(inventoryRepo, inventoryView);
-        VoucherController voucherController = new VoucherController(voucherRepo, voucherView);
-        TransactionController transactionController = new TransactionController(history, salesRepo,
-                checkoutService, historyView, receiptView);
-        SalesReportController salesController = new SalesReportController(salesRepo, salesView);
-        BookingController bookingController = new BookingController(movieRepo, cinemaRepo, inventoryRepo,
-                history, voucherRepo, checkoutService, movieListView, scheduleView, seatView, ticketView,
-                inventoryView, receiptView);
+
+        InventoryController inventoryController =
+            new InventoryController(inventoryRepo, inventoryView);
+
+        VoucherController voucherController =
+            new VoucherController(voucherRepo, voucherView);
+
+        transactionController = new TransactionController(
+            history, salesRepo, checkoutService, historyView, receiptView
+        );
+
+        SalesReportController salesController =
+            new SalesReportController(salesRepo, salesView);
+
+        bookingController = new BookingController(
+            movieRepo, cinemaRepo, inventoryRepo, history, voucherRepo,
+            checkoutService, movieListView, scheduleView, seatView,
+            ticketView, inventoryView, receiptView
+        );
  
         // Role controllers
         adminController = new AdminController(view, profileController, userController, movieController,
@@ -194,13 +208,53 @@ public class CinemaTicketManagementSystem {
         cinema.setName("Grand Cinema");
         cinema.setLocation("Downtown Mall");
         cinemaRepo.addCinema(cinema);
- 
+        // Movie
+Movie movie = new Movie(movieRepo.generateMovieID());
+movie.setTitle("Test Movie");
+movie.setGenre("Action");
+movie.setDuration("120");
+movie.setRating("PG");
+movie.setDescription("Sample movie for booking tests.");
+movie.setReleaseDate(LocalDate.now().toString());
+movieRepo.addMovie(movie);
+
+// Cinema room
+CinemaRoom room = new CinemaRoom(
+    CinemaRoom.generateRoomID(cinema)
+);
+
+room.setRoomName("Room 1");
+room.setRows("3");
+room.setSeatsPerRow("5");
+room.setStatus(true);
+room.generateSeatLayout();
+
+cinema.addRoom(room);
+
+// Schedule
+Schedule schedule = new Schedule("SCH001");
+schedule.setMovie(movie);
+schedule.setRoom(room);
+
+LocalDateTime showTime = LocalDateTime.now()
+    .plusDays(1)
+    .withHour(18)
+    .withMinute(0)
+    .withSecond(0)
+    .withNano(0);
+
+schedule.setShowDateTime(
+    showTime.format(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"))
+);
+
+schedule.setPrice("250");
+room.addSchedule(schedule);
         // Inventory (Soda is deliberately low on stock so the low-stock report has something to show)
         Food popcorn = new Food(inventoryRepo.generateProductID());
         popcorn.setName("Popcorn (Large)");
         popcorn.setPrice(180.0);
         popcorn.setStockQuantity(100);
-        popcorn.setFoodType("Snack");
+        popcorn.setFoodType("POPCORN");
         popcorn.setServingSize("Large");
         inventoryRepo.addProduct(popcorn);
  
@@ -208,7 +262,7 @@ public class CinemaTicketManagementSystem {
         nachos.setName("Nachos with Cheese");
         nachos.setPrice(150.0);
         nachos.setStockQuantity(60);
-        nachos.setFoodType("Snack");
+        nachos.setFoodType("FRIES");
         nachos.setServingSize("Regular");
         inventoryRepo.addProduct(nachos);
  
@@ -241,9 +295,9 @@ public class CinemaTicketManagementSystem {
         Voucher welcome = new Voucher("WELCOME10");
         welcome.setDescription("10% off for new customers");
         welcome.setDiscountMode("PERCENT");
-        welcome.setValue("10");
-        welcome.setExpiryDate(LocalDate.now().plusYears(1).toString());
-        welcome.setMaxUses("100");
+        welcome.setValue(10);
+        welcome.setExpiryDate(LocalDate.now().plusYears(1));
+        welcome.setMaxUses(1);
         welcome.setTimesUsed(0);
         welcome.setActive(true);
         voucherRepo.addVoucher(welcome);
@@ -251,12 +305,12 @@ public class CinemaTicketManagementSystem {
         Voucher save50 = new Voucher("SAVE50");
         save50.setDescription("50 off any purchase");
         save50.setDiscountMode("FIXED");
-        save50.setValue("50");
-        save50.setExpiryDate(LocalDate.now().plusMonths(6).toString());
-        save50.setMaxUses("50");
+        save50.setValue(50);
+        save50.setExpiryDate(LocalDate.now().plusMonths(6));
+        save50.setMaxUses(1);
         save50.setTimesUsed(0);
         save50.setActive(true);
-        voucherRepo.addVoucher(save50);
+        voucherRepo.addVoucher(save50);        
     }
  
 }

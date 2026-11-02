@@ -28,6 +28,9 @@ public class MovieRepositoryView extends BaseView {
         printTable("ALL MOVIES", headers, rows);
     }
 
+    BaseView.printTable("ALL MOVIES", headers, rows);
+}
+
     public void displayNowShowing(LinkedList<Movie> movies) {
         String[] headers = {"ID", "Title", "Genre", "Duration", "Rating", "Release", "Description"};
         ArrayList<String[]> rows = new ArrayList<>();

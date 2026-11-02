@@ -107,7 +107,7 @@ public class SeatView extends BaseView {
         String labelFormat = "%-" + labelWidth + "s";
         String cellFormat = "%-" + cellWidth + "s";
         // The seats sit to the right of the row label; the screen is centered over them.
-        int screenPadding = labelWidth + (maxPerRow * cellWidth - "SCREEN".length()) / 2;
+        int screenPadding = (width - "SCREEN".length()) / 2;
 
         System.out.println();
         System.out.println(title);
