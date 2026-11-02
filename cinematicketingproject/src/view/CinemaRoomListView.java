@@ -37,7 +37,7 @@ public class CinemaRoomListView extends BaseView {
     }
 
     public String promptRoomID() {
-        return readString("Enter room ID: ");
+        return readString("Enter room ID (0 to go back): ");
     }
 
     public void displayRooms(LinkedList<CinemaRoom> rooms) {
@@ -53,5 +53,28 @@ public class CinemaRoomListView extends BaseView {
                     r.getStatus() ? "Open" : "Closed", r.getSeats().size(), r.getSchedules().size());
             node = node.getNext();
         }
+    }  
+    
+    public String promptRoomName() {
+        return readString("Room name (0 to go back): ");
+    }
+
+    public String promptRows() {
+        return readString("Number of rows, 1-26 (0 to go back): ");
+    }
+
+    public String promptSeatsPerRow() {
+        return readString("Seats per row (0 to go back): ");
+    }
+
+    public int showEditRoomMenu(CinemaRoom room) {
+        System.out.println();
+        System.out.println("===== EDIT ROOM " + room.getRoomID() + " =====");
+        System.out.println("1. Name          (" + room.getRoomName() + ")");
+        System.out.println("2. Rows          (" + room.getRows() + ")");
+        System.out.println("3. Seats per row (" + room.getSeatsPerRow() + ")");
+        System.out.println("4. Open or close (" + (room.getStatus() ? "Open" : "Closed") + ")");
+        System.out.println("0. Back");
+        return readInt("Choose a field to edit: ", 0, 4);
     }
 }

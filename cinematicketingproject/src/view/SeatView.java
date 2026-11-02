@@ -36,35 +36,44 @@ public class SeatView extends BaseView {
 
     // Display methods
 
-    // Shows the seats of the schedule's room: [ ] is free, [X] is booked in this schedule.
+
+    // Shows the room's seats for one schedule. All widths are worked out from the seats themselves.
     public void displaySeatGrid(Schedule schedule) {
+        CinemaRoom room = schedule.getRoom();
+
+        // Measure the room: longest row and longest seat label
+        int maxPerRow = 0;
+        int inRow = 0;
+        int longestCell = 0;
+        char previousRow = 0;
+        Node<Seat> measure = room.getSeats().getHead();
+        while (measure != null) {
+            Seat seat = measure.getData();
+            inRow = (seat.getSeatRow() == previousRow) ? inRow + 1 : 1;
+            previousRow = seat.getSeatRow();
+            maxPerRow = Math.max(maxPerRow, inRow);
+            longestCell = Math.max(longestCell, seat.getSeatID().length() + 2);   // + 2 for the brackets
+            measure = measure.getNext();
+        }
+
+        String title = "SEATS FOR SCHEDULE " + schedule.getScheduleID();
+        int labelWidth = "Row X".length() + 3;
+        int cellWidth = Math.max(longestCell, ("Seat " + maxPerRow).length()) + 2;
+        int width = Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4));
+        String equalsLine = "=".repeat(width);
+        String dashLine = "-".repeat(width);
+        String labelFormat = "%-" + labelWidth + "s";
+        String cellFormat = "%-" + cellWidth + "s";
+        int screenPadding = (width - "SCREEN".length()) / 2;
+
         System.out.println();
-        System.out.println("===== SEATS FOR SCHEDULE " + schedule.getScheduleID() + " =====");
-        System.out.println("                SCREEN");
-        System.out.println("[ ] available   [X] booked");
-        System.out.println();
-        Node<Seat> node = schedule.getRoom().getSeats().getHead();
-        char currentRow = 0;
-        while (node != null) {
-            Seat seat = node.getData();
-            if (seat.getSeatRow() != currentRow) {
-                if (currentRow != 0) {
-                    System.out.println();
-                }
-                currentRow = seat.getSeatRow();
-            }
-            String mark = schedule.getBookedSeatIDs().contains(seat.getSeatID()) ? "X" : " ";
-            System.out.print(seat.getSeatID() + "[" + mark + "] ");
-            node = node.getNext();
+        System.out.println(title);
+        System.out.println(equalsLine);
+        System.out.print(String.format(labelFormat, ""));
+        for (int n = 1; n <= maxPerRow; n++) {
+            System.out.print(String.format(cellFormat, "Seat " + n));
         }
         System.out.println();
-    }
-
-    // Shows every seat of the room with its type and status.
-    public void displayRoomLayout(CinemaRoom room) {
-        System.out.println();
-        System.out.println("===== LAYOUT OF " + room.getRoomName() + " (" + room.getRoomID() + ") =====");
-        System.out.println("                SCREEN");
         Node<Seat> node = room.getSeats().getHead();
         char currentRow = 0;
         while (node != null) {
@@ -74,11 +83,92 @@ public class SeatView extends BaseView {
                     System.out.println();
                 }
                 currentRow = seat.getSeatRow();
+                System.out.print(String.format(labelFormat, "Row " + currentRow));
             }
-            System.out.print(seat.getSeatID() + "(" + seat.getSeatType() + ") ");
+            String cell;
+            if (schedule.getBookedSeatIDs().contains(seat.getSeatID())) {
+                cell = "[XX]";
+            } else if (!seat.getStatus()) {
+                cell = "[--]";
+            } else {
+                cell = "[" + seat.getSeatID() + "]";
+            }
+            System.out.print(String.format(cellFormat, cell));
             node = node.getNext();
         }
         System.out.println();
+        System.out.println(dashLine);
+        System.out.println();
+        System.out.println(equalsLine);
+        System.out.println(" ".repeat(screenPadding) + "SCREEN");
+        System.out.println(equalsLine);
+        System.out.println();
+        System.out.println("Legend:");
+        System.out.println("  [A1]  Available seat");
+        System.out.println("  [XX]  Already booked for this schedule");
+        System.out.println("  [--]  Unavailable seat (cannot be booked)");
+    }
+
+    // Shows every seat of the room. All widths are worked out from the seats themselves.
+    public void displayRoomLayout(CinemaRoom room) {
+        // Measure the room: longest row and longest seat label
+        int maxPerRow = 0;
+        int inRow = 0;
+        int longestCell = 0;
+        char previousRow = 0;
+        Node<Seat> measure = room.getSeats().getHead();
+        while (measure != null) {
+            Seat seat = measure.getData();
+            inRow = (seat.getSeatRow() == previousRow) ? inRow + 1 : 1;
+            previousRow = seat.getSeatRow();
+            maxPerRow = Math.max(maxPerRow, inRow);
+            longestCell = Math.max(longestCell, seat.getSeatID().length() + 2);   // + 2 for the brackets
+            measure = measure.getNext();
+        }
+
+        String title = "LAYOUT OF " + room.getRoomName() + " (" + room.getRoomID() + ")";
+        int labelWidth = "Row X".length() + 3;
+        int cellWidth = Math.max(longestCell, ("Seat " + maxPerRow).length()) + 2;
+        int width = Math.max(labelWidth + maxPerRow * cellWidth, Math.max(title.length(), "SCREEN".length() + 4));
+        String equalsLine = "=".repeat(width);
+        String dashLine = "-".repeat(width);
+        String labelFormat = "%-" + labelWidth + "s";
+        String cellFormat = "%-" + cellWidth + "s";
+        int screenPadding = (width - "SCREEN".length()) / 2;
+
+        System.out.println();
+        System.out.println(title);
+        System.out.println(equalsLine);
+        System.out.print(String.format(labelFormat, ""));
+        for (int n = 1; n <= maxPerRow; n++) {
+            System.out.print(String.format(cellFormat, "Seat " + n));
+        }
+        System.out.println();
+        Node<Seat> node = room.getSeats().getHead();
+        char currentRow = 0;
+        while (node != null) {
+            Seat seat = node.getData();
+            if (seat.getSeatRow() != currentRow) {
+                if (currentRow != 0) {
+                    System.out.println();
+                }
+                currentRow = seat.getSeatRow();
+                System.out.print(String.format(labelFormat, "Row " + currentRow));
+            }
+            String cell = seat.getStatus() ? "[" + seat.getSeatID() + "]" : "[--]";
+            System.out.print(String.format(cellFormat, cell));
+            node = node.getNext();
+        }
+        System.out.println();
+        System.out.println(dashLine);
+        System.out.println();
+        System.out.println(equalsLine);
+        System.out.println(" ".repeat(screenPadding) + "SCREEN");
+        System.out.println(equalsLine);
+        System.out.println();
+        System.out.println("Legend:");
+        System.out.println("  [A1]  Available seat");
+        System.out.println("  [--]  Unavailable seat (cannot be booked)");
     }
 
     public void displaySeat(Seat seat) {
