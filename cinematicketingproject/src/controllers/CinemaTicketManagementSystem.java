@@ -69,7 +69,7 @@ public class CinemaTicketManagementSystem {
             new UserManagementController(userRepo, userView);
 
         MovieManagementController movieController =
-            new MovieManagementController(movieRepo, movieView);
+            new MovieManagementController(movieRepo, movieView, movieListView);
 
         CinemaManagementController cinemaController =
             new CinemaManagementController(cinemaRepo, movieRepo,
@@ -290,27 +290,26 @@ room.addSchedule(schedule);
         coffee.setSize("Regular");
         coffee.setCold(false);
         inventoryRepo.addProduct(coffee);
- 
+        
         // Vouchers
         Voucher welcome = new Voucher("WELCOME10");
         welcome.setDescription("10% off for new customers");
-        welcome.setDiscountMode("PERCENT");
-        welcome.setValue(10);
-        welcome.setExpiryDate(LocalDate.now().plusYears(1));
-        welcome.setMaxUses(1);
-        welcome.setTimesUsed(0);
+        welcome.setDiscountMode("PERCENT");   // must come before setValue (PERCENT is capped at 100)
+        welcome.setValue("10");
+        welcome.setExpiryDate(LocalDate.now().plusYears(1).toString());
+        welcome.setMaxUses("1");
+        welcome.setTimesUsed(0);              // takes an int, so this one stays as is
         welcome.setActive(true);
         voucherRepo.addVoucher(welcome);
- 
+
         Voucher save50 = new Voucher("SAVE50");
         save50.setDescription("50 off any purchase");
         save50.setDiscountMode("FIXED");
-        save50.setValue(50);
-        save50.setExpiryDate(LocalDate.now().plusMonths(6));
-        save50.setMaxUses(1);
+        save50.setValue("50");
+        save50.setExpiryDate(LocalDate.now().plusMonths(6).toString());
+        save50.setMaxUses("1");
         save50.setTimesUsed(0);
         save50.setActive(true);
-        voucherRepo.addVoucher(save50);        
+        voucherRepo.addVoucher(save50);
     }
- 
 }

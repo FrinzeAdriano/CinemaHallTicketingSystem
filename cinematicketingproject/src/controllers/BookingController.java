@@ -688,124 +688,124 @@ if (orderedProducts != null && orderedProducts.size() > 0) {
             "Total Amount Due: " +
             String.format("%.2f", transaction.getTotalAmount())
         );
-ticketView.showMessage("======================================");
+        ticketView.showMessage("======================================");
 
-// Online payment methods
-ticketView.showMessage("\n========== PAYMENT METHOD ==========");
-ticketView.showMessage("[1] E-wallet");
-ticketView.showMessage("[2] Card");
-ticketView.showMessage("--------------------------------------");
+        // Online payment methods
+        ticketView.showMessage("\n========== PAYMENT METHOD ==========");
+        ticketView.showMessage("[1] E-wallet");
+        ticketView.showMessage("[2] Card");
+        ticketView.showMessage("--------------------------------------");
 
-int paymentChoice =
-    ticketView.readInt("Select payment method: ", 1, 2);
+        int paymentChoice =
+            ticketView.readInt("Select payment method: ", 1, 2);
 
-if (paymentChoice == 1) {
-    transaction.setPaymentMethod("E-wallet");
-} else {
-    transaction.setPaymentMethod("Card");
-}
+        if (paymentChoice == 1) {
+            transaction.setPaymentMethod("E-wallet");
+        } else {
+            transaction.setPaymentMethod("Card");
+        }
 
-        // Requests payment. Enter 0 to cancel the booking.
-        // Online payment requires the exact amount
-double totalAmount = transaction.getTotalAmount();
+                // Requests payment. Enter 0 to cancel the booking.
+                // Online payment requires the exact amount
+        double totalAmount = transaction.getTotalAmount();
 
-ticketView.showMessage(
-    "Payment Amount: " + String.format("%.2f", totalAmount)
-);
+        ticketView.showMessage(
+            "Payment Amount: " + String.format("%.2f", totalAmount)
+        );
 
-// Confirms the payment
-if (!ticketView.confirm(
-        "Proceed with " + transaction.getPaymentMethod()
-        + " payment of " + String.format("%.2f", totalAmount) + "?")) {
+        // Confirms the payment
+        if (!ticketView.confirm(
+                "Proceed with " + transaction.getPaymentMethod()
+                + " payment of " + String.format("%.2f", totalAmount) + "?")) {
 
-    ticketView.showMessage("Payment cancelled. Booking cancelled.");
-    return;
-}
+            ticketView.showMessage("Payment cancelled. Booking cancelled.");
+            return;
+        }
 
-transaction.setAmountPaid(totalAmount);
+        transaction.setAmountPaid(totalAmount);
 
-        // Completes checkout, records the transaction, and creates the receipt
-        Receipt receipt = checkoutService.checkout(transaction);
+                // Completes checkout, records the transaction, and creates the receipt
+                Receipt receipt = checkoutService.checkout(transaction);
 
-        // Seats remain reserved only after successful checkout
-        completed = true;
+                // Seats remain reserved only after successful checkout
+                completed = true;
 
-        ticketView.showMessage("Payment successful.");
-        ticketView.showMessage("Booking successfully created.");
-        receiptView.displayReceipt(receipt);
+                ticketView.showMessage("Payment successful.");
+                ticketView.showMessage("Booking successfully created.");
+                receiptView.displayReceipt(receipt);
 
-    } catch (IllegalArgumentException | IllegalStateException e) {
-        ticketView.showError(e.getMessage());
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                ticketView.showError(e.getMessage());
 
-    } finally {
-        // Releases temporarily reserved seats if payment or checkout fails
-        if (!completed) {
-            for (int i = 0; i < reservedSeatIDs.size(); i++) {
-                try {
-                    schedule.cancelBooking(reservedSeatIDs.get(i));
-                } catch (IllegalArgumentException e) {
-                    // The seat can no longer be released if the show has started
+            } finally {
+                // Releases temporarily reserved seats if payment or checkout fails
+                if (!completed) {
+                    for (int i = 0; i < reservedSeatIDs.size(); i++) {
+                        try {
+                            schedule.cancelBooking(reservedSeatIDs.get(i));
+                        } catch (IllegalArgumentException e) {
+                            // The seat can no longer be released if the show has started
+                        }
+                    }
                 }
             }
         }
-    }
-}
 
-    public void cancelBooking(Customer customer) {
+            public void cancelBooking(Customer customer) {
 
-        if (customer == null) {
+                if (customer == null) {
+                    return;
+                }
+
+                // Only the current customer's transactions
+                LinkedList<Transaction> customerTransactions = history.getByCustomer(customer.getUserID());
+
+                if (customerTransactions == null || customerTransactions.size() == 0) {
+                    ticketView.showMessage("You have no booking history.");
+                    return;
+                }
+
+                ticketView.showMessage("Your Booking History:");
+
+                for (int i = 0; i < customerTransactions.size(); i++) {
+
+                    Transaction current = customerTransactions.get(i);
+
+                    ticketView.showMessage(
+                    " Booking Code:: " + current.getBookingCode()
+                    + " | Status: " + current.getStatus()
+                    );
+                }
+
+                // Requests the booking code. Enter 0 to go back.
+                Transaction transaction = null;
+
+                while (transaction == null) {
+
+                    String code = ticketView.readString(
+            "Enter booking code (0 to go back): "
+        );
+
+        if (code.trim().equals("0")) {
             return;
         }
-
-        // Only the current customer's transactions
-        LinkedList<Transaction> customerTransactions = history.getByCustomer(customer.getUserID());
-
-        if (customerTransactions == null || customerTransactions.size() == 0) {
-            ticketView.showMessage("You have no booking history.");
-            return;
-        }
-
-        ticketView.showMessage("Your Booking History:");
 
         for (int i = 0; i < customerTransactions.size(); i++) {
 
             Transaction current = customerTransactions.get(i);
 
-            ticketView.showMessage(
-            " Booking Code:: " + current.getBookingCode()
-            + " | Status: " + current.getStatus()
-            );
+            String bookingCode = current.getBookingCode();
+            String transactionID = current.getTransactionID();
+
+            if ((bookingCode != null
+                    && bookingCode.equalsIgnoreCase(code.trim()))
+                    || (transactionID != null
+                    && transactionID.equalsIgnoreCase(code.trim()))) {
+
+                transaction = current;
+                break;
+            }
         }
-
-        // Requests the booking code. Enter 0 to go back.
-        Transaction transaction = null;
-
-        while (transaction == null) {
-
-            String code = ticketView.readString(
-    "Enter booking code (0 to go back): "
-);
-
-if (code.trim().equals("0")) {
-    return;
-}
-
-for (int i = 0; i < customerTransactions.size(); i++) {
-
-    Transaction current = customerTransactions.get(i);
-
-    String bookingCode = current.getBookingCode();
-    String transactionID = current.getTransactionID();
-
-    if ((bookingCode != null
-            && bookingCode.equalsIgnoreCase(code.trim()))
-            || (transactionID != null
-            && transactionID.equalsIgnoreCase(code.trim()))) {
-
-        transaction = current;
-        break;
-    }
-}
 
             if (transaction == null) {
                 ticketView.showError("Booking not found under this customer.");
