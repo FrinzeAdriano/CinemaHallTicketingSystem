@@ -225,7 +225,7 @@ public class CinemaManagementController {
         if (room == null) {
             return;
         }
-
+ 
         while (LoopUtility.retryUntilValid(seatView::showSeatMenu, choice -> {
             try {
                 switch (choice.trim()) {
@@ -239,9 +239,17 @@ public class CinemaManagementController {
                         }
                         break;
                     case "3": {
+                        // Remove seat: the ID is checked first (bad format or not found),
+                        // and the confirmation is only asked for an existing seat.
                         seatView.displayRoomLayout(room);
                         Boolean removed = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
-                                id -> seatView.confirm("Remove seat " + id.trim() + "?") && room.removeSeat(id),
+                                id -> {
+                                    Seat target = room.findSeat(id);   // throws for a blank or badly formatted ID
+                                    if (target == null) {
+                                        throw new IllegalArgumentException("Invalid input. Seat " + id.trim() + " was not found in this room.");
+                                    }
+                                    return seatView.confirm("Remove seat " + target.getSeatID() + "?") && room.removeSeat(id);
+                                },
                                 seatView::showError, "0");
                         if (removed != null && removed) {
                             seatView.showMessage("Seat removed.");
@@ -249,8 +257,15 @@ public class CinemaManagementController {
                         break;
                     }
                     case "4": {
+                        // Edit seat: an ID that is not in the room shows an error instead of silently going back.
                         Seat seat = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
-                                room::findSeat, seatView::showError, "0");
+                                id -> {
+                                    Seat found = room.findSeat(id);
+                                    if (found == null) {
+                                        throw new IllegalArgumentException("Invalid input. Seat " + id.trim() + " was not found in this room.");
+                                    }
+                                    return found;
+                                }, seatView::showError, "0");
                         if (seat != null) {
                             while (LoopUtility.retryUntilValid(() -> seatView.showEditSeatMenu(seat), editChoice -> {
                                 switch (editChoice.trim()) {

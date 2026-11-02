@@ -51,7 +51,7 @@ public class SeatView extends BaseView {
     }
 
     public String promptSeatID() {
-        return readString("Enter seat ID (e.g. A1): ");
+        return readString("Enter seat ID (e.g. A1) (0 to go back): ");
     }
 
     public String promptSeatType() {
