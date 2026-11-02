@@ -94,6 +94,11 @@ public abstract class BaseView {
 
     // Prints a bordered table. A cell longer than MAX_CELL_WIDTH is wrapped onto extra lines.
     public static void printTable(String[] headers, ArrayList<String[]> rows) {
+        printTable(null, headers, rows);
+    }
+
+    // Same table with a title banner (=== TITLE ===) that is stretched to the width of the table.
+    public static void printTable(String title, String[] headers, ArrayList<String[]> rows) {
         // Step 1: find the width of each column (the longest text in it, header included).
         int[] widths = new int[headers.length];
         for (int c = 0; c < headers.length; c++) {
@@ -109,7 +114,11 @@ public abstract class BaseView {
         for (int c = 0; c < headers.length; c++) {
             border += "-".repeat(widths[c] + 2) + "+";
         }
-        // Step 3: print the border, the headers, the border, every row, and the last border.
+        // Step 3: print the title, the border, the headers, the border, every row, and the last border.
+        if (title != null) {
+            System.out.println();
+            System.out.println(banner(title, Math.max(border.length(), title.length() + 10)));
+        }
         System.out.println(border);
         printRow(headers, widths);
         System.out.println(border);
@@ -151,6 +160,14 @@ public abstract class BaseView {
         }
         lines.add(rest);
         return lines;
+    }
+
+    // "===== TITLE =====" stretched to exactly "width" characters.
+    private static String banner(String title, int width) {
+        String text = " " + title + " ";
+        int fill = Math.max(width - text.length(), 2);
+        int left = fill / 2;
+        return "=".repeat(left) + text + "=".repeat(fill - left);
     }
 }
 

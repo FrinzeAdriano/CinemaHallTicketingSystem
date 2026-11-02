@@ -32,6 +32,7 @@ public class CinemaTicketManagementSystem {
                 new SeatView(), new ScheduleView());
 
         controller.manageCinemas();
+        controller.manageRooms();
     }
     
     public void start() {
