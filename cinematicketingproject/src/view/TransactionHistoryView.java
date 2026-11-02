@@ -13,16 +13,18 @@ public class TransactionHistoryView extends BaseView {
 
     // Admin menus
     public int showHistoryMenu() {
+        showMessage("");
         showMessage("========== TRANSACTION HISTORY ===========");
         showMessage("[1] View All Transactions");
         showMessage("[2] Filter Transactions");
         showMessage("[3] Search Transaction");
         showMessage("[0] Back");
         showMessage("------------------------------------------");
-        return readInt("Choice: ", 0, 3);
+        return readInt("Choose an option (0 to go back): ", 0, 3);
     }
 
     public int promptFilterOption() {
+        showMessage("");
         showMessage("========== FILTER TRANSACTIONS ===========");
         showMessage("[1] Status");
         showMessage("[2] Booking Type");
@@ -31,7 +33,7 @@ public class TransactionHistoryView extends BaseView {
         showMessage("[5] Date Range");
         showMessage("[0] Back");
         showMessage("------------------------------------------");
-        return readInt("Choice: ", 0, 5);
+        return readInt("Choose an option (0 to go back): ", 0, 5);
     }
 
     // Customer booking history menu
@@ -109,9 +111,7 @@ public class TransactionHistoryView extends BaseView {
             return;
         }
 
-    ArrayList<String[]> rows = new ArrayList<>();
-        
-        showMessage("============== TRANSACTIONS ==============");
+        ArrayList<String[]> rows = new ArrayList<>();
 
         for (int i = 0; i < transactions.size(); i++) {
             Transaction t = transactions.get(i);
@@ -127,7 +127,9 @@ public class TransactionHistoryView extends BaseView {
             });
         }
 
-        showMessage("========== END OF TRANSACTIONS ===========");
+        printTable("TRANSACTIONS",
+            new String[] {"ID", "Booking Type", "Customer", "Cashier", "Date", "Total", "Status", "Receipt No."},
+            rows);
     }
 
     public void displayTransactionDetails(Transaction transaction) {
