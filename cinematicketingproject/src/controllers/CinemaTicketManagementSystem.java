@@ -36,7 +36,7 @@ public class CinemaTicketManagementSystem {
         
     
         
-}
+    }  
     
     public void start() {
         // Build the shared repositories once.
