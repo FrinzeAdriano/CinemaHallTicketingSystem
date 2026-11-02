@@ -5,6 +5,7 @@ import datastructures.*;
 import repositories.*;
 import utility.*;
 import service.*;
+
 public class TicketView extends BaseView {
 
 
@@ -34,7 +35,17 @@ public class TicketView extends BaseView {
         }
     }
 
+    public int promptWalkInDiscount(Ticket ticket) {
+    showMessage("\nTicket ID: " + ticket.getTicketID());
+    showMessage("Seat: " + ticket.getSeat().getSeatID());
+    showMessage("Ticket Price: " + ticket.getPrice());
 
+    showMessage("[1] Senior Citizen");
+    showMessage("[2] PWD");
+    showMessage("[0] No discount");
+
+    return readInt("Discount: ", 0, 2);
+}
     // Displays one ticket
 
     public void displayTicket(Ticket ticket) {

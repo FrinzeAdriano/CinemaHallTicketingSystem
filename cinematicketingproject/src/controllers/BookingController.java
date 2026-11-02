@@ -45,226 +45,225 @@ public class BookingController {
     }
 
     // Cashier
-    public void sellTickets(Cashier cashier) {
+// Cashier
+public void sellTickets(Cashier cashier) {
+    if (cashier == null) return;
 
-        if (cashier == null) {
+    try {
+        if (!cashier.getStatus().equalsIgnoreCase("Active")) {
+            ticketView.showError("This account is inactive and cannot sell tickets.");
             return;
         }
-
-        // Inactive accounts (or accounts with no status set) cannot sell tickets
-        try {
-            if (!cashier.getStatus().equalsIgnoreCase("Active")) {
-                ticketView.showError("This account is inactive and cannot sell tickets.");
-                return;
-            }
-        } catch (IllegalStateException e) {
-            ticketView.showError("This account has no status set and cannot sell tickets.");
-            return;
-        }
-
-        LinkedList<Schedule> schedules = cinemaRepo.getAllSchedules();
-
-        if (schedules == null || schedules.size() == 0) {
-            ticketView.showMessage("No available movie schedules.");
-            return;
-        }
-
-        // Selects a schedule that is open, has a room and has not started.
-        // ScheduleView.selectSchedule must return null when the user enters 0 (go back).
-        Schedule schedule = scheduleView.selectSchedule(schedules);
-
-        while (schedule != null && !(schedule.isActive() && schedule.getRoom() != null
-                && schedule.getShowDateTime() != null
-                && schedule.getShowDateTime().isAfter(LocalDateTime.now()))) {
-
-            ticketView.showError("Invalid or inactive movie schedule. Please select another schedule.");
-            schedule = scheduleView.selectSchedule(schedules);
-        }
-
-        if (schedule == null) {
-            return;
-        }
-
-        LinkedList<Seat> seats = schedule.getRoom().getSeats();
-        LinkedList<String> bookedSeatIDs = schedule.getBookedSeatIDs();
-
-        // Counts the seats that are in service and not booked
-        int availableSeats = 0;
-
-        for (int i = 0; i < seats.size(); i++) {
-            if (seats.get(i).getStatus() && !bookedSeatIDs.contains(seats.get(i).getSeatID())) {
-                availableSeats++;
-            }
-        }
-
-        if (availableSeats == 0) {
-            ticketView.showMessage("No available seats.");
-            return;
-        }
-
-        seatView.displaySeatGrid(schedule);
-
-        // Repeats until the quantity is valid. 0 goes back.
-        int ticketCount;
-
-        while (true) {
-
-            ticketCount = ticketView.promptTicketCount();
-
-            if (ticketCount == 0) {
-                return;
-            }
-
-            if (ticketCount < 0) {
-                ticketView.showError("Ticket quantity must be greater than zero.");
-            } else if (ticketCount <= availableSeats) {
-                break;
-            } else {
-                ticketView.showError("Only " + availableSeats + " seats are available.");
-            }
-        }
-
-        LinkedList<Ticket> selectedTickets = new LinkedList<Ticket>();
-        LinkedList<String> reservedSeatIDs = new LinkedList<String>();
-        boolean completed = false;
-
-        // Every model and service call below throws IllegalArgumentException or
-        // IllegalStateException for bad data; the catch shows the message.
-        // The finally block releases the reserved seats unless the sale was completed.
-        try {
-
-            String transactionID = history.generateTransactionID();
-
-            // Selects one seat per ticket. Enter 0 to cancel ticket selling.
-            for (int ticketNumber = 1; ticketNumber <= ticketCount; ticketNumber++) {
-
-                Seat selectedSeat = null;
-
-                while (selectedSeat == null) {
-
-                    String input = seatView.promptSeatID();
-
-                    if (input.trim().equals("0")) {
-                        ticketView.showMessage("Ticket selling cancelled.");
-                        return;
-                    }
-
-                    try {
-
-                        if (!InputValidator.isValidSeatID(input)) {
-                            throw new IllegalArgumentException("Invalid seat ID.");
-                        }
-
-                        String seatID = input.trim().toUpperCase();
-
-                        // Checks the schedule is open and not started, the seat exists, is in
-                        // service and is not booked (this also stops picking the same seat twice)
-                        schedule.bookSeat(seatID);
-                        reservedSeatIDs.insertAtEnd(seatID);
-
-                        selectedSeat = schedule.getRoom().findSeat(seatID);
-
-                    } catch (IllegalArgumentException e) {
-                        seatView.showError(e.getMessage());
-                    }
-                }
-
-                // The seat's price modifier is a multiplier of the schedule price
-                selectedTickets.insertAtEnd(new Ticket(
-                    transactionID + "-T" + ticketNumber,
-                    schedule,
-                    selectedSeat,
-                    schedule.getPrice() * selectedSeat.getPriceModifier(),
-                    "BOOKED"
-                ));
-            }
-
-            Transaction transaction = new Transaction(
-                transactionID, "WALK_IN", null, cashier.getUserID(), LocalDateTime.now(),
-                selectedTickets, new LinkedList<OrderProduct>(),
-                null, 0, 0, null, 0, null, 0, "PENDING", null, null, null
-            );
-
-            // Allows the cashier to add food and drinks
-            if (inventoryRepo != null && inventoryView != null) {
-    int result = addProductsToOrder(transaction);
-    if (result == 0) {
-        ticketView.showMessage("Returning to previous menu.");
+    } catch (IllegalStateException e) {
+        ticketView.showError("This account has no status set and cannot sell tickets.");
         return;
     }
-    if (result == 3) {
-        ticketView.showMessage("Sale cancelled.");
+
+    LinkedList<Schedule> schedules = cinemaRepo.getAllSchedules();
+    if (schedules == null || schedules.size() == 0) {
+        ticketView.showMessage("No available movie schedules.");
         return;
     }
-}
 
-            ticketView.showMessage("[1] Cash");
-            ticketView.showMessage("[2] E-wallet");
-            ticketView.showMessage("[3] Card");
+    Schedule schedule = scheduleView.selectSchedule(schedules);
 
-            // Repeats the same field until the choice is 1, 2 or 3
-            int paymentChoice = ticketView.readInt("Payment method: ", 1, 3);
+    while (schedule != null && !(schedule.isActive() && schedule.getRoom() != null
+            && schedule.getShowDateTime() != null
+            && schedule.getShowDateTime().isAfter(LocalDateTime.now()))) {
+        ticketView.showError("Invalid or inactive movie schedule. Please select another schedule.");
+        schedule = scheduleView.selectSchedule(schedules);
+    }
 
-            while (paymentChoice < 1 || paymentChoice > 3) {
-                ticketView.showError("Invalid choice. Enter 1, 2 or 3.");
-                paymentChoice = ticketView.readInt("Payment method: ", 1, 3);
-            }
+    if (schedule == null) return;
 
-            if (paymentChoice == 1) {
-                transaction.setPaymentMethod("Cash");
-            } else if (paymentChoice == 2) {
-                transaction.setPaymentMethod("E-wallet");
-            } else {
-                transaction.setPaymentMethod("Card");
-            }
+    LinkedList<Seat> seats = schedule.getRoom().getSeats();
+    LinkedList<String> bookedSeatIDs = schedule.getBookedSeatIDs();
+    int availableSeats = 0;
 
-            // Repeats until the payment covers the total. Enter 0 to cancel the sale.
-            double amountPaid = 0;
+    for (int i = 0; i < seats.size(); i++) {
+        if (seats.get(i).getStatus() && !bookedSeatIDs.contains(seats.get(i).getSeatID())) {
+            availableSeats++;
+        }
+    }
 
-            while (amountPaid == 0) {
+    if (availableSeats == 0) {
+        ticketView.showMessage("No available seats.");
+        return;
+    }
 
-                String input = ticketView.readString("Enter amount paid (0 to go back): ");
+    seatView.displaySeatGrid(schedule);
+
+    int ticketCount;
+    while (true) {
+        ticketCount = ticketView.promptTicketCount();
+        if (ticketCount == 0) return;
+        if (ticketCount < 0) {
+            ticketView.showError("Ticket quantity must be greater than zero.");
+        } else if (ticketCount <= availableSeats) {
+            break;
+        } else {
+            ticketView.showError("Only " + availableSeats + " seats are available.");
+        }
+    }
+
+    LinkedList<Ticket> selectedTickets = new LinkedList<Ticket>();
+    LinkedList<String> reservedSeatIDs = new LinkedList<String>();
+    boolean completed = false;
+
+    try {
+        String transactionID = history.generateTransactionID();
+
+        for (int ticketNumber = 1; ticketNumber <= ticketCount; ticketNumber++) {
+            Seat selectedSeat = null;
+
+            while (selectedSeat == null) {
+                String input = seatView.promptSeatID();
 
                 if (input.trim().equals("0")) {
                     ticketView.showMessage("Ticket selling cancelled.");
                     return;
                 }
 
-                if (!InputValidator.isPositiveDouble(input)) {
-                    ticketView.showError("Enter a valid amount greater than zero.");
-                } else if (Double.parseDouble(input.trim()) < transaction.getTotalAmount()) {
-                    ticketView.showError("Insufficient payment. Required amount: " + transaction.getTotalAmount());
-                } else {
-                    amountPaid = Double.parseDouble(input.trim());
+                try {
+                    if (!InputValidator.isValidSeatID(input)) {
+                        throw new IllegalArgumentException("Invalid seat ID.");
+                    }
+
+                    String seatID = input.trim().toUpperCase();
+                    schedule.bookSeat(seatID);
+                    reservedSeatIDs.insertAtEnd(seatID);
+                    selectedSeat = schedule.getRoom().findSeat(seatID);
+                } catch (IllegalArgumentException e) {
+                    seatView.showError(e.getMessage());
                 }
             }
 
-            transaction.setAmountPaid(amountPaid);
+            selectedTickets.insertAtEnd(new Ticket(
+                transactionID + "-T" + ticketNumber,
+                schedule,
+                selectedSeat,
+                schedule.getPrice() * selectedSeat.getPriceModifier(),
+                "BOOKED"
+            ));
+        }
 
-            Receipt receipt = checkoutService.checkout(transaction);
+        
 
-            // The seats stay reserved from here on
-            completed = true;
+                    Transaction transaction = new Transaction(
+                 transactionID, "WALK_IN", null, cashier.getUserID(),
+                 LocalDateTime.now(), selectedTickets,
+                 new LinkedList<OrderProduct>(),
+                 null, 0, 0, null,
+                 null, 0, "PENDING",
+                 null, null, null
+             );
 
-            receiptView.displayReceipt(receipt);
+        // Add food and drinks
+        if (inventoryRepo != null && inventoryView != null) {
+            int result = addProductsToOrder(transaction);
 
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            ticketView.showError(e.getMessage());
+            if (result == 0) {
+                ticketView.showMessage("Returning to previous menu.");
+                return;
+            }
 
-        } finally {
+            if (result == 3) {
+                ticketView.showMessage("Sale cancelled.");
+                return;
+            }
+        }
+         // Apply Senior Citizen/PWD discounts to individual tickets
+        for (int i = 0; i < selectedTickets.size(); i++) {
+            Ticket ticket = selectedTickets.get(i);
 
-            // Rolls back the seat reservations when the sale was cancelled or failed
-            if (!completed) {
-                for (int i = 0; i < reservedSeatIDs.size(); i++) {
-                    try {
-                        schedule.cancelBooking(reservedSeatIDs.get(i));
-                    } catch (IllegalArgumentException e) {
-                        // The show already started, so the seat no longer matters
-                    }
+            ticketView.showMessage("\nTicket ID: " + ticket.getTicketID());
+            ticketView.showMessage("Seat: " + ticket.getSeat().getSeatID());
+            ticketView.showMessage("[1] Senior Citizen  [2] PWD  [0] No Discount");
+
+            int choice = ticketView.readInt("Discount: ", 0, 2);
+            if (choice == 0) continue;
+
+            String discountType = choice == 1 ? "SENIOR" : "PWD";
+
+            boolean validID = ticketView.confirm(
+                "Was a valid " + discountType + " ID presented?"
+            );
+
+            if (validID) {
+                ticket.applyDiscount(discountType);
+                ticketView.showMessage(
+                    "Discount applied: " + String.format("%.2f", ticket.getDiscountAmount())
+                );
+                ticketView.showMessage(
+                    "Net ticket price: " + String.format("%.2f", ticket.getNetPrice())
+                );
+            } else {
+                ticketView.showMessage("No discount applied.");
+            }
+        }
+
+        // Payment summary
+        ticketView.showMessage("\n========== PAYMENT SUMMARY ==========");
+        ticketView.showMessage("Subtotal: " + String.format("%.2f", transaction.getSubtotal()));
+        ticketView.showMessage("Discount: -" + String.format("%.2f", transaction.getDiscountAmount()));
+        ticketView.showMessage("Cultural Tax: " + String.format("%.2f", transaction.getCulturalTax()));
+        ticketView.showMessage("Amusement Tax: " + String.format("%.2f", transaction.getAmusementTax()));
+        ticketView.showMessage("VAT: " + String.format("%.2f", transaction.getVat()));
+        ticketView.showMessage("Total Due: " + String.format("%.2f", transaction.getTotalAmount()));
+        ticketView.showMessage("======================================");
+
+        ticketView.showMessage("[1] Cash");
+        ticketView.showMessage("[2] E-wallet");
+        ticketView.showMessage("[3] Card");
+
+        int paymentChoice = ticketView.readInt("Payment method: ", 1, 3);
+
+        if (paymentChoice == 1) {
+            transaction.setPaymentMethod("Cash");
+        } else if (paymentChoice == 2) {
+            transaction.setPaymentMethod("E-wallet");
+        } else {
+            transaction.setPaymentMethod("Card");
+        }
+
+        double amountPaid = 0;
+
+        while (amountPaid == 0) {
+            String input = ticketView.readString("Enter amount paid (0 to go back): ");
+
+            if (input.trim().equals("0")) {
+                ticketView.showMessage("Ticket selling cancelled.");
+                return;
+            }
+
+            if (!InputValidator.isPositiveDouble(input)) {
+                ticketView.showError("Enter a valid amount greater than zero.");
+            } else if (Double.parseDouble(input.trim()) < transaction.getTotalAmount()) {
+                ticketView.showError("Insufficient payment. Required amount: " + transaction.getTotalAmount());
+            } else {
+                amountPaid = Double.parseDouble(input.trim());
+            }
+        }
+
+        transaction.setAmountPaid(amountPaid);
+        Receipt receipt = checkoutService.checkout(transaction);
+        completed = true;
+        receiptView.displayReceipt(receipt);
+
+    } catch (IllegalArgumentException | IllegalStateException e) {
+        ticketView.showError(e.getMessage());
+    } finally {
+        if (!completed) {
+            for (int i = 0; i < reservedSeatIDs.size(); i++) {
+                try {
+                    schedule.cancelBooking(reservedSeatIDs.get(i));
+                } catch (IllegalArgumentException e) {
+                    // The show already started, so the seat cannot be released.
                 }
             }
         }
     }
+}
 
 public int addProductsToOrder(Transaction transaction) {
 
@@ -600,11 +599,11 @@ public void bookTickets(Customer customer) {
         }
 
         // Creates a pending transaction
-        Transaction transaction = new Transaction(
+                Transaction transaction = new Transaction(
             transactionID, "ONLINE", customer.getUserID(), null,
             LocalDateTime.now(), selectedTickets,
             new LinkedList<OrderProduct>(),
-            null, 0, 0, null, 0, null, 0,
+            null, 0, 0, null, null, 0,
             "PENDING", bookingCode, null, null
         );
 
@@ -638,6 +637,7 @@ for (int i = 0; i < selectedTickets.size(); i++) {
     ticketView.showMessage(
         "Price: " + String.format("%.2f", ticket.getPrice())
     );
+   
     ticketView.showMessage("Status: " + ticket.getStatus());
     ticketView.showMessage("--------------------------------------");
 }
@@ -681,9 +681,9 @@ if (orderedProducts != null && orderedProducts.size() > 0) {
             String.format("%.2f", transaction.getDiscountAmount())
         );
 
-        ticketView.showMessage(
-            "Tax: " + String.format("%.2f", transaction.getTaxAmount())
-        );
+         ticketView.showMessage("Cultural Tax: " + String.format("%.2f", transaction.getCulturalTax()));
+    ticketView.showMessage("Amusement Tax: " + String.format("%.2f", transaction.getAmusementTax()));
+    ticketView.showMessage("VAT: " + String.format("%.2f", transaction.getVat()));
         ticketView.showMessage(
             "Total Amount Due: " +
             String.format("%.2f", transaction.getTotalAmount())

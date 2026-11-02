@@ -156,22 +156,58 @@ public class UserView extends BaseView {
 
     // Display methods
 
-    public void displayProfile(User user) {
+public void displayProfile(User user) {
+
+    System.out.println();
+    System.out.println("==================================================");
+    System.out.println("                    MY PROFILE                    ");
+    System.out.println("==================================================");
+    System.out.println();
+
+    System.out.println("  ACCOUNT INFORMATION");
+    System.out.println("  ----------------------------------------------");
+    System.out.printf("  %-18s : %s%n", "User ID", user.getUserID());
+    System.out.printf("  %-18s : %s%n", "Role", user.getRole());
+    System.out.printf("  %-18s : %s%n", "Username", user.getUserName());
+    System.out.printf("  %-18s : %s%n", "Full Name", user.getFullName());
+
+    System.out.println();
+    System.out.println("  ACCOUNT STATUS");
+    System.out.println("  ----------------------------------------------");
+    System.out.printf("  %-18s : %s%n", "Status", user.getStatus());
+
+    if (user instanceof Cashier) {
+
+        Cashier cashier = (Cashier) user;
+
+        System.out.printf(
+            "  %-18s : %s%n",
+            "Assigned Shift",
+            cashier.getShift()
+        );
+
+    } else if (user instanceof Customer) {
+        Customer customer = (Customer) user;
+
         System.out.println();
-        System.out.println("----- PROFILE -----");
-        System.out.println("User ID    : " + user.getUserID());
-        System.out.println("Role       : " + user.getRole());
-        System.out.println("Username   : " + user.getUserName());
-        System.out.println("Full name  : " + user.getFullName());
-        System.out.println("Status     : " + user.getStatus());
-        if (user instanceof Cashier) {
-            System.out.println("Shift      : " + ((Cashier) user).getShift());
-        } else if (user instanceof Customer) {
-            Customer customer = (Customer) user;
-            System.out.println("Type       : " + customer.getCustomerType());
-            System.out.println("Registered : " + customer.getDateRegistered());
-        }
+        System.out.println("  CUSTOMER INFORMATION");
+        System.out.println("  ----------------------------------------------");
+
+        System.out.printf(
+            "  %-18s : %s%n",
+            "Customer Type",
+            customer.getCustomerType()
+        );
+
+        System.out.printf(
+            "  %-18s : %s%n",
+            "Date Registered",
+            customer.getDateRegistered()
+        );
     }
+    System.out.println();
+    System.out.println("==================================================");
+}
 
     public void displayUsers(LinkedList<User> users) {
         ArrayList<String[]> rows = new ArrayList<>();

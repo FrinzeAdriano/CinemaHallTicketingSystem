@@ -3,6 +3,7 @@ package controllers;
 import datastructures.LinkedList;
 import models.Product;
 import repositories.InventoryRepository;
+import utility.InputValidator;
 import view.InventoryView;
 
 public class InventoryController {
@@ -14,7 +15,7 @@ public class InventoryController {
         this.inventoryView = inventoryView;
     }
 
-       public void manageInventory() {
+    public void manageInventory() {
 
         if (inventoryRepo == null || inventoryView == null) {
             return;
@@ -49,6 +50,10 @@ public class InventoryController {
                     break;
 
                 case 6:
+                    activateProduct();
+                    break;
+
+                case 7:
                     viewLowStock();
                     break;
 
@@ -64,7 +69,7 @@ public class InventoryController {
     }
 
 
-      public void addProduct() {
+    public void addProduct() {
 
         try {
 
@@ -83,6 +88,11 @@ public class InventoryController {
                     "Product successfully added. Product ID: " + productID
                 );
 
+            } else if (inventoryRepo.hasDuplicate(product)) {
+
+                inventoryView.showError("A " + product.getCategory() + " named \""
+                    + product.getName() + "\" already exists.");
+
             } else {
 
                 inventoryView.showError("Unable to add product.");
@@ -94,9 +104,9 @@ public class InventoryController {
         }
     }
 
-     public void editProduct() {
+    public void editProduct() {
 
-        Product product = selectProduct();
+        Product product = selectProduct(inventoryRepo.viewProducts(), "No products available.");
 
         if (product == null) {
             return;
@@ -106,28 +116,24 @@ public class InventoryController {
 
         while (editing) {
 
-            inventoryView.showMessage("\n===== EDIT PRODUCT =====");
-            inventoryView.showMessage("Product ID: " + product.getProductID());
-            inventoryView.showMessage("Product Name: " + product.getName());
-            inventoryView.showMessage("Price: " + product.getPrice());
-            inventoryView.showMessage("----------------------------------------");
-            inventoryView.showMessage("1. Edit product name");
-            inventoryView.showMessage("2. Edit product price");
-            inventoryView.showMessage("0. Back");
-
-            int choice = inventoryView.readInt("Choice: ", 0, 2);
+            int choice = inventoryView.showEditMenu(product);
 
             try {
 
                 switch (choice) {
 
-                    case 1:
-
+                    case 1: {
                         String name = inventoryView.readString(
                             "New product name (0 to go back): "
                         );
 
-                        if (name.equals("0")) {
+                        if (name.trim().equals("0")) {
+                            break;
+                        }
+
+                        if (inventoryRepo.isNameTaken(product, name)) {
+                            inventoryView.showError("A " + product.getCategory()
+                                + " with that name already exists.");
                             break;
                         }
 
@@ -135,23 +141,27 @@ public class InventoryController {
 
                         inventoryView.showMessage("Product name successfully updated.");
                         break;
+                    }
 
-                    case 2:
-
+                    case 2: {
                         String input = inventoryView.readString(
                             "New product price (0 to go back): "
                         );
 
-                        if (input.equals("0")) {
+                        if (input.trim().equals("0")) {
                             break;
                         }
 
-                        double price = Double.parseDouble(input.trim());
+                        if (!InputValidator.isPositiveDouble(input)) {
+                            inventoryView.showError("Enter a valid price greater than zero.");
+                            break;
+                        }
 
-                        product.setPrice(price);
+                        product.setPrice(Double.parseDouble(input.trim()));
 
                         inventoryView.showMessage("Product price successfully updated.");
                         break;
+                    }
 
                     case 0:
                         editing = false;
@@ -165,9 +175,9 @@ public class InventoryController {
         }
     }
 
-     public void restockProduct() {
+    public void restockProduct() {
 
-        Product product = selectProduct();
+        Product product = selectProduct(inventoryRepo.viewProducts(), "No products available.");
 
         if (product == null) {
             return;
@@ -198,9 +208,9 @@ public class InventoryController {
         }
     }
 
-       public void deactivateProduct() {
+    public void deactivateProduct() {
 
-        Product product = selectProduct();
+        Product product = selectProduct(inventoryRepo.viewProducts(), "No products available.");
 
         if (product == null) {
             return;
@@ -235,8 +245,40 @@ public class InventoryController {
         }
     }
 
+    // Shows only INACTIVE products so the admin picks from the ones that can be activated.
+    public void activateProduct() {
 
-   public void viewLowStock() {
+        Product product = selectProduct(
+            inventoryRepo.filterByStatus("INACTIVE"),
+            "There are no inactive products."
+        );
+
+        if (product == null) {
+            return;
+        }
+
+        int confirmation = inventoryView.confirmAction(
+            "Activate " + product.getName() + "?"
+        );
+
+        if (confirmation != 1) {
+            inventoryView.showMessage("Activation cancelled.");
+            return;
+        }
+
+        if (inventoryRepo.activateProduct(product.getProductID())) {
+
+            inventoryView.showMessage(
+                "Product successfully activated. Status: " + product.getStatus()
+            );
+
+        } else {
+
+            inventoryView.showError("Unable to activate product.");
+        }
+    }
+
+    public void viewLowStock() {
 
         int threshold = inventoryView.promptLowStockThreshold();
 
@@ -250,13 +292,11 @@ public class InventoryController {
         inventoryView.displayLowStock(lowStockProducts);
     }
 
-    // Selects a product using its ID. Enter 0 to go back.
-    private Product selectProduct() {
-
-        LinkedList<Product> products = inventoryRepo.viewProducts();
+    // Selects a product from the given list using its ID. Enter 0 to go back.
+    private Product selectProduct(LinkedList<Product> products, String emptyMessage) {
 
         if (products == null || products.size() == 0) {
-            inventoryView.showMessage("No products available.");
+            inventoryView.showMessage(emptyMessage);
             return null;
         }
 
