@@ -1,17 +1,17 @@
 package models;
-
+ 
 import utility.InputValidator;
-
+ 
 public class Seat {
-    private static final String[] VALID_SEAT_TYPES = {"Regular", "Premium", "VIP"};
-
+    private static final String[] VALID_SEAT_TYPES = {"Regular", "Premium", "VIP", "Wheelchair", "Aisle"};
+ 
     private final String seatID;
     private final char seatRow;
     private final int seatNumber;
     private String seatType;
     private boolean status;
     private double priceModifier;
-
+ 
     // Constructor (ID is required because the table has no setters for seatID, seatRow, seatNumber).
     // A valid ID is a letter followed by a number from 1 to 999 (e.g. "A1", "b12" -> "B12").
     // Throws IllegalArgumentException if the ID is invalid.
