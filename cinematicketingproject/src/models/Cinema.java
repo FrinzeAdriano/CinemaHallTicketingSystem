@@ -115,6 +115,10 @@ public class Cinema {
             throw new IllegalArgumentException(
                 "Invalid input. Cinema name must be between " + MIN_NAME_LENGTH + " and " + MAX_NAME_LENGTH + " characters.");
         }
+        if (!cleaned.matches("\\p{L}[\\p{L} .'&-]*")) {
+            throw new IllegalArgumentException(
+                "Invalid input. Cinema name cannot contain numbers or symbols. Use letters, spaces, and . ' & - only.");
+        }
         this.name = cleaned;
     }
 
@@ -127,6 +131,10 @@ public class Cinema {
         if (!InputValidator.inRange(cleaned.length(), MIN_LOCATION_LENGTH, MAX_LOCATION_LENGTH)) {
             throw new IllegalArgumentException(
                 "Invalid input. Location must be between " + MIN_LOCATION_LENGTH + " and " + MAX_LOCATION_LENGTH + " characters.");
+        }
+        if (!cleaned.matches("\\p{L}[\\p{L} .,'&-]*")) {
+            throw new IllegalArgumentException(
+                "Invalid input. Location cannot contain numbers or symbols. Use letters, spaces, and . , ' & - only.");
         }
         this.location = cleaned;
     }
