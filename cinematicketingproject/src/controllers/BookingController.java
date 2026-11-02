@@ -827,98 +827,74 @@ if (orderedProducts != null && orderedProducts.size() > 0) {
             }
         }
 
-            public void cancelBooking(Customer customer) {
+           public void cancelBooking(Customer customer) {
+    if (customer == null) return;
 
-                if (customer == null) {
-                    return;
-                }
+    // Only the current customer's transactions
+    LinkedList<Transaction> customerTransactions = history.getByCustomer(customer.getUserID());
 
-                // Only the current customer's transactions
-                LinkedList<Transaction> customerTransactions = history.getByCustomer(customer.getUserID());
+    if (customerTransactions == null || customerTransactions.size() == 0) {
+        ticketView.showMessage("You have no booking history.");
+        return;
+    }
 
-                if (customerTransactions == null || customerTransactions.size() == 0) {
-                    ticketView.showMessage("You have no booking history.");
-                    return;
-                }
+    ticketView.displayBookingTable(customerTransactions);
 
-                ticketView.showMessage("Your Booking History:");
+    // Requests the booking code. Enter 0 to go back.
+    Transaction transaction = null;
 
-                for (int i = 0; i < customerTransactions.size(); i++) {
-
-                    Transaction current = customerTransactions.get(i);
-
-                    ticketView.showMessage(
-                    " Booking Code:: " + current.getBookingCode()
-                    + " | Status: " + current.getStatus()
-                    );
-                }
-
-                // Requests the booking code. Enter 0 to go back.
-                Transaction transaction = null;
-
-                while (transaction == null) {
-
-                    String code = ticketView.readString(
-            "Enter booking code (0 to go back): "
-        );
-
-        if (code.trim().equals("0")) {
-            return;
-        }
+    while (transaction == null) {
+        String code = ticketView.readString("Enter booking code (0 to go back): ");
+        if (code.equals("0")) return;
 
         for (int i = 0; i < customerTransactions.size(); i++) {
-
             Transaction current = customerTransactions.get(i);
 
-            String bookingCode = current.getBookingCode();
-            String transactionID = current.getTransactionID();
-
-            if ((bookingCode != null
-                    && bookingCode.equalsIgnoreCase(code.trim()))
-                    || (transactionID != null
-                    && transactionID.equalsIgnoreCase(code.trim()))) {
-
+            if ((current.getBookingCode() != null && current.getBookingCode().equalsIgnoreCase(code))
+                    || current.getTransactionID().equalsIgnoreCase(code)) {
                 transaction = current;
                 break;
             }
         }
 
-            if (transaction == null) {
-                ticketView.showError("Booking not found under this customer.");
-                continue;
-            }
-
-            // A booking cannot be cancelled when a ticket was used or its show has started
-            LinkedList<Ticket> tickets = transaction.getTickets();
-
-            for (int i = 0; transaction != null && i < tickets.size(); i++) {
-
-                Ticket ticket = tickets.get(i);
-
-                if (ticket.getStatus().equalsIgnoreCase("USED")) {
-                    ticketView.showError("This booking has used tickets and cannot be cancelled.");
-                    transaction = null;
-                } else if (!ticket.getSchedule().getShowDateTime().isAfter(LocalDateTime.now())) {
-                    ticketView.showError("The show has already started. This booking cannot be cancelled.");
-                    transaction = null;
-                }
-            }
+        if (transaction == null) {
+            ticketView.showError("Booking not found under this customer.");
+            continue;
         }
 
-        if (!ticketView.confirm("Are you sure you want to cancel this booking?")) {
-            return;
+        if (transaction.getStatus().equalsIgnoreCase("CANCELLED")) {
+            ticketView.showError("This booking has already been cancelled.");
+            transaction = null;
+            continue;
         }
 
-        try {
+        // A booking cannot be cancelled when a ticket was used or its show has started
+        LinkedList<Ticket> tickets = transaction.getTickets();
 
-            if (checkoutService.cancelTransaction(transaction)) {
-                ticketView.showMessage("Booking successfully cancelled.");
-            } else {
-                ticketView.showError("Unable to cancel booking.");
+        for (int i = 0; i < tickets.size(); i++) {
+            Ticket ticket = tickets.get(i);
+
+            if (ticket.getStatus().equalsIgnoreCase("USED")) {
+                ticketView.showError("This booking has used tickets and cannot be cancelled.");
+                transaction = null;
+                break;
             }
 
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            ticketView.showError(e.getMessage());
+            if (!ticket.getSchedule().getShowDateTime().isAfter(LocalDateTime.now())) {
+                ticketView.showError("The show has already started. This booking cannot be cancelled.");
+                transaction = null;
+                break;
+            }
         }
     }
+
+    if (!ticketView.confirm("Are you sure you want to cancel this booking?")) return;
+
+    try {
+        if (checkoutService.cancelTransaction(transaction)) ticketView.showMessage("Booking successfully cancelled.");
+        else ticketView.showError("Unable to cancel booking.");
+    } catch (IllegalArgumentException | IllegalStateException e) {
+        ticketView.showError(e.getMessage());
+    }
+}
 }
