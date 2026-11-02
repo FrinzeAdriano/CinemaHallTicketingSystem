@@ -67,6 +67,27 @@ public class CinemaRepository {
 
     // Rules: there must be at least one cinema, the ID must not be blank, and it must
     // belong to an existing cinema (case-insensitive).
+    // Returns the cinema; throws IllegalArgumentException otherwise.
+    public Cinema findCinemaByID(String id) {
+        if (cinemas.size() == 0) {
+            throw new IllegalArgumentException("Invalid input. There are no cinemas yet.");
+        }
+        if (!InputValidator.isNotBlank(id)) {
+            throw new IllegalArgumentException("Invalid input. Cinema ID cannot be blank.");
+        }
+        String key = id.trim();
+        Node<Cinema> node = cinemas.getHead();
+        while (node != null) {
+            if (node.getData().getCinemaID().equalsIgnoreCase(key)) {
+                return node.getData();
+            }
+            node = node.getNext();
+        }
+        throw new IllegalArgumentException("Invalid input. Cinema " + key + " was not found.");
+    }
+
+    // Rules: there must be at least one cinema, the ID must not be blank, and it must
+    // belong to an existing cinema (case-insensitive).
     // Returns true when removed; throws IllegalArgumentException otherwise.
     public boolean removeCinema(String id) {
         if (cinemas.size() == 0) {
