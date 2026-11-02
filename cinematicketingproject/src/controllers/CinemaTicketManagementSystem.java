@@ -27,70 +27,10 @@ public class CinemaTicketManagementSystem {
     // System Methods
     public static void main(String[]ARGS){
         VoucherController vcontrol = new VoucherController(new VoucherRepository(), new VoucherView());
+        CinemaTicketManagementSystem s = new CinemaTicketManagementSystem();
+        s.start();
         
-        //vcontrol.manageVouchers();
         
-                // 1. Create shared repositories and views first
-         UserRepository sharedUserRepo = new UserRepository();
-         UserView sharedUserView = new UserView();
-         MovieRepository sharedMovieRepo = new MovieRepository();
-         MovieRepositoryView sharedMovieView = new MovieRepositoryView();
-
-         TransactionHistory sharedHistory = new TransactionHistory();
-         SalesRepository sharedSalesRepo = new SalesRepository();
-         InventoryRepository sharedInventoryRepo = new InventoryRepository();
-         VoucherRepository sharedVoucherRepo = new VoucherRepository();
-         ReceiptView sharedReceiptView = new ReceiptView();
-
-         // 2. Instantiate CheckoutService using shared dependencies
-         CheckoutService checkoutService = new CheckoutService(
-             sharedHistory,
-             sharedSalesRepo,
-             sharedInventoryRepo,
-             sharedVoucherRepo,
-             1 // receiptCounter starting value
-         );
-
-         // 3. Instantiate Controllers
-         ProfileController profileController = new ProfileController(
-             sharedUserRepo, 
-             sharedUserView
-         );
-
-         BookingController bookingController = new BookingController(
-             sharedMovieRepo,
-             new CinemaRepository(),
-             sharedInventoryRepo,
-             sharedHistory,
-             sharedVoucherRepo,
-             checkoutService,
-             sharedMovieView,
-             new ScheduleView(),
-             new SeatView(),
-             new TicketView(),
-             new InventoryView(),
-             sharedReceiptView
-         );
-
-         TransactionController transactionController = new TransactionController(
-             sharedHistory,
-             sharedSalesRepo,
-             checkoutService,
-             new TransactionHistoryView(),
-             sharedReceiptView
-         );
-
-         // 4. Finally, instantiate CustomerController
-         CustomerController customerController = new CustomerController(
-             sharedUserRepo,
-             sharedMovieRepo,
-             sharedUserView,
-             sharedMovieView,
-             new CinemaTicketManagementSystemView(),
-             profileController,
-             bookingController,
-             transactionController
-         );
         
     }
     
