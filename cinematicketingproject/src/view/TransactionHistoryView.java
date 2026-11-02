@@ -4,6 +4,7 @@ import models.*;
 import datastructures.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class TransactionHistoryView extends BaseView {
 
@@ -108,6 +109,8 @@ public class TransactionHistoryView extends BaseView {
             return;
         }
 
+    ArrayList<String[]> rows = new ArrayList<>();
+        
         showMessage("============== TRANSACTIONS ==============");
 
         for (int i = 0; i < transactions.size(); i++) {
