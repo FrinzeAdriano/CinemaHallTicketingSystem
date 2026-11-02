@@ -37,7 +37,7 @@ public class SeatView extends BaseView {
         System.out.println("============= FILTER SEATS =============");
         System.out.println("[1] By row (e.g. A)");
         System.out.println("[2] By type (Regular, Premium, VIP, Wheelchair)");
-        System.out.println("[3] By status (Available, Out of service)");
+        System.out.println("[3] By status (Available, Unavailable)");
         System.out.println("[0] Back");
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
@@ -149,7 +149,7 @@ public class SeatView extends BaseView {
         System.out.println("  [A1]  Available seat");
         System.out.println("  [XX]  Already booked for this schedule");
         System.out.println("  [--]  Unavailable seat (cannot be booked)");
-        System.out.println("  (gap)  Aisle");
+        System.out.println("  (blank column)  Aisle");
     }
 
     // Shows every seat of the room. All widths are worked out from the seats themselves.
@@ -217,7 +217,7 @@ public class SeatView extends BaseView {
         System.out.println("Legend:");
         System.out.println("  [A1]  Available seat");
         System.out.println("  [--]  Unavailable seat (cannot be booked)");
-        System.out.println("  (gap)  Aisle");
+        System.out.println("  (blank column)  Aisle");
     }
 
     // Table of seats (used for the filter results).
@@ -227,7 +227,7 @@ public class SeatView extends BaseView {
         while (node != null) {
             Seat seat = node.getData();
             rows.add(new String[] {seat.getSeatID(), String.valueOf(seat.getSeatRow()), String.valueOf(seat.getSeatNumber()),
-                    seat.getSeatType(), seat.getStatus() ? "Available" : "Out of service",
+                    seat.getSeatType(), seat.getStatus() ? "Available" : "Unavailable",
                     String.valueOf(seat.getPriceModifier()), seat.hasAisleAfter() ? "Yes" : "No"});
             node = node.getNext();
         }

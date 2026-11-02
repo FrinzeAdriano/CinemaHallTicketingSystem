@@ -48,7 +48,7 @@ public class Seat {
         throw new IllegalArgumentException("Invalid input. Seat type must be one of: " + String.join(", ", VALID_SEAT_TYPES) + ".");
     }
 
-    // Status: true = seat is usable, false = seat is out of service.
+    // Status: true = seat is available, false = seat is unavailable.
     public void setStatus(boolean status) {
         this.status = status;
     }

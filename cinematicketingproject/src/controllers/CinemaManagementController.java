@@ -285,7 +285,9 @@ public class CinemaManagementController {
                         break;
                     }
                     case "4": {
-                        // Edit seat: an ID that is not in the room shows an error instead of silently going back.
+                        // Edit seat: show every seat first, then ask for the ID.
+                        // An ID that is not in the room shows an error instead of silently going back.
+                        seatView.displaySeats(room.getSeats());
                         Seat seat = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
                                 id -> {
                                     Seat found = room.findSeat(id);
@@ -358,7 +360,7 @@ public class CinemaManagementController {
                         break;
                     }
                     case "6": {
-                        // Add or remove an aisle after a seat (the seat IDs do not change).
+                        // Add or remove an aisle after a seat number, through every row (the seat IDs do not change).
                         seatView.displayRoomLayout(room);
                         String result = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
                                 id -> {
@@ -366,14 +368,29 @@ public class CinemaManagementController {
                                     if (target == null) {
                                         throw new IllegalArgumentException("Invalid input. Seat " + id.trim() + " was not found in this room.");
                                     }
-                                    if (target.hasAisleAfter()) {
-                                        if (!seatView.confirm("Remove the aisle after seat " + target.getSeatID() + "?")) {
+                                    // An aisle is one line through the room, so check the whole column (seat number).
+                                    boolean columnHasAisle = false;
+                                    Node<Seat> n = room.getSeats().getHead();
+                                    while (n != null) {
+                                        if (n.getData().getSeatNumber() == target.getSeatNumber() && n.getData().hasAisleAfter()) {
+                                            columnHasAisle = true;
+                                        }
+                                        n = n.getNext();
+                                    }
+                                    if (columnHasAisle) {
+                                        if (!seatView.confirm("Remove the aisle after seat number " + target.getSeatNumber() + "?")) {
                                             return "";
                                         }
-                                        target.setAisleAfter(false);
+                                        n = room.getSeats().getHead();
+                                        while (n != null) {
+                                            if (n.getData().getSeatNumber() == target.getSeatNumber()) {
+                                                n.getData().setAisleAfter(false);
+                                            }
+                                            n = n.getNext();
+                                        }
                                         return "Aisle removed.";
                                     }
-                                    if (!seatView.confirm("Put an aisle after seat " + target.getSeatID() + "?")) {
+                                    if (!seatView.confirm("Put an aisle after seat number " + target.getSeatNumber() + "?")) {
                                         return "";
                                     }
                                     room.addAisle(id);

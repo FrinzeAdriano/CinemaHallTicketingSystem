@@ -1,17 +1,12 @@
-
 package repositories;
 
-import controllers.*;
-import models.*;
-import datastructures.*;
-import java.time.LocalDate;
-import view.*;
-import utility.*;
-import service.*;
+import datastructures.LinkedList;
+import datastructures.Node;
+import models.Voucher;
 
 public class VoucherRepository {
 
-    private LinkedList vouchers = new LinkedList();
+    private LinkedList<Voucher> vouchers = new LinkedList<Voucher>();
 
 
     // Voucher Management Methods
@@ -25,10 +20,11 @@ public class VoucherRepository {
         return true;
     }
 
-    public LinkedList viewVouchers() {
-        return vouchers;}
+    public LinkedList<Voucher> viewVouchers() {
+        return vouchers;
+    }
 
-    // Codes are case-insensitive.
+    // Codes are case-insensitive. Returns null when there is no such voucher.
     public Voucher findByCode(String code) {
         if (code == null) {
             return null;
