@@ -5,12 +5,32 @@ import datastructures.*;
 import repositories.*;
 import utility.*;
 import service.*;
-
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 public class TicketView extends BaseView {
 
 
     // Requests the number of tickets
+// Table of the customer's bookings: the customer picks a booking code from this
+public void displayBookingTable(LinkedList<Transaction> transactions) {
+    DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    String[] headers = {"Booking Code", "Date", "Tickets", "Total", "Status"};
+    ArrayList<String[]> rows = new ArrayList<String[]>();
 
+    for (int i = 0; i < transactions.size(); i++) {
+        Transaction t = transactions.get(i);
+
+        rows.add(new String[] {
+            t.getBookingCode() == null ? "N/A" : t.getBookingCode(),
+            t.getDateTime().format(format),
+            String.valueOf(t.getTickets().size()),
+            String.format("%.2f", t.getTotalAmount()),
+            t.getStatus()
+        });
+    }
+
+    printTable("MY BOOKINGS", headers, rows);
+}
      public int promptTicketCount() {
 
         while (true) {

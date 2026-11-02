@@ -115,10 +115,12 @@ public class TransactionController {
                         }, historyView::showError, "0");
                     break;
 
-                default:
-                    break;   // 0 exits the loop
+                
             }
+                default:
+                    historyView.showError("Invalid menu option. Please try again.");
         }
+    }
     }
     // Cashier: reprint a receipt
     public void reprintReceipt(Cashier cashier) {
