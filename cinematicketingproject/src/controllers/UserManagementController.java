@@ -1,10 +1,10 @@
 package controllers;
 
-import datastructures.LinkedList;
-import datastructures.Node;
-import models.User;
-import repositories.UserRepository;
-import view.UserView;
+import datastructures.*;
+import models.*;
+import repositories.*;
+import utility.*;
+import view.*;
 
 public class UserManagementController {
     private UserRepository userRepo;
@@ -15,206 +15,117 @@ public class UserManagementController {
         this.userView = userView;
     }
 
-     public void manageUsers() {
-
-        if (userRepo == null || userView == null) {
-            throw new IllegalStateException(
-                "User management dependencies cannot be null."
-            );
-        }
-
-        boolean running = true;
-
-        while (running) {
-
-            int choice = userView.showUserManagementMenu();
-
-            switch (choice) {
-
-                case 1:
-                    addUser();
-                    break;
-
-                case 2:
-                    viewAllUsers();
-                    break;
-
-                case 3:
-                    filterUsersByRole();
-                    break;
-
-                case 4:
-                    deactivateUser();
-                    break;
-
-                case 0:
-                    running = false;
-                    break;
-
-                default:
-                    userView.showError("Invalid option.");
-                    break;
+    public void manageUsers() {
+        int choice = -1;
+        while (choice != 0) {
+            choice = userView.showUserManagementMenu();
+            try {
+                // View, filter and deactivate need at least one user.
+                if (userRepo.viewUsers().size() == 0 && choice >= 2 && choice <= 4) {
+                    throw new IllegalArgumentException("Invalid input. There are no users yet.");
+                }
+                switch (choice) {
+                    case 1: {
+                        // Add user (role first, then each field is asked again until it is valid;
+                        // 0 at any prompt goes back without adding)
+                        String role = userView.promptRole();
+                        if (role.equals("0")) {
+                            break;
+                        }
+                        User user = createUser(role, userRepo.generateUserID(role));
+                        if (LoopUtility.retryUntilValid(userView::promptUsername,
+                                name -> {
+                                    if (userRepo.isUsernameTaken(name)) {
+                                        throw new IllegalArgumentException("Invalid input. Username " + name.trim() + " is already taken.");
+                                    }
+                                    user.setUserName(name);
+                                }, userView::showError, "0")
+                                && LoopUtility.retryUntilValid(userView::promptPassword,
+                                password -> setNewPassword(user, password), userView::showError, "0")
+                                && LoopUtility.retryUntilValid(userView::promptFullName, user::setFullName, userView::showError, "0")
+                                && promptRoleDetails(user)) {
+                            user.setStatus("Active");
+                            userRepo.addUser(user);   // throws on a duplicate ID or username
+                            userView.showMessage("User " + user.getUserID() + " was added.");
+                        }
+                        break;
+                    }
+                    case 2:
+                        userView.displayUsers(userRepo.viewUsers());
+                        break;
+                    case 3: {
+                        // Filter users by role (0 to go back)
+                        String role = userView.promptRole();
+                        if (!role.equals("0")) {
+                            LinkedList<User> filtered = userRepo.filterByRole(role);
+                            if (filtered.size() == 0) {
+                                throw new IllegalArgumentException("Invalid input. No users found with the role " + role + ".");
+                            }
+                            userView.displayUsers(filtered);
+                        }
+                        break;
+                    }
+                    case 4: {
+                        // Deactivate user (table first, then found by ID, 0 to go back). The ID and status
+                        // are checked first, and the confirmation is only asked when the user can be deactivated.
+                        userView.displayUsers(userRepo.viewUsers());
+                        Boolean deactivated = LoopUtility.retryUntilValidResult(userView::promptUserID,
+                                id -> {
+                                    User found = userRepo.findUserByID(id);   // throws if not found
+                                    if (found.getStatus().equalsIgnoreCase("Inactive")) {
+                                        throw new IllegalArgumentException("Invalid input. User " + found.getUserID() + " is already inactive.");
+                                    }
+                                    return userView.confirm("Deactivate " + found.getUserName() + "?")
+                                            && userRepo.deactivateUser(found.getUserID());
+                                }, userView::showError, "0");
+                        if (deactivated != null) {
+                            userView.showMessage(deactivated ? "User was deactivated." : "Deactivation cancelled.");
+                        }
+                        break;
+                    }
+                    default:
+                        break;   // 0 exits the loop
+                }
+            } catch (IllegalArgumentException e) {
+                userView.showError(e.getMessage());
             }
         }
     }
-     
-      private void addUser() {
 
-        String role = userView.promptRole();
-        String userID = userRepo.generateUserID(role);
+    // Helpers
 
-        try {
-
-            User user = userView.promptNewUser(userID);
-
-            // Check for duplicate usernames.
-            while (isUsernameTaken(user.getUserName())) {
-
-                userView.showError(
-                    "Username already exists. Please enter another username."
-                );
-
-                user.setUserName(userView.promptUsername());
-            }
-
-            if (userRepo.addUser(user)) {
-
-                userView.showMessage(
-                    "User successfully added. User ID: " + userID
-                );
-
-            } else {
-
-                userView.showError("Unable to add user.");
-            }
-
-        } catch (IllegalArgumentException e) {
-
-            userView.showError(e.getMessage());
+    // Builds the right kind of user for the chosen role.
+    private User createUser(String role, String userID) {
+        if (role.equals("Admin")) {
+            return new Admin(userID);
         }
+        if (role.equals("Cashier")) {
+            return new Cashier(userID);
+        }
+        return new Customer(userID);
     }
 
-
-    // Checks whether a username is already being used
-
-    private boolean isUsernameTaken(String username) {
-
-        Node<User> node = userRepo.viewUsers().getHead();
-
-        while (node != null) {
-
-            if (node.getData().getUserName().equalsIgnoreCase(username)) {
-                return true;
-            }
-
-            node = node.getNext();
+    // Checks the password, asks the user to confirm it, then sets it.
+    // First-time setup, so the old password is null. Throws IllegalArgumentException if it is rejected.
+    private void setNewPassword(User user, String password) {
+        if (!InputValidator.isValidPassword(password)) {
+            throw new IllegalArgumentException("Invalid input. Password must be at least 6 characters and contain at least 1 digit.");
         }
-
-        return false;
+        if (!password.equals(userView.promptConfirmPassword())) {
+            throw new IllegalArgumentException("Invalid input. Passwords do not match.");
+        }
+        user.changePassword(null, password);
     }
 
-
-    // Displays all users
-
-    private void viewAllUsers() {
-
-        LinkedList<User> users = userRepo.viewUsers();
-
-        if (users.size() == 0) {
-
-            userView.showMessage("No users found.");
-            return;
+    // Cashiers need a shift and customers need a type; admins need nothing extra.
+    // Returns false when the user typed 0 to go back.
+    private boolean promptRoleDetails(User user) {
+        if (user instanceof Cashier) {
+            return LoopUtility.retryUntilValid(userView::promptShift, ((Cashier) user)::setShift, userView::showError, "0");
         }
-
-        userView.displayUsers(users);
-    }
-
-
-    // Filters users by role
-
-    private void filterUsersByRole() {
-
-        String role = userView.promptRole();
-
-        LinkedList<User> filteredUsers = userRepo.filterByRole(role);
-
-        if (filteredUsers.size() == 0) {
-
-            userView.showMessage(
-                "No users found with the role " + role + "."
-            );
-
-            return;
+        if (user instanceof Customer) {
+            return LoopUtility.retryUntilValid(userView::promptCustomerType, ((Customer) user)::setCustomerType, userView::showError, "0");
         }
-
-        userView.displayUsers(filteredUsers);
-    }
-
-
-    // Deactivates a user
-
-    private void deactivateUser() {
-
-        User user = selectUser();
-
-        if (user == null) {
-            return;
-        }
-
-        if (user.getStatus().equalsIgnoreCase("Inactive")) {
-
-            userView.showMessage("This user is already inactive.");
-            return;
-        }
-
-        if (!userView.confirm(
-                "Are you sure you want to deactivate " + user.getUserName() + "?")) {
-            return;
-        }
-
-        if (userRepo.deactivateUser(user.getUserID())) {
-
-            userView.showMessage("User successfully deactivated.");
-
-        } else {
-
-            userView.showError("Unable to deactivate user.");
-        }
-    }
-
-
-    // Selects a user using their ID.
-    // Invalid IDs are re-prompted in the same field.
-
-    private User selectUser() {
-
-        LinkedList<User> users = userRepo.viewUsers();
-
-        if (users.size() == 0) {
-
-            userView.showMessage("No users available.");
-            return null;
-        }
-
-        userView.displayUsers(users);
-
-        while (true) {
-
-            String userID = userView.promptUserID();
-
-            if (userID.equals("0")) {
-                return null;
-            }
-
-            User user = userRepo.findUser(userID);
-
-            if (user != null) {
-                return user;
-            }
-
-            userView.showError(
-                "User ID was not found. Please try again."
-            );
-        }
+        return true;
     }
 }

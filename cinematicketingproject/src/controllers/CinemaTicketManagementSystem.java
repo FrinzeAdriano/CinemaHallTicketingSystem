@@ -26,6 +26,10 @@ public class CinemaTicketManagementSystem {
  
     // System Methods
     public static void main(String[]ARGS){
+        UserManagementController ucontrol = new UserManagementController(new UserRepository(), new UserView());
+        
+        ucontrol.manageUsers();
+        
         VoucherController vcontrol = new VoucherController(new VoucherRepository(), new VoucherView());
         
         vcontrol.manageVouchers();
