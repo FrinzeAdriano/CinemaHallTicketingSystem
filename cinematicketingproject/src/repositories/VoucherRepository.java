@@ -3,11 +3,12 @@ package repositories;
 import datastructures.LinkedList;
 import datastructures.Node;
 import models.Voucher;
+import utility.InputValidator;
 
 public class VoucherRepository {
 
+    private static final String ID_PREFIX = "VCH";
     private LinkedList<Voucher> vouchers = new LinkedList<Voucher>();
-
 
     // Voucher Management Methods
 
@@ -57,4 +58,21 @@ public class VoucherRepository {
         return vouchers.remove(v);
     }
 
+    // Generates the next voucher code in the format VCH001, VCH002, ... (highest existing number + 1).
+    // An empty list is valid and gives VCH001.
+    public String generateVoucherCode() {
+        int max = 0;
+        Node<Voucher> node = vouchers.getHead();
+        while (node != null) {
+            String id = node.getData().getVoucherCode();
+            if (id.startsWith(ID_PREFIX) && InputValidator.isPositiveInt(id.substring(ID_PREFIX.length()))) {
+                int number = Integer.parseInt(id.substring(ID_PREFIX.length()));
+                if (number > max) {
+                    max = number;
+                }
+            }
+            node = node.getNext();
+        }
+        return String.format("%s%03d", ID_PREFIX, max + 1);
+    }
 }
