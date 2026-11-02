@@ -30,10 +30,14 @@ public class CinemaTicketManagementSystem {
                 new CinemaRepository(), new MovieRepository(),
                 new CinemaView(), new CinemaRoomListView(),
                 new SeatView(), new ScheduleView());
-
-        controller.manageCinemas();
-        controller.manageRooms();
-        controller.manageSeats();
+        
+    MovieManagementController mov = new MovieManagementController(new MovieRepository(), new MovieView(),
+            new MovieRepositoryView());
+    
+    mov.manageMovies();
+//        controller.manageCinemas();
+//        controller.manageRooms();
+//        controller.manageSeats();
     }
     
     public void start() {
@@ -66,7 +70,7 @@ public class CinemaTicketManagementSystem {
         // Feature controllers
         ProfileController profileController = new ProfileController(userRepo, userView);
         UserManagementController userController = new UserManagementController(userRepo, userView);
-        MovieManagementController movieController = new MovieManagementController(movieRepo, movieView);
+        MovieManagementController movieController = new MovieManagementController(movieRepo, movieView, movieListView);
         CinemaManagementController cinemaController = new CinemaManagementController(cinemaRepo, movieRepo,
                 cinemaView, roomView, seatView, scheduleView);
         InventoryController inventoryController = new InventoryController(inventoryRepo, inventoryView);

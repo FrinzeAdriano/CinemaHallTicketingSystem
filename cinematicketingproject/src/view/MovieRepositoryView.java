@@ -2,6 +2,7 @@ package view;
 
 import datastructures.LinkedList;
 import datastructures.Node;
+import java.util.ArrayList;
 import models.Movie;
 
 public class MovieRepositoryView extends BaseView {
@@ -14,41 +15,44 @@ public class MovieRepositoryView extends BaseView {
     // Display methods (the controller decides which movies go in each list)
 
     public void displayMovieList(LinkedList<Movie> movies) {
-        System.out.println();
-        System.out.println("===== ALL MOVIES =====");
-        System.out.printf("%-8s %-30s %-15s %-9s %-7s %-12s%n", "ID", "Title", "Genre", "Duration", "Rating", "Release");
+        String[] headers = {"ID", "Title", "Genre", "Duration", "Rating", "Release", "Description"};
+        ArrayList<String[]> rows = new ArrayList<>();
         Node<Movie> node = movies.getHead();
         while (node != null) {
             Movie m = node.getData();
-            System.out.printf("%-8s %-30s %-15s %-9s %-7s %-12s%n", m.getMovieID(), m.getTitle(), m.getGenre(),
-                    m.getDuration() + " min", m.getRating(), m.getReleaseDate() == null ? "TBA" : m.getReleaseDate());
+            String description = m.getDescription();
+            rows.add(new String[] {m.getMovieID(), m.getTitle(), m.getGenre(), m.getDuration() + " min",
+                    m.getRating(), m.getReleaseDate() == null ? "TBA" : m.getReleaseDate().toString(), description});
             node = node.getNext();
         }
+        printTable("ALL MOVIES", headers, rows);
     }
 
     public void displayNowShowing(LinkedList<Movie> movies) {
-        System.out.println();
-        System.out.println("===== NOW SHOWING =====");
-        System.out.printf("%-8s %-30s %-15s %-9s %-7s %-12s%n", "ID", "Title", "Genre", "Duration", "Rating", "Release");
+        String[] headers = {"ID", "Title", "Genre", "Duration", "Rating", "Release", "Description"};
+        ArrayList<String[]> rows = new ArrayList<>();
         Node<Movie> node = movies.getHead();
         while (node != null) {
             Movie m = node.getData();
-            System.out.printf("%-8s %-30s %-15s %-9s %-7s %-12s%n", m.getMovieID(), m.getTitle(), m.getGenre(),
-                    m.getDuration() + " min", m.getRating(), m.getReleaseDate() == null ? "TBA" : m.getReleaseDate());
+            String description = m.getDescription();
+            rows.add(new String[] {m.getMovieID(), m.getTitle(), m.getGenre(), m.getDuration() + " min",
+                    m.getRating(), m.getReleaseDate() == null ? "TBA" : m.getReleaseDate().toString(), description});
             node = node.getNext();
         }
+        printTable("NOW SHOWING", headers, rows);
     }
 
     public void displayComingSoon(LinkedList<Movie> movies) {
-        System.out.println();
-        System.out.println("===== COMING SOON =====");
-        System.out.printf("%-8s %-30s %-15s %-9s %-7s %-12s%n", "ID", "Title", "Genre", "Duration", "Rating", "Release");
+        String[] headers = {"ID", "Title", "Genre", "Duration", "Rating", "Release", "Description"};
+        ArrayList<String[]> rows = new ArrayList<>();
         Node<Movie> node = movies.getHead();
         while (node != null) {
             Movie m = node.getData();
-            System.out.printf("%-8s %-30s %-15s %-9s %-7s %-12s%n", m.getMovieID(), m.getTitle(), m.getGenre(),
-                    m.getDuration() + " min", m.getRating(), m.getReleaseDate() == null ? "TBA" : m.getReleaseDate());
+            String description = m.getDescription();
+            rows.add(new String[] {m.getMovieID(), m.getTitle(), m.getGenre(), m.getDuration() + " min",
+                    m.getRating(), m.getReleaseDate() == null ? "TBA" : m.getReleaseDate().toString(), description});
             node = node.getNext();
         }
+        printTable("COMING SOON", headers, rows);
     }
 }

@@ -66,5 +66,8 @@ public class InputValidator {
     public static boolean inRange(int n, int min, int max) {
         return n >= min && n <= max;
     }
-
+    // Movie ID: MOV followed by at least 3 digits, for example MOV001.
+    public static boolean isValidMovieID(String s) {
+        return s != null && s.trim().toUpperCase().matches("MOV\\d{3,}");
+    }
 }
