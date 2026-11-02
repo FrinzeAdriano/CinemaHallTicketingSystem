@@ -97,8 +97,9 @@ public class CinemaTicketManagementSystem {
         // Role controllers
         adminController = new AdminController(view, profileController, userController, movieController,
                 cinemaController, inventoryController, voucherController, transactionController, salesController);
-        customerController = new CustomerController(userRepo,movieRepo,userView,
-    movieListView,view,profileController,bookingController,transactionController,inventoryRepo,inventoryView);
+        customerController = new CustomerController(userRepo, movieRepo, userView, movieListView, view,
+                profileController, bookingController, transactionController,
+                inventoryRepo, inventoryView);
  
         loadSampleData();
  
