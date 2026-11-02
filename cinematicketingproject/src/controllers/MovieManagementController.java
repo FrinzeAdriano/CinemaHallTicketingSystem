@@ -1,5 +1,5 @@
 package controllers;
-
+import java.time.LocalDate;
 import models.*;
 import datastructures.*;
 import controllers.*;
@@ -11,13 +11,15 @@ public class MovieManagementController {
     private MovieRepository movieRepo;
     private MovieView movieView;
     private MovieRepositoryView movieListView;
+    private CinemaRepository cinemaRepo;
 
-    public MovieManagementController(MovieRepository movieRepo, MovieView movieView,
-            MovieRepositoryView movieListView) {
-        this.movieRepo = movieRepo;
-        this.movieView = movieView;
-        this.movieListView = movieListView;
-    }
+public MovieManagementController(MovieRepository movieRepo, CinemaRepository cinemaRepo, MovieView movieView,
+        MovieRepositoryView movieListView) {
+    this.movieRepo = movieRepo;
+    this.cinemaRepo = cinemaRepo;
+    this.movieView = movieView;
+    this.movieListView = movieListView;
+}
 
     public void manageMovies() {
         int choice = -1;
@@ -163,10 +165,43 @@ public class MovieManagementController {
                         }
                         break;
                     }
-                    case 6:
-                        // View all movies
-                        movieListView.displayMovieList(movieRepo.viewMovies());
+                    case 6: {
+                        // View all movies: two tables.
+                        // Now showing: movie has a schedule in any room's queue.
+                        // Coming soon: from MovieRepository.getComingSoon() (release date after today).
+                        movieRepo.viewMovies();   // throws if there are no movies
+                        LinkedList<Movie> nowShowing = new LinkedList<>();
+
+                        Node<Cinema> cinemaNode = cinemaRepo.viewCinemas().getHead();
+                        while (cinemaNode != null) {
+                            Node<CinemaRoom> roomNode = cinemaNode.getData().getCinemaRooms().getHead();
+                            while (roomNode != null) {
+                                Queue<Schedule> queue = roomNode.getData().getSchedules();
+                                int count = queue.size();
+                                for (int i = 0; i < count; i++) {
+                                    Schedule schedule = queue.dequeue();
+                                    Movie scheduled = schedule.getMovie();
+                                    if (scheduled != null && !nowShowing.contains(scheduled)) {
+                                        nowShowing.insertAtEnd(scheduled);
+                                    }
+                                    queue.enqueue(schedule);   // put it back so the order stays the same
+                                }
+                                roomNode = roomNode.getNext();
+                            }
+                            cinemaNode = cinemaNode.getNext();
+                        }
+
+                        LinkedList<Movie> comingSoon;
+                        try {
+                            comingSoon = movieRepo.getComingSoon();
+                        } catch (IllegalArgumentException e) {
+                            comingSoon = new LinkedList<>();   // none coming soon, still show the empty table
+                        }
+
+                        movieListView.displayNowShowing(nowShowing);
+                        movieListView.displayComingSoon(comingSoon);
                         break;
+                    }
                     default:
                         break;   // 0 exits the loop
                 }

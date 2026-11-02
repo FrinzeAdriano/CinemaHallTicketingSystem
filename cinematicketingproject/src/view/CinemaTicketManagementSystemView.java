@@ -18,7 +18,7 @@ public class CinemaTicketManagementSystemView extends BaseView{
         System.out.println("[1] Login");
         System.out.println("[2] Register as a Customer");
         System.out.println("[0] Exit");
-        System.out.println("----------------------------------------");
+        System.out.println("------------------------------------------");
         return readInt("Choose an option (0 to exit): ", 0, 2);
     }
 

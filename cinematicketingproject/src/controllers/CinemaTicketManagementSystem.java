@@ -69,11 +69,11 @@ public class CinemaTicketManagementSystem {
             new UserManagementController(userRepo, userView);
 
         MovieManagementController movieController =
-            new MovieManagementController(movieRepo, movieView, movieListView);
+            new MovieManagementController(movieRepo, cinemaRepo, movieView, movieListView);
 
         CinemaManagementController cinemaController =
             new CinemaManagementController(cinemaRepo, movieRepo,
-                cinemaView, roomView, seatView, scheduleView);
+                cinemaView, roomView, seatView, scheduleView, movieListView);
 
         InventoryController inventoryController =
             new InventoryController(inventoryRepo, inventoryView);
