@@ -69,7 +69,7 @@ public class CinemaTicketManagementSystem {
             new UserManagementController(userRepo, userView);
 
         MovieManagementController movieController =
-            new MovieManagementController(movieRepo, movieView);
+            new MovieManagementController(movieRepo, movieView, movieListView);
 
         CinemaManagementController cinemaController =
             new CinemaManagementController(cinemaRepo, movieRepo,
@@ -209,46 +209,46 @@ public class CinemaTicketManagementSystem {
         cinema.setLocation("Downtown Mall");
         cinemaRepo.addCinema(cinema);
         // Movie
-Movie movie = new Movie(movieRepo.generateMovieID());
-movie.setTitle("Test Movie");
-movie.setGenre("Action");
-movie.setDuration("120");
-movie.setRating("PG");
-movie.setDescription("Sample movie for booking tests.");
-movie.setReleaseDate(LocalDate.now().toString());
-movieRepo.addMovie(movie);
+        Movie movie = new Movie(movieRepo.generateMovieID());
+        movie.setTitle("Test Movie");
+        movie.setGenre("Action");
+        movie.setDuration("120");
+        movie.setRating("PG");
+        movie.setDescription("Sample movie for booking tests.");
+        movie.setReleaseDate(LocalDate.now().toString());
+        movieRepo.addMovie(movie);
 
-// Cinema room
-CinemaRoom room = new CinemaRoom(
-    CinemaRoom.generateRoomID(cinema)
-);
+        // Cinema room
+        CinemaRoom room = new CinemaRoom(
+            CinemaRoom.generateRoomID(cinema)
+        );
 
-room.setRoomName("Room 1");
-room.setRows("3");
-room.setSeatsPerRow("5");
-room.setStatus(true);
-room.generateSeatLayout();
+        room.setRoomName("Room 1");
+        room.setRows("3");
+        room.setSeatsPerRow("5");
+        room.setStatus(true);
+        room.generateSeatLayout();
 
-cinema.addRoom(room);
+        cinema.addRoom(room);
 
-// Schedule
-Schedule schedule = new Schedule("SCH001");
-schedule.setMovie(movie);
-schedule.setRoom(room);
+        // Schedule
+        Schedule schedule = new Schedule("SCH001");
+        schedule.setMovie(movie);
+        schedule.setRoom(room);
 
-LocalDateTime showTime = LocalDateTime.now()
-    .plusDays(1)
-    .withHour(18)
-    .withMinute(0)
-    .withSecond(0)
-    .withNano(0);
+        LocalDateTime showTime = LocalDateTime.now()
+            .plusDays(1)
+            .withHour(18)
+            .withMinute(0)
+            .withSecond(0)
+            .withNano(0);
 
-schedule.setShowDateTime(
-    showTime.format(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"))
-);
+        schedule.setShowDateTime(
+            showTime.format(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"))
+        );
 
-schedule.setPrice("250");
-room.addSchedule(schedule);
+        schedule.setPrice("250");
+        room.addSchedule(schedule);
         // Inventory (Soda is deliberately low on stock so the low-stock report has something to show)
         Food popcorn = new Food(inventoryRepo.generateProductID());
         popcorn.setName("Popcorn (Large)");
@@ -290,27 +290,26 @@ room.addSchedule(schedule);
         coffee.setSize("Regular");
         coffee.setCold(false);
         inventoryRepo.addProduct(coffee);
- 
+        
         // Vouchers
         Voucher welcome = new Voucher("WELCOME10");
         welcome.setDescription("10% off for new customers");
-        welcome.setDiscountMode("PERCENT");
-        welcome.setValue(10);
-        welcome.setExpiryDate(LocalDate.now().plusYears(1));
-        welcome.setMaxUses(1);
-        welcome.setTimesUsed(0);
+        welcome.setDiscountMode("PERCENT");   // must come before setValue (PERCENT is capped at 100)
+        welcome.setValue("10");
+        welcome.setExpiryDate(LocalDate.now().plusYears(1).toString());
+        welcome.setMaxUses("1");
+        welcome.setTimesUsed(0);              // takes an int, so this one stays as is
         welcome.setActive(true);
         voucherRepo.addVoucher(welcome);
- 
+
         Voucher save50 = new Voucher("SAVE50");
         save50.setDescription("50 off any purchase");
         save50.setDiscountMode("FIXED");
-        save50.setValue(50);
-        save50.setExpiryDate(LocalDate.now().plusMonths(6));
-        save50.setMaxUses(1);
+        save50.setValue("50");
+        save50.setExpiryDate(LocalDate.now().plusMonths(6).toString());
+        save50.setMaxUses("1");
         save50.setTimesUsed(0);
         save50.setActive(true);
-        voucherRepo.addVoucher(save50);        
+        voucherRepo.addVoucher(save50);
     }
- 
 }

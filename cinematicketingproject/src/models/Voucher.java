@@ -69,22 +69,6 @@ public class Voucher {
         this.description = cleaned;
     }
 
-    // Discount type: PERCENT or FIXED (case-insensitive, stored in uppercase).
-    // A voucher whose value is already above 100 cannot become PERCENT.
-    public void setDiscountMode(String discountMode) {
-        if (!InputValidator.isNotBlank(discountMode)) {
-            throw new IllegalArgumentException("Invalid input. Discount type cannot be blank.");
-        }
-        String cleaned = discountMode.trim().toUpperCase();
-        if (!cleaned.equals("PERCENT") && !cleaned.equals("FIXED")) {
-            throw new IllegalArgumentException("Invalid input. Discount type must be PERCENT or FIXED.");
-        }
-        if (cleaned.equals("PERCENT") && value > MAX_PERCENT) {
-            throw new IllegalArgumentException(
-                "Invalid input. The value is more than 100, so the type cannot be PERCENT. Change the value first.");
-        }
-        this.discountMode = cleaned;
-    }
 
     // Value: a decimal greater than 0. A PERCENT voucher cannot be more than 100.
     public void setValue(String value) {
