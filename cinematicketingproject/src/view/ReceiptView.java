@@ -55,18 +55,25 @@ public class ReceiptView extends BaseView {
         showMessage("\n---------------- PRODUCTS ----------------");
         LinkedList<OrderProduct> products = transaction.getProducts();
 
-        if (products.size() == 0) showMessage("No products.");
+        if (products.size() == 0) {
+            showMessage("No products.");
+        } else {
+            for (int i = 0; i < products.size(); i++) {
+                OrderProduct product = products.get(i);
+                if (product == null) continue;
 
-        for (int i = 0; i < products.size(); i++) {
-            OrderProduct product = products.get(i);
-            if (product == null) continue;
+                if (product.getProduct() == null) {
+                    showMessage("Product information unavailable.");
+                    continue;
+                }
 
-            if (product.getProduct() == null) {
-                showMessage("Product information unavailable.");
-                continue;
+                // Aligned format: Name x Qty = Subtotal (Total width: 42 chars)
+                String line = String.format("%-24s x %-2d = %10.2f", 
+                    product.getProduct().getName(), 
+                    product.getQuantity(), 
+                    product.getSubtotal());
+                showMessage(line);
             }
-
-            showMessage(product.getProduct().getName() + " x " + product.getQuantity() + " = " + product.getSubtotal());
         }
 
 

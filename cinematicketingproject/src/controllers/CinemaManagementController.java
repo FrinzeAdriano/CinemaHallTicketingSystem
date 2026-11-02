@@ -14,15 +14,17 @@ public class CinemaManagementController {
     private CinemaRoomListView roomView;
     private SeatView seatView;
     private ScheduleView scheduleView;
-
+    private MovieRepositoryView movieListView;
+    
     public CinemaManagementController(CinemaRepository cinemaRepo, MovieRepository movieRepo,
-            CinemaView cinemaView, CinemaRoomListView roomView, SeatView seatView, ScheduleView scheduleView) {
+            CinemaView cinemaView, CinemaRoomListView roomView, SeatView seatView, ScheduleView scheduleView, MovieRepositoryView movieListView) {
         this.cinemaRepo = cinemaRepo;
         this.movieRepo = movieRepo;
         this.cinemaView = cinemaView;
         this.roomView = roomView;
         this.seatView = seatView;
         this.scheduleView = scheduleView;
+        this.movieListView = movieListView;
     }
 
     public void manageCinemas() {
@@ -451,9 +453,20 @@ public class CinemaManagementController {
                         scheduleView.displaySchedules(room.getSchedules());
                         break;
                     case "2": {
+                        movieListView.displayMovieList(movieRepo.viewMovies());   // throws if there are no movies to schedule
                         Schedule schedule = new Schedule(room.generateScheduleID());
                         Movie movie = LoopUtility.retryUntilValidResult(scheduleView::promptMovieID,
-                                movieRepo::findMovie, scheduleView::showError, "0");
+                                id -> {
+                                    if (!InputValidator.isValidMovieID(id)) {
+                                        throw new IllegalArgumentException("Invalid input. Movie ID format MOV001.");
+                                    }
+                                    Movie match = movieRepo.findByID(id);
+                                    if (match == null) {
+                                        throw new IllegalArgumentException("Invalid input. Movie " + id.trim().toUpperCase() + " was not found.");
+                                    }
+                                    return match;
+                                },
+                                scheduleView::showError, "0");
                         if (movie != null) {
                             schedule.setMovie(movie);
                             schedule.setRoom(room);
