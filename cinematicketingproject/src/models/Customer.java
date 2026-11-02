@@ -1,7 +1,7 @@
 package models;
 
 import utility.*;
-
+import java.time.LocalDate;
 public class Customer extends User{
     
     private String customerType;
@@ -10,7 +10,7 @@ public class Customer extends User{
     public Customer(String userID){
         super(userID);   
         this.customerType = customerType;
-        this.dateRegistered = dateRegistered;}
+        this.dateRegistered = LocalDate.now().toString();}
     
     @Override
       public String getRole(){

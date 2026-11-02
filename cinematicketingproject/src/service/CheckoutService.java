@@ -66,6 +66,50 @@ public class CheckoutService {
             );
         }
 
+        if (transaction.getVoucherCode() != null) {
+
+    Voucher voucher = voucherRepo.findByCode(
+        transaction.getVoucherCode()
+    );
+
+    if (voucher == null
+            || !voucher.isActive()
+            || voucher.getExpiryDate().isBefore(LocalDate.now())
+            || voucher.getTimesUsed() >= voucher.getMaxUses()) {
+
+        throw new IllegalStateException(
+            "Voucher is no longer valid. Please try another voucher."
+        );
+    }
+
+    String mode = voucher.getDiscountMode();
+
+    if (mode.equals("PERCENT")) {
+
+        if (Math.abs(transaction.getDiscountRate()
+                - voucher.getValue() / 100.0) > 0.000001
+                || transaction.getDiscountFixed() != 0) {
+
+            throw new IllegalStateException(
+                "Voucher discount does not match the transaction."
+            );
+        }
+
+    } else if (mode.equals("FIXED")) {
+
+        if (transaction.getDiscountRate() != 0
+                || transaction.getDiscountFixed() != voucher.getValue()) {
+
+            throw new IllegalStateException(
+                "Voucher discount does not match the transaction."
+            );
+        }
+
+    } else {
+
+        throw new IllegalStateException("Invalid voucher discount mode.");
+    }
+}
         LinkedList<OrderProduct> products =
             transaction.getProducts();
 
@@ -139,9 +183,21 @@ public class CheckoutService {
 
         // Save transaction and record sales
         history.addTransaction(transaction);
-        salesRepo.recordSale(transaction);
+salesRepo.recordSale(transaction);
 
-        receiptCounter = nextReceiptCounter;
+// Count voucher usage after successful checkout
+            if (transaction.getVoucherCode() != null) {
+
+                Voucher voucher = voucherRepo.findByCode(
+                    transaction.getVoucherCode()
+                );
+
+                if (voucher != null) {
+                    voucher.setTimesUsed(voucher.getTimesUsed() + 1);
+                }
+            }
+
+            receiptCounter = nextReceiptCounter;
 
 
         // Create receipt

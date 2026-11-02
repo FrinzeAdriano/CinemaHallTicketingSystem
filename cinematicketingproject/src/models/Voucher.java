@@ -35,6 +35,31 @@ public class Voucher {
     
     // Setters
 
+    public void setDiscountMode(String discountMode) {
+
+    if (!InputValidator.isNotBlank(discountMode)) {
+        throw new IllegalArgumentException(
+            "Invalid input. Discount mode cannot be blank."
+        );
+    }
+
+    String mode = discountMode.trim().toUpperCase();
+
+    if (!mode.equals("PERCENT") && !mode.equals("FIXED")) {
+        throw new IllegalArgumentException(
+            "Invalid input. Discount mode must be PERCENT or FIXED."
+        );
+    }
+
+    if (mode.equals("PERCENT") && value > 100) {
+        throw new IllegalArgumentException(
+            "Invalid input. A percent discount cannot be more than 100."
+        );
+    }
+
+    this.discountMode = mode;
+}
+    
     public void setDescription(String description) {
  
         if (!InputValidator.isNotBlank(description)) {

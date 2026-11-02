@@ -373,7 +373,88 @@ public int addProductsToOrder(Transaction transaction) {
     }
 }
 
+private void applyOnlineVoucher(Transaction transaction) {
 
+    if (transaction == null || voucherRepo == null) {
+        return;
+    }
+
+    while (true) {
+
+        String code = ticketView.readString(
+            "Enter voucher code (0 to skip): "
+        ).trim();
+
+        if (code.equals("0")) {
+            ticketView.showMessage("Voucher skipped.");
+            return;
+        }
+
+        Voucher voucher = voucherRepo.findByCode(code);
+
+        if (voucher == null) {
+            ticketView.showError("Voucher code not found.");
+            continue;
+        }
+
+        if (!voucher.isActive()) {
+            ticketView.showError("This voucher is inactive.");
+            continue;
+        }
+
+        try {
+
+            if (voucher.getExpiryDate().isBefore(java.time.LocalDate.now())) {
+                ticketView.showError("This voucher has expired.");
+                continue;
+            }
+
+            if (voucher.getTimesUsed() >= voucher.getMaxUses()) {
+                ticketView.showError("This voucher has reached its usage limit.");
+                continue;
+            }
+
+            String mode = voucher.getDiscountMode();
+            double value = voucher.getValue();
+
+            if (mode.equalsIgnoreCase("PERCENT")) {
+
+                transaction.setDiscountType("VOUCHER");
+                transaction.setDiscountRate(value / 100.0);
+                transaction.setDiscountFixed(0);
+
+            } else if (mode.equalsIgnoreCase("FIXED")) {
+
+                transaction.setDiscountType("VOUCHER");
+                transaction.setDiscountRate(0);
+                transaction.setDiscountFixed(value);
+
+            } else {
+
+                ticketView.showError("Invalid voucher discount type.");
+                continue;
+            }
+
+            transaction.setVoucherCode(voucher.getVoucherCode());
+
+            ticketView.showMessage("Voucher successfully applied!");
+            ticketView.showMessage("Voucher: " + voucher.getVoucherCode());
+            ticketView.showMessage(
+                "Discount: -" +
+                String.format("%.2f", transaction.getDiscountAmount())
+            );
+            ticketView.showMessage(
+                "New total: " +
+                String.format("%.2f", transaction.getTotalAmount())
+            );
+
+            return;
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+
+            ticketView.showError(e.getMessage());}
+    }
+}
 
 
     // Customer
@@ -532,16 +613,16 @@ public void bookTickets(Customer customer) {
             int result = addProductsToOrder(transaction);
 
             if (result == 0) {
-                ticketView.showMessage("Returning to previous menu.");
-                return;
-            }
+            ticketView.showMessage("Returning to booking summary.");
+              }
 
             if (result == 3) {
-                ticketView.showMessage("Booking cancelled.");
-                return;
-            }
+            ticketView.showMessage("Booking cancelled.");
+            return;
+}
         }
-
+        applyOnlineVoucher(transaction);
+        
         ticketView.showMessage("\n========== BOOKING SUMMARY ==========");
 ticketView.showMessage("Booking Code: " + bookingCode);
 ticketView.showMessage("--------------------------------------");
@@ -584,10 +665,29 @@ if (orderedProducts != null && orderedProducts.size() > 0) {
         ticketView.showMessage("--------------------------------------");
     }
 }
-ticketView.showMessage(
-    "Total Amount Due: " +
-    String.format("%.2f", transaction.getTotalAmount())
-);
+    ticketView.showMessage("--------------------------------------");
+        ticketView.showMessage(
+            "Subtotal: " + String.format("%.2f", transaction.getSubtotal())
+        );
+
+        ticketView.showMessage(
+            "Voucher Code: " +
+            (transaction.getVoucherCode() == null
+                ? "None" : transaction.getVoucherCode())
+        );
+
+        ticketView.showMessage(
+            "Discount: -" +
+            String.format("%.2f", transaction.getDiscountAmount())
+        );
+
+        ticketView.showMessage(
+            "Tax: " + String.format("%.2f", transaction.getTaxAmount())
+        );
+        ticketView.showMessage(
+            "Total Amount Due: " +
+            String.format("%.2f", transaction.getTotalAmount())
+        );
 ticketView.showMessage("======================================");
 
 // Online payment methods
@@ -672,9 +772,8 @@ transaction.setAmountPaid(totalAmount);
             Transaction current = customerTransactions.get(i);
 
             ticketView.showMessage(
-                "Transaction ID: " + current.getTransactionID()
-                + " | Booking Code: " + current.getBookingCode()
-                + " | Status: " + current.getStatus()
+            " Booking Code:: " + current.getBookingCode()
+            + " | Status: " + current.getStatus()
             );
         }
 
@@ -684,7 +783,7 @@ transaction.setAmountPaid(totalAmount);
         while (transaction == null) {
 
             String code = ticketView.readString(
-    "Enter booking code or transaction ID (0 to go back): "
+    "Enter booking code (0 to go back): "
 );
 
 if (code.trim().equals("0")) {

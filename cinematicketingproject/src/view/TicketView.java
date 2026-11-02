@@ -17,7 +17,7 @@ public class TicketView extends BaseView {
             showMessage("----------------------------------------");
 
             String input = readString(
-                "Enter ticket quantity (0 to go back): "
+                "Enter seat quantity (0 to go back): "
             );
 
             if (input.equals("0")) {

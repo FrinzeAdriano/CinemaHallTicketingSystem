@@ -2,6 +2,7 @@ package view;
 import controllers.*;
 import models.*;
 import datastructures.*;
+import java.util.ArrayList;
 import repositories.*;
 import utility.*;
 import service.*;
@@ -9,8 +10,7 @@ import service.*;
 
 public class InventoryView extends BaseView {
 
-
-    // Menu Methods
+    // Inventory Menu
 
     public int showInventoryMenu() {
         System.out.println("\n===== INVENTORY MANAGEMENT =====");
@@ -21,112 +21,297 @@ public class InventoryView extends BaseView {
         System.out.println("5. Deactivate product");
         System.out.println("6. View low stock");
         System.out.println("0. Back");
-        return readInt("Choose an option: ", 0, 6);
+        showMessage("----------------------------------------");
+        return readInt("Choice: ", 0, 6);
+    }
+
+    // Product Ordering Menu
+
+    public int showProductOrderMenu() {
+        System.out.println("\n===== PRODUCT ORDERING =====");
+        System.out.println("1. Add product");
+        System.out.println("2. Finish and continue");
+        System.out.println("3. Cancel booking");
+        System.out.println("0. Go back");
+        showMessage("----------------------------------------");
+        return readInt("Choice: ", 0, 3);
     }
 
     // Product Input Methods
 
     public Product promptNewProduct(String productID) {
-        System.out.println("Product category:");
-        System.out.println("1. Food");
-        System.out.println("2. Drink");
-        int category = readInt("Choose a category: ", 1, 2);
- 
-        String name = readString("Product name: ");
-        double price = readDouble("Price: ");
-        int stock = readInt("Starting stock (0-100000): ", 0, 100000);
- 
-        Product product;
- 
-        if (category == 1) {
-            System.out.println("Food type:");
-            System.out.println("1. Snack");
-            System.out.println("2. Meal");
-            System.out.println("3. Dessert");
-            int typeChoice = readInt("Choose a food type: ", 1, 3);
-            String foodType = (typeChoice == 1) ? "Snack" : (typeChoice == 2) ? "Meal" : "Dessert";
- 
-            System.out.println("Serving size:");
-            System.out.println("1. Small");
-            System.out.println("2. Regular");
-            System.out.println("3. Large");
-            int sizeChoice = readInt("Choose a serving size: ", 1, 3);
-            String servingSize = (sizeChoice == 1) ? "Small" : (sizeChoice == 2) ? "Regular" : "Large";
- 
-            Food food = new Food(productID);   //namumula kasi di pa updated constructor
-            food.setFoodType(foodType);
-            food.setServingSize(servingSize);
-            product = food;
-        } else {
-            System.out.println("Drink size:");
-            System.out.println("1. Small");
-            System.out.println("2. Regular");
-            System.out.println("3. Large");
-            int sizeChoice = readInt("Choose a size: ", 1, 3);
-            String size = (sizeChoice == 1) ? "Small" : (sizeChoice == 2) ? "Regular" : "Large";
-            boolean isCold = confirm("Is it served cold?");
- 
-            Drink drink = new Drink(productID); //namumula kasi di pa updated constructor
-            drink.setSize(size);
-            drink.setCold(isCold);
-            product = drink;
-        }
- 
-        product.setName(name);
-        product.setPrice(price);           // namumula kasi di pa updated yung sa setter methods ni product
-        product.setStockQuantity(stock);   // also sets the status: AVAILABLE, or OUT_OF_STOCK at 0
-        return product;}
- 
-    public String promptProductID() {
-        return readString("Enter product ID: ");
-    }
- 
-    public int promptQuantity() {
-        return readInt("Quantity (1-100000): ", 1, 100000);
+
+    System.out.println("\n===== ADD PRODUCT =====");
+    System.out.println("1. Food");
+    System.out.println("2. Drink");
+    System.out.println("0. Cancel");
+    showMessage("----------------------------------------");
+
+    int category = readInt("Choice: ", 0, 2);
+
+    if (category == 0) {
+        return null;
     }
 
+    String name = readString("Product name (0 to cancel): ");
+
+    if (name.equals("0")) {
+        return null;
+    }
+
+    double price;
+
+    while (true) {
+
+        String input = readString("Price (0 to cancel): ");
+
+        if (input.equals("0")) {
+            return null;
+        }
+
+        if (InputValidator.isPositiveDouble(input)) {
+            price = Double.parseDouble(input.trim());
+            break;
+        }
+
+        showError("Enter a valid price greater than zero.");
+    }
+
+    System.out.println("\nStarting stock (0 to cancel)");
+    int stock = readInt("Quantity (1-100000): ", 0, 100000);
+
+    if (stock == 0) {
+        return null;
+    }
+
+    Product product;
+
+    if (category == 1) {
+
+        System.out.println("\n===== FOOD TYPE =====");
+        System.out.println("1. Pizza");
+        System.out.println("2. Burger");
+        System.out.println("3. Pasta");
+        System.out.println("4. Fries");
+        System.out.println("5. Sandwich");
+        System.out.println("6. Hotdog");
+        System.out.println("7. Popcorn");
+        System.out.println("8. Dessert");
+        System.out.println("0. Cancel");
+        showMessage("----------------------------------------");
+
+        int typeChoice = readInt("Choice: ", 0, 8);
+
+        if (typeChoice == 0) {
+            return null;
+        }
+
+        String foodType;
+
+        switch (typeChoice) {
+            case 1: foodType = "PIZZA"; break;
+            case 2: foodType = "BURGER"; break;
+            case 3: foodType = "PASTA"; break;
+            case 4: foodType = "FRIES"; break;
+            case 5: foodType = "SANDWICH"; break;
+            case 6: foodType = "HOTDOG"; break;
+            case 7: foodType = "POPCORN"; break;
+            default: foodType = "DESSERT"; break;
+        }
+
+        System.out.println("\n===== SERVING SIZE =====");
+        System.out.println("1. Small");
+        System.out.println("2. Regular");
+        System.out.println("3. Large");
+        System.out.println("4. Family");
+        System.out.println("0. Cancel");
+        showMessage("----------------------------------------");
+
+        int sizeChoice = readInt("Choice: ", 0, 4);
+
+        if (sizeChoice == 0) {
+            return null;
+        }
+
+        String servingSize = sizeChoice == 1 ? "Small"
+            : sizeChoice == 2 ? "Regular"
+            : sizeChoice == 3 ? "Large" : "Family";
+
+        Food food = new Food(productID);
+        food.setFoodType(foodType);
+        food.setServingSize(servingSize);
+
+        product = food;
+
+    } else {
+
+        System.out.println("\n===== DRINK SIZE =====");
+        System.out.println("1. Small");
+        System.out.println("2. Regular");
+        System.out.println("3. Large");
+        System.out.println("0. Cancel");
+        showMessage("----------------------------------------");
+
+        int sizeChoice = readInt("Choice: ", 0, 3);
+
+        if (sizeChoice == 0) {
+            return null;
+        }
+
+        String size = sizeChoice == 1 ? "Small"
+            : sizeChoice == 2 ? "Regular" : "Large";
+
+        boolean isCold;
+
+        while (true) {
+
+            String input = readString(
+                "Is it served cold? (Y/N, 0 to cancel): "
+            );
+
+            if (input.equals("0")) {
+                return null;
+            }
+
+            if (input.equalsIgnoreCase("Y")) {
+                isCold = true;
+                break;
+            }
+
+            if (input.equalsIgnoreCase("N")) {
+                isCold = false;
+                break;
+            }
+
+            showError("Enter Y or N.");
+        }
+
+        Drink drink = new Drink(productID);
+        drink.setSize(size);
+        drink.setCold(isCold);
+
+        product = drink;
+    }
+
+    product.setName(name);
+    product.setPrice(price);
+    product.setStockQuantity(stock);
+
+    return product;
+}
+
+    public String promptProductID() {
+        showMessage("----------------------------------------");
+        return readString("Enter product ID (0 to go back): ");
+    }
+
+    public int promptQuantity() {
+    showMessage("----------------------------------------");
+    return readInt("Quantity (0 to go back, 1-100000): ", 0, 100000);
+}
 
     // Display Methods
 
-    public void displayProducts(LinkedList list) {
-        if (list == null || list.getHead() == null) {
-            System.out.println("No products found.");
-            return;
+    public void displayProducts(LinkedList<Product> products) {
+
+    if (products == null || products.size() == 0) {
+        showMessage("No products found.");
+        return;
+    }
+
+    String[] headers = {
+        "ID", "Type", "Name", "Price", "Stock", "Status", "Details"
+    };
+
+    ArrayList<String[]> rows = new ArrayList<String[]>();
+
+    for (int i = 0; i < products.size(); i++) {
+
+        Product product = products.get(i);
+
+        String type = product.getCategory();
+        String details = "";
+
+        if (product instanceof Food) {
+
+            Food food = (Food) product;
+
+            details = food.getFoodType() + ", "
+                + food.getServingSize().toUpperCase();
+
+        } else if (product instanceof Drink) {
+
+            Drink drink = (Drink) product;
+
+            details = drink.getSize().toUpperCase() + ", "
+                + (drink.isCold() ? "Cold" : "Hot");
         }
-        String row = "%-8s %-7s %-24s %10s %7s %-13s %-22s%n";
-        System.out.println();
-        System.out.printf(row, "ID", "Type", "Name", "Price", "Stock", "Status", "Details");
-        System.out.println("--------------------------------------------------------------------------------------------------");
-        Node n = list.getHead();
-        while (n != null) {
-            Product p = (Product) n.getData();
-            String details = "";
-            if (p instanceof Food) {
-                Food food = (Food) p;
-                details = food.getFoodType() + ", " + food.getServingSize();
-            } else if (p instanceof Drink) {
-                Drink drink = (Drink) p;
-                details = drink.getSize() + ", " + (drink.isCold() ? "Cold" : "Hot");
-            }
-            System.out.printf(row, p.getProductID(), p.getCategory(), p.getName(),
-                    String.format("%.2f", p.getPrice()), p.getStockQuantity(), p.getStatus(), details);
-            n = n.getNext();
-        }}
- 
+
+        rows.add(new String[] {
+            product.getProductID(),
+            type,
+            product.getName(),
+            String.format("%.2f", product.getPrice()),
+            String.valueOf(product.getStockQuantity()),
+            product.getStatus(),
+            details
+        });
+    }
+
+    BaseView.printTable(headers, rows);
+}
+//pinaddd
     public void displayLowStock(LinkedList list) {
+
         if (list == null || list.getHead() == null) {
-            System.out.println("No products are low on stock.");
+            showMessage("No products are low on stock.");
             return;
         }
+
         System.out.println("\n===== LOW STOCK ALERT =====");
+
         String row = "%-8s %-24s %7s%n";
         System.out.printf(row, "ID", "Name", "Stock");
         System.out.println("-----------------------------------------");
-        Node n = list.getHead();
-        while (n != null) {
-            Product p = (Product) n.getData();
-            System.out.printf(row, p.getProductID(), p.getName(), p.getStockQuantity());
-            n = n.getNext();
+
+        Node node = list.getHead();
+
+        while (node != null) {
+
+            Product p = (Product) node.getData();
+
+            System.out.printf(row, p.getProductID(),
+                p.getName(), p.getStockQuantity());
+
+            node = node.getNext();
         }
     }
+    
+    public int promptLowStockThreshold() {
+
+    showMessage("----------------------------------------");
+    return readInt("Low-stock  limit(0 to go back, 1-100000): ", 0, 100000);
+}
+
+public int confirmAction(String prompt) {
+
+    while (true) {
+
+        String input = readString(prompt + " (Y/N, 0 to go back): ");
+
+        if (input.equals("0")) {
+            return 0;
+        }
+
+        if (input.equalsIgnoreCase("Y")) {
+            return 1;
+        }
+
+        if (input.equalsIgnoreCase("N")) {
+            return 2;
+        }
+
+        showError("Enter Y, N, or 0.");
+    }
+}
 }

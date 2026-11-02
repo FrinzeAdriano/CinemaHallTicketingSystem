@@ -67,6 +67,7 @@ public class VoucherView extends BaseView {
         Voucher voucher = new Voucher(code);
         voucher.setDescription(description);
         // voucher.setDiscountMode(mode);   // Voucher has no setDiscountMode yet
+        voucher.setDiscountMode(mode);
         voucher.setValue(value);
         voucher.setExpiryDate(expiry);
         voucher.setMaxUses(maxUses);

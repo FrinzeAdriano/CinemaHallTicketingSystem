@@ -1,17 +1,16 @@
 package view;
-import controllers.*;
+
 import models.*;
 import datastructures.*;
-import repositories.*;
-import utility.*;
-import service.*;
+import java.time.format.DateTimeFormatter;
 
 public class ReceiptView extends BaseView {
 
+    private static final DateTimeFormatter DATE_FORMAT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // Displays a receipt
-
-     public void displayReceipt(Receipt receipt) {
+    public void displayReceipt(Receipt receipt) {
 
         if (receipt == null) {
             showError("Receipt not found.");
@@ -27,12 +26,24 @@ public class ReceiptView extends BaseView {
 
         showMessage("========== RECEIPT ==========");
         showMessage("Receipt No.: " + receipt.getReceiptNo());
-        showMessage("Date Issued: " + receipt.getDateTimeIssued());
+
+        showMessage(
+            "Date Issued: " +
+            (receipt.getDateTimeIssued() == null
+                ? "N/A" : receipt.getDateTimeIssued().format(DATE_FORMAT))
+        );
+
         showMessage("Transaction ID: " + transaction.getTransactionID());
+        showMessage("Booking Code: " +
+            (transaction.getBookingCode() == null
+                ? "N/A" : transaction.getBookingCode()));
         showMessage("Booking Type: " + transaction.getBookingType());
 
-        // Displays tickets
+        showMessage("Customer ID: " +
+            (transaction.getCustomerID() == null
+                ? "N/A" : transaction.getCustomerID()));
 
+        // Displays tickets
         showMessage("\n--- TICKETS ---");
 
         LinkedList<Ticket> tickets = transaction.getTickets();
@@ -42,26 +53,28 @@ public class ReceiptView extends BaseView {
         }
 
         for (int i = 0; i < tickets.size(); i++) {
-
             Ticket ticket = tickets.get(i);
 
             if (ticket == null) {
                 continue;
             }
 
-            if (ticket.getSeat() == null) {
-                showMessage("Ticket seat information unavailable.");
-                continue;
-            }
+            showMessage("Ticket ID: " + ticket.getTicketID());
 
-            showMessage(
-                ticket.getSeat().getSeatID()
-                + " - " + ticket.getPrice()
-            );
+            showMessage("Schedule: " +
+                (ticket.getSchedule() == null
+                    ? "N/A" : ticket.getSchedule().getScheduleID()));
+
+            showMessage("Seat: " +
+                (ticket.getSeat() == null
+                    ? "N/A" : ticket.getSeat().getSeatID()));
+
+            showMessage("Price: " + ticket.getPrice());
+            showMessage("Status: " + ticket.getStatus());
+            showMessage("----------------------------------------");
         }
 
         // Displays products
-
         showMessage("\n--- PRODUCTS ---");
 
         LinkedList<OrderProduct> products = transaction.getProducts();
@@ -71,7 +84,6 @@ public class ReceiptView extends BaseView {
         }
 
         for (int i = 0; i < products.size(); i++) {
-
             OrderProduct product = products.get(i);
 
             if (product == null) {
@@ -90,23 +102,28 @@ public class ReceiptView extends BaseView {
             );
         }
 
-        // Displays transaction summary
-
-        showMessage("----------------------------------------");
+        // Displays payment summary
+        showMessage("\n--- PAYMENT SUMMARY ---");
+        showMessage( "Voucher Code: " +
+            (transaction.getVoucherCode() == null
+                ? "None" : transaction.getVoucherCode())
+        );
         showMessage("Subtotal: " + transaction.getSubtotal());
         showMessage("Discount: " + transaction.getDiscountAmount());
         showMessage("Tax: " + transaction.getTaxAmount());
         showMessage("Total: " + transaction.getTotalAmount());
         showMessage("Amount Paid: " + transaction.getAmountPaid());
         showMessage("Change: " + transaction.getChange());
-        showMessage("Payment Method: " + transaction.getPaymentMethod());
+
+        showMessage("Payment Method: " +
+            (transaction.getPaymentMethod() == null
+                ? "N/A" : transaction.getPaymentMethod()));
+
         showMessage("Status: " + transaction.getStatus());
         showMessage("=============================");
     }
 
-
     // Displays a reprinted receipt
-
     public void displayReprint(Receipt receipt) {
 
         if (receipt == null) {
@@ -115,8 +132,6 @@ public class ReceiptView extends BaseView {
         }
 
         showMessage("========== REPRINTED RECEIPT ==========");
-
         displayReceipt(receipt);
     }
-
 }

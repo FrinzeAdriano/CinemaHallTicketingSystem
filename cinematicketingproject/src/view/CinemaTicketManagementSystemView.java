@@ -15,7 +15,7 @@ public class CinemaTicketManagementSystemView extends BaseView{
         System.out.println("      CINEMA TICKET MANAGEMENT SYSTEM");
         System.out.println("==========================================");
         System.out.println("1. Login");
-        System.out.println("2. Register as a customer");
+        System.out.println("2. Register as a Customer");
         System.out.println("0. Exit");
         System.out.println("----------------------------------------");
         return readInt("Choice: ", 0, 2);}
@@ -50,16 +50,20 @@ public class CinemaTicketManagementSystemView extends BaseView{
         return readInt("Choice: ", 0, max);}
 
     public int showCashierMenu() {
-        System.out.println("\n===== CASHIER MENU =====");
-        System.out.println("1. Sell tickets");
-        System.out.println("2. Void a transaction");
-        System.out.println("3. My transactions");
-        System.out.println("4. Reprint receipt");
-        System.out.println("5. View inventory");
-        System.out.println("6. My profile");
-        System.out.println("0. Logout");
-        System.out.println("----------------------------------------");
-        return readInt("Choice: ", 0, 6);}
+
+    System.out.println("\n===== CASHIER MENU =====");
+    System.out.println("1. Browse movies");
+    System.out.println("2. Sell tickets");
+    System.out.println("3. Void a transaction");
+    System.out.println("4. My transactions");
+    System.out.println("5. Reprint receipt");
+    System.out.println("6. View inventory");
+    System.out.println("7. My profile");
+    System.out.println("0. Logout");
+    System.out.println("----------------------------------------");
+
+    return readInt("Choice: ", 0, 7);
+}
 
     public int showCustomerMenu() {
         System.out.println("\n===== CUSTOMER MENU =====");
