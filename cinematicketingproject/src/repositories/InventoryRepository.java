@@ -99,7 +99,7 @@ public class InventoryRepository {
         return false;}
 
     // Reverse of deactivateProduct. True only if the product exists and was INACTIVE.
-    // Status goes to OUT_OF_STOCK if stock is 0, otherwise ACTIVE.
+    // Status goes to OUT_OF_STOCK if stock is 0, otherwise AVAILABLE.
     public boolean activateProduct(String productID) {
         if (productID == null) {
             return false;
@@ -111,7 +111,7 @@ public class InventoryRepository {
                 if (!"INACTIVE".equals(p.getStatus())) {
                     return false;
                 }
-                p.setStatus(p.getStockQuantity() <= 0 ? "OUT_OF_STOCK" : "ACTIVE");
+                p.setStatus(p.getStockQuantity() <= 0 ? "OUT_OF_STOCK" : "AVAILABLE");
                 return true;
             }
             n = n.getNext();

@@ -36,8 +36,11 @@ public class VoucherController {
                             && LoopUtility.retryUntilValid(voucherView::promptExpiryDate, voucher::setExpiryDate, voucherView::showError, "0")
                             && LoopUtility.retryUntilValid(voucherView::promptMaxUses, voucher::setMaxUses, voucherView::showError, "0")) {
                             voucher.setActive(true);
-                            voucherRepo.addVoucher(voucher);
-                            voucherView.showMessage("Voucher " + voucher.getVoucherCode() + " was added.");
+                            if (voucherRepo.addVoucher(voucher)) {
+                                voucherView.showMessage("Voucher " + voucher.getVoucherCode() + " was added.");
+                            } else {
+                                voucherView.showError("Invalid input. Voucher " + voucher.getVoucherCode() + " already exists.");
+                            }
                         }
                         break;
                     }

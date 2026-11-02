@@ -7,6 +7,7 @@ import repositories.SalesRepository;
 import repositories.TransactionHistory;
 import service.CheckoutService;
 import utility.InputValidator;
+import utility.LoopUtility;
 import view.ReceiptView;
 import view.TransactionHistoryView;
 
@@ -41,7 +42,6 @@ public class TransactionController {
                     historyView.displayTransactions(history.viewTransactionHistory());
                     break;
 
-                // Filter transactions
                 case 2: {
                     int filterChoice = historyView.promptFilterOption();
                     if (filterChoice == 0) break;
@@ -73,6 +73,7 @@ public class TransactionController {
                                 historyView.showError(e.getMessage());
                             }
                         }
+                        break;
                     }
                     break;
                 }
@@ -92,7 +93,6 @@ public class TransactionController {
                         break;
                     }
                     break;
-                }
 
                 default:
                     historyView.showError("Invalid menu option. Please try again.");

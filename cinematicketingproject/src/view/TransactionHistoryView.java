@@ -111,7 +111,17 @@ public class TransactionHistoryView extends BaseView {
         showMessage("============== TRANSACTIONS ==============");
 
         for (int i = 0; i < transactions.size(); i++) {
-            displayTransactionDetails(transactions.get(i));
+            Transaction t = transactions.get(i);
+            rows.add(new String[] {
+                t.getTransactionID(),
+                String.valueOf(t.getBookingType()),
+                t.getCustomerID() == null ? "N/A" : t.getCustomerID(),
+                t.getCashierID() == null ? "N/A" : t.getCashierID(),
+                t.getDateTime() == null ? "N/A" : t.getDateTime().format(DATE_FORMAT),
+                String.format(Locale.ROOT, "%.2f", t.getTotalAmount()),
+                String.valueOf(t.getStatus()),
+                t.getReceiptNo() == null ? "N/A" : t.getReceiptNo()
+            });
         }
 
         showMessage("========== END OF TRANSACTIONS ===========");

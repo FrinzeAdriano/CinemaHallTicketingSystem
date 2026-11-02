@@ -12,9 +12,9 @@ public class CinemaTicketManagementSystemView extends BaseView{
     // 1 = Login, 2 = Register as customer, 0 = Exit
     public int showMainMenu() {
         System.out.println();
-        System.out.println("==========================================");
+        System.out.println("========================================");
         System.out.println("      CINEMA TICKET MANAGEMENT SYSTEM");
-        System.out.println("==========================================");
+        System.out.println("========================================");
         System.out.println("[1] Login");
         System.out.println("[2] Register as a Customer");
         System.out.println("[0] Exit");
