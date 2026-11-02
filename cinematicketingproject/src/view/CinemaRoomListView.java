@@ -26,7 +26,17 @@ public class CinemaRoomListView extends BaseView {
         System.out.println("----------------------------------------");
         return readInt("Choose an option: ", 0, 5);
     }
+    public String promptRoomName() {
+        return readString("Room name (0 to go back): ");
+    }
 
+    public String promptRows() {
+        return readString("Number of rows, 1-26 (0 to go back): ");
+    }
+
+    public String promptSeatsPerRow() {
+        return readString("Seats per row (0 to go back): ");
+    }
     // Shows which fields of the room can be edited. 0 = back.
     // 1 = name, 2 = rows, 3 = seats per row, 4 = status (open or closed).
     public int showEditRoomMenu(CinemaRoom room) {
