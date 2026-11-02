@@ -1,6 +1,8 @@
 package view;
 
+import datastructures.LinkedList;
 import datastructures.Node;
+import java.util.ArrayList;
 import models.CinemaRoom;
 import models.Schedule;
 import models.Seat;
@@ -216,6 +218,20 @@ public class SeatView extends BaseView {
         System.out.println("  [A1]  Available seat");
         System.out.println("  [--]  Unavailable seat (cannot be booked)");
         System.out.println("  (gap)  Aisle");
+    }
+
+    // Table of seats (used for the filter results).
+    public void displaySeats(LinkedList<Seat> seats) {
+        ArrayList<String[]> rows = new ArrayList<>();
+        Node<Seat> node = seats.getHead();
+        while (node != null) {
+            Seat seat = node.getData();
+            rows.add(new String[] {seat.getSeatID(), String.valueOf(seat.getSeatRow()), String.valueOf(seat.getSeatNumber()),
+                    seat.getSeatType(), seat.getStatus() ? "Available" : "Out of service",
+                    String.valueOf(seat.getPriceModifier()), seat.hasAisleAfter() ? "Yes" : "No"});
+            node = node.getNext();
+        }
+        printTable("SEATS", new String[] {"ID", "Row", "Number", "Type", "Status", "Price modifier", "Aisle after"}, rows);
     }
 
     public void displaySeat(Seat seat) {

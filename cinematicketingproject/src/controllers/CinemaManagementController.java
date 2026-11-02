@@ -329,11 +329,7 @@ public class CinemaManagementController {
                                     LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
                                             value -> room.filterSeat("ROW", value), seatView::showError, "0");
                                     if (found != null) {
-                                        Node<Seat> node = found.getHead();
-                                        while (node != null) {
-                                            seatView.displaySeat(node.getData());
-                                            node = node.getNext();
-                                        }
+                                        seatView.displaySeats(found);
                                     }
                                     break;
                                 }
@@ -341,11 +337,7 @@ public class CinemaManagementController {
                                     LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
                                             value -> room.filterSeat("TYPE", value), seatView::showError, "0");
                                     if (found != null) {
-                                        Node<Seat> node = found.getHead();
-                                        while (node != null) {
-                                            seatView.displaySeat(node.getData());
-                                            node = node.getNext();
-                                        }
+                                        seatView.displaySeats(found);
                                     }
                                     break;
                                 }
@@ -353,11 +345,7 @@ public class CinemaManagementController {
                                     LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
                                             value -> room.filterSeat("STATUS", value), seatView::showError, "0");
                                     if (found != null) {
-                                        Node<Seat> node = found.getHead();
-                                        while (node != null) {
-                                            seatView.displaySeat(node.getData());
-                                            node = node.getNext();
-                                        }
+                                        seatView.displaySeats(found);
                                     }
                                     break;
                                 }
