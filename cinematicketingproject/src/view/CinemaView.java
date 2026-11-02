@@ -14,19 +14,6 @@ public class CinemaView extends BaseView {
 
     // Menus and prompts
 
-    public int showCinemaMenu() {
-        System.out.println();
-        System.out.println("===== CINEMA MANAGEMENT =====");
-        System.out.println("[1] Add cinema");
-        System.out.println("[2] Edit cinema");
-        System.out.println("[3] Remove cinema");
-        System.out.println("[4] Find cinema by name");
-        System.out.println("[5] View all cinemas");
-        System.out.println("[0] Back");
-        System.out.println("----------------------------------------");
-        return readInt("Choose an option: ", 0, 5);
-    }
-
     // Reads the raw fields and passes them to the setters. A setter that rejects a value
     // throws IllegalArgumentException; the controller catches it and shows e.getMessage().
     public Cinema promptNewCinema(String cinemaID) {
@@ -68,8 +55,6 @@ public class CinemaView extends BaseView {
     }
 
     public void displayCinemas(LinkedList<Cinema> list) {
-        System.out.println();
-        System.out.println("===== ALL CINEMAS =====");
         ArrayList<String[]> rows = new ArrayList<>();
         Node<Cinema> node = list.getHead();
         while (node != null) {
@@ -78,6 +63,6 @@ public class CinemaView extends BaseView {
                     String.valueOf(c.getCinemaRooms().size())});
             node = node.getNext();
         }
-        printTable(new String[] {"ID", "Name", "Location", "Rooms"}, rows);
+        printTable("ALL CINEMAS", new String[] {"ID", "Name", "Location", "Rooms"}, rows);
     }
 }

@@ -33,6 +33,26 @@ public class CinemaRoom {
         this.seats = new LinkedList<Seat>();
         this.schedules = new Queue<Schedule>();
     }
+    
+    // Auto-generated room ID: ROM001, ROM002, ... (highest number in this cinema + 1).
+    // Rooms are numbered per cinema. A null cinema gives ROM001.
+    public static String generateRoomID(Cinema cinema) {
+        int highest = 0;
+        if (cinema != null) {
+            Node<CinemaRoom> node = cinema.getCinemaRooms().getHead();
+            while (node != null) {
+                String id = node.getData().getRoomID();
+                if (id.startsWith("ROM") && id.substring(3).matches("\\d{1,6}")) {
+                    int number = Integer.parseInt(id.substring(3));
+                    if (number > highest) {
+                        highest = number;
+                    }
+                }
+                node = node.getNext();
+            }
+        }
+        return String.format("ROM%03d", highest + 1);
+    }
 
     // Behavior methods
 
