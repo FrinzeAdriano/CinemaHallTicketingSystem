@@ -26,18 +26,21 @@ public class CinemaTicketManagementSystem {
  
     // System Methods
     public static void main(String[]ARGS){
+        VoucherController vcontrol = new VoucherController(new VoucherRepository(), new VoucherView());
+        
+        vcontrol.manageVouchers();
+        
         CinemaManagementController controller = new CinemaManagementController(
                 new CinemaRepository(), new MovieRepository(),
                 new CinemaView(), new CinemaRoomListView(),
                 new SeatView(), new ScheduleView());
         
-    MovieManagementController mov = new MovieManagementController(new MovieRepository(), new MovieView(),
-            new MovieRepositoryView());
-    
-    mov.manageMovies();
-//        controller.manageCinemas();
-//        controller.manageRooms();
-//        controller.manageSeats();
+        
+        controller.manageCinemas();
+        controller.manageRooms();
+        controller.manageSeats();
+        controller.manageSchedules();
+        
     }
     
     public void start() {
@@ -239,27 +242,26 @@ public class CinemaTicketManagementSystem {
         coffee.setCold(false);
         inventoryRepo.addProduct(coffee);
  
-        // Vouchers (discount mode can't be set until Voucher has a setDiscountMode)
+        // Vouchers
         Voucher welcome = new Voucher("WELCOME10");
         welcome.setDescription("10% off for new customers");
-        // welcome.setDiscountMode("PERCENT");
-        welcome.setValue(10);
-        welcome.setExpiryDate(LocalDate.now().plusYears(1));
-        welcome.setMaxUses(100);
+        welcome.setDiscountMode("PERCENT");
+        welcome.setValue("10");
+        welcome.setExpiryDate(LocalDate.now().plusYears(1).toString());
+        welcome.setMaxUses("100");
         welcome.setTimesUsed(0);
         welcome.setActive(true);
         voucherRepo.addVoucher(welcome);
  
         Voucher save50 = new Voucher("SAVE50");
         save50.setDescription("50 off any purchase");
-        // save50.setDiscountMode("FIXED");
-        save50.setValue(50);
-        save50.setExpiryDate(LocalDate.now().plusMonths(6));
-        save50.setMaxUses(50);
+        save50.setDiscountMode("FIXED");
+        save50.setValue("50");
+        save50.setExpiryDate(LocalDate.now().plusMonths(6).toString());
+        save50.setMaxUses("50");
         save50.setTimesUsed(0);
         save50.setActive(true);
         voucherRepo.addVoucher(save50);
     }
  
 }
-

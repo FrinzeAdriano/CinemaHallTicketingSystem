@@ -24,7 +24,7 @@ public class CinemaRoomListView extends BaseView {
         System.out.println("[5] View all rooms");
         System.out.println("[0] Back");
         System.out.println("----------------------------------------");
-        return readInt("Choose an option: ", 0, 5);
+        return readInt("Choose an option (0 to go back): ", 0, 5);
     }
     public String promptRoomName() {
         return readString("Room name (0 to go back): ");
@@ -48,7 +48,7 @@ public class CinemaRoomListView extends BaseView {
         System.out.println("[4] Status        (" + (room.getStatus() ? "Open" : "Closed") + ")");
         System.out.println("[0] Back");
         System.out.println("----------------------------------------");
-        return readInt("Choose a field to edit: ", 0, 4);
+        return readInt("Choose a field to edit (0 to go back): ", 0, 4);
     }
 
     // Reads the raw fields and passes them to the setters. A setter that rejects a value

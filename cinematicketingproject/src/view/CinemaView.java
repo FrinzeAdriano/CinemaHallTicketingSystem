@@ -23,7 +23,7 @@ public class CinemaView extends BaseView {
         System.out.println("[5] View all cinemas");
         System.out.println("[0] Back");
         System.out.println("----------------------------------------");
-        return readInt("Choose an option: ", 0, 5);
+        return readInt("Choose an option (0 to go back): ", 0, 5);
     }
     // Reads the raw fields and passes them to the setters. A setter that rejects a value
     // throws IllegalArgumentException; the controller catches it and shows e.getMessage().
@@ -53,7 +53,7 @@ public class CinemaView extends BaseView {
         System.out.println("[2] Location (" + cinema.getLocation() + ")");
         System.out.println("[0] Back");
         System.out.println("----------------------------------------");
-        return readInt("Choose a field to edit: ", 0, 2);
+        return readInt("Choose a field to edit (0 to go back): ", 0, 2);
     }
 
     public void displayCinema(Cinema cinema) {

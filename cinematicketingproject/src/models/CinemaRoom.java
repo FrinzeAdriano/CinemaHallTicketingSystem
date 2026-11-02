@@ -118,7 +118,7 @@ public class CinemaRoom {
     }
  
  
-    // Categories: "ROW" (e.g. A), "TYPE" (e.g. VIP), "STATUS" (true or false).
+    // Categories: "ROW" (e.g. A), "TYPE" (e.g. VIP), "STATUS" (Available or Unavailable).
     // Throws if the room has no seats, for an unknown category, or when nothing matches.
     public LinkedList<Seat> filterSeat(String category, String value) {
         if (seats.size() == 0) {
@@ -141,7 +141,13 @@ public class CinemaRoom {
             } else if (cat.equals("TYPE")) {
                 match = seat.getSeatType().equalsIgnoreCase(val);
             } else {
-                match = String.valueOf(seat.getStatus()).equalsIgnoreCase(val);
+                // The table shows Available / Unavailable, so those words work (true and false too).
+                String wanted = val.toLowerCase();
+                if (seat.getStatus()) {
+                    match = wanted.equals("available") || wanted.equals("true");
+                } else {
+                    match = wanted.equals("unavailable") || wanted.equals("false");
+                }
             }
             if (match) {
                 result.insertAtEnd(seat);
@@ -231,31 +237,53 @@ public class CinemaRoom {
         return true;
     }
  
-    // Rules: the seat must exist, must not already have an aisle after it, and must have another seat
-    // after it in its row. The seat IDs do not change: putting an aisle after A3 makes the layout
-    // print A1 A2 A3, a gap, then A4 A5 A6.
+    // Rules: the seat must exist, its column (seat number) must not already have an aisle after it,
+    // and at least one row must have a seat after that number. The seat IDs do not change:
+    // putting an aisle after seat number 3 makes every row print 1 2 3, a gap, then 4 5 6.
+    // The aisle is one straight line through the room: every row gets the gap after the same seat
+    // number (after A3, B3, C3, ...). A row with no seat after that number is skipped.
     // Returns true when the aisle is added; throws IllegalArgumentException otherwise.
     public boolean addAisle(String seatID) {
         Seat seat = findSeat(seatID);   // throws for a blank or badly formatted ID
         if (seat == null) {
             throw new IllegalArgumentException("Invalid input. Seat " + seatID.trim() + " was not found in this room.");
         }
-        if (seat.hasAisleAfter()) {
-            throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " already has an aisle after it.");
-        }
+        boolean columnHasAisle = false;
         boolean seatAfter = false;
         Node<Seat> node = seats.getHead();
         while (node != null) {
             Seat other = node.getData();
-            if (other.getSeatRow() == seat.getSeatRow() && other.getSeatNumber() > seat.getSeatNumber()) {
+            if (other.getSeatNumber() == seat.getSeatNumber() && other.hasAisleAfter()) {
+                columnHasAisle = true;
+            }
+            if (other.getSeatNumber() > seat.getSeatNumber()) {
                 seatAfter = true;
             }
             node = node.getNext();
         }
-        if (!seatAfter) {
-            throw new IllegalArgumentException("Invalid input. There is no seat after " + seat.getSeatID() + " in its row.");
+        if (columnHasAisle) {
+            throw new IllegalArgumentException("Invalid input. There is already an aisle after seat number " + seat.getSeatNumber() + ".");
         }
-        seat.setAisleAfter(true);
+        if (!seatAfter) {
+            throw new IllegalArgumentException("Invalid input. There is no seat after seat number " + seat.getSeatNumber() + ".");
+        }
+        node = seats.getHead();
+        while (node != null) {
+            Seat sameNumber = node.getData();
+            if (sameNumber.getSeatNumber() == seat.getSeatNumber()) {
+                Node<Seat> scan = seats.getHead();
+                while (scan != null) {
+                    Seat later = scan.getData();
+                    if (later.getSeatRow() == sameNumber.getSeatRow()
+                            && later.getSeatNumber() > sameNumber.getSeatNumber()) {
+                        sameNumber.setAisleAfter(true);
+                        break;
+                    }
+                    scan = scan.getNext();
+                }
+            }
+            node = node.getNext();
+        }
         return true;
     }
  
@@ -302,7 +330,6 @@ public class CinemaRoom {
     // Rules: schedule must not be null, must belong to this room, the room must be open
     // and have seats, the ID must be unique, and the showtime must not overlap another schedule.
     // Returns true when added; throws IllegalArgumentException otherwise.
-
     public boolean addSchedule(Schedule schedule) {
         if (schedule == null) {
             throw new IllegalArgumentException("Invalid input. No schedule was provided.");
@@ -332,21 +359,7 @@ public class CinemaRoom {
             }
             node = node.getNext();
         }
-
-        // Insert in showtime order: rotate the queue once and slip the new schedule in before the first later show.
-        int count = schedules.size();
-        boolean placed = false;
-        for (int i = 0; i < count; i++) {
-            Schedule existing = schedules.dequeue();
-            if (!placed && newStart.isBefore(existing.getShowDateTime())) {
-                schedules.enqueue(schedule);
-                placed = true;
-            }
-            schedules.enqueue(existing);
-        }
-        if (!placed) {
-            schedules.enqueue(schedule);
-        }
+        schedules.enqueue(schedule);
         return true;
     }
  
