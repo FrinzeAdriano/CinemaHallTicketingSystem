@@ -18,7 +18,7 @@ public class InputValidator {
 
     // At least 6 characters and not just whitespace.
     public static boolean isValidPassword(String s) {
-        return isNotBlank(s) && s.length() >= 6;
+        return isNotBlank(s) && s.length() >= 6 && s.matches(".*\\d.*");
     }
 
     // Whole number from 1 to 999,999,999 (digits only).
