@@ -6,7 +6,7 @@ import repositories.*;
 import utility.*;
 import service.*;
 public class CinemaTicketManagementSystemView extends BaseView{
-    
+
      // Menu Methods
 
     // 1 = Login, 2 = Register as customer, 0 = Exit
@@ -17,25 +17,37 @@ public class CinemaTicketManagementSystemView extends BaseView{
         System.out.println("1. Login");
         System.out.println("2. Register as a customer");
         System.out.println("0. Exit");
-        return readInt("Choose an option: ", 0, 2);}
+        System.out.println("----------------------------------------");
+        return readInt("Choice: ", 0, 2);}
 
-    // 1 My profile, 2 Users, 3 Movies, 4 Cinemas, 5 Rooms, 6 Seats, 7 Schedules,
-    // 8 Inventory, 9 Vouchers, 10 Transaction history, 11 Sales reports, 0 Logout
+    // The admin features are grouped into 5 categories; each one opens a submenu (showSubMenu).
+    // 1 Account, 2 Movies and Showtimes, 3 Cinema Setup, 4 Food, Drinks and Promos,
+    // 5 Sales and Records, 0 Logout
     public int showAdminMenu() {
         System.out.println("\n===== ADMIN MENU =====");
-        System.out.println(" 1. My profile");
-        System.out.println(" 2. Manage users");
-        System.out.println(" 3. Manage movies");
-        System.out.println(" 4. Manage cinemas");
-        System.out.println(" 5. Manage rooms");
-        System.out.println(" 6. Manage seats");
-        System.out.println(" 7. Manage schedules");
-        System.out.println(" 8. Manage inventory");
-        System.out.println(" 9. Manage vouchers");
-        System.out.println("10. Transaction history");
-        System.out.println("11. Sales reports");
-        System.out.println(" 0. Logout");
-        return readInt("Choose an option: ", 0, 11);}
+        System.out.println("1. Account");
+        System.out.println("2. Movies and Showtimes");
+        System.out.println("3. Cinema Setup");
+        System.out.println("4. Food, Drinks and Promos");
+        System.out.println("5. Sales and Records");
+        System.out.println("0. Logout");
+        System.out.println("----------------------------------------");
+        return readInt("Choice: ", 0, 5);}
+
+    // Submenu with 2 or 3 options. Pass null as the third option when there are only 2.
+    // 0 = Back. readInt keeps asking until the number is in range.
+    public int showSubMenu(String title, String first, String second, String third) {
+        System.out.println("\n===== " + title + " =====");
+        System.out.println("1. " + first);
+        System.out.println("2. " + second);
+        int max = 2;
+        if (third != null) {
+            System.out.println("3. " + third);
+            max = 3;
+        }
+        System.out.println("0. Back");
+        System.out.println("----------------------------------------");
+        return readInt("Choice: ", 0, max);}
 
     public int showCashierMenu() {
         System.out.println("\n===== CASHIER MENU =====");
@@ -46,7 +58,8 @@ public class CinemaTicketManagementSystemView extends BaseView{
         System.out.println("5. View inventory");
         System.out.println("6. My profile");
         System.out.println("0. Logout");
-        return readInt("Choose an option: ", 0, 6);}
+        System.out.println("----------------------------------------");
+        return readInt("Choice: ", 0, 6);}
 
     public int showCustomerMenu() {
         System.out.println("\n===== CUSTOMER MENU =====");
@@ -56,7 +69,8 @@ public class CinemaTicketManagementSystemView extends BaseView{
         System.out.println("4. My booking history");
         System.out.println("5. My profile");
         System.out.println("0. Logout");
-        return readInt("Choose an option: ", 0, 5);}
+        System.out.println("----------------------------------------");
+        return readInt("Choice: ", 0, 5);}
 
 
     // Login Input Methods
