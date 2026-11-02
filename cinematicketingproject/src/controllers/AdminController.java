@@ -122,13 +122,16 @@ public class AdminController {
 
 
     // Manages transaction history (Member C)
- // Manages transaction history (Member C)
+
+ 
     public void manageTransactionHistory() {
 
         if (historyView == null || history == null) {
             return;
         }
 
+
+        // Repeats the history menu until the admin chooses to go back
         while (true) {
 
             int choice = historyView.showHistoryMenu();
@@ -153,9 +156,26 @@ public class AdminController {
                 // Filter transactions
                 case 2: {
 
-                    int filterChoice =
-                        historyView.promptFilterOption();
+                    int filterChoice;
 
+
+                    // Repeats until a valid filter option is selected
+                    while (true) {
+
+                        filterChoice =
+                            historyView.promptFilterOption();
+
+                        if (filterChoice >= 0 && filterChoice <= 5) {
+                            break;
+                        }
+
+                        historyView.showError(
+                            "Invalid filter option. Please select 0 to 5."
+                        );
+                    }
+
+
+                    // Returns to the history menu
                     if (filterChoice == 0) {
                         break;
                     }
@@ -167,32 +187,52 @@ public class AdminController {
                         LocalDate startDate;
                         LocalDate endDate;
 
+
+                        // Repeats only the start date field if invalid
                         while (true) {
 
                             startDate = historyView.readDate(
                                 "Enter start date (yyyy-MM-dd): "
                             );
 
+                            if (startDate != null) {
+                                break;
+                            }
+
+                            historyView.showError(
+                                "Invalid start date. Please try again."
+                            );
+                        }
+
+
+                        // Repeats only the end date field if invalid
+                        while (true) {
+
                             endDate = historyView.readDate(
                                 "Enter end date (yyyy-MM-dd): "
                             );
 
-                            if (startDate == null || endDate == null) {
+                            if (endDate == null) {
+
                                 historyView.showError(
-                                    "Invalid date range."
+                                    "Invalid end date. Please try again."
                                 );
+
                                 continue;
                             }
 
                             if (endDate.isBefore(startDate)) {
+
                                 historyView.showError(
                                     "End date cannot be earlier than start date."
                                 );
+
                                 continue;
                             }
 
                             break;
                         }
+
 
                         historyView.displayTransactions(
                             history.filterByDateRange(
@@ -212,18 +252,14 @@ public class AdminController {
                             field = "customerID";
                         } else if (filterChoice == 4) {
                             field = "cashierID";
-                        } else {
-                            historyView.showError(
-                                "Invalid filter option."
-                            );
-                            break;
                         }
+
 
                         final String filterField = field;
                         final String[] filterValue = new String[1];
 
 
-                        // Repeats until filter value is valid
+                        // Repeats until the filter value is valid
                         LoopUtility.retryUntilValid(
 
                             new Supplier<String>() {
@@ -247,7 +283,8 @@ public class AdminController {
 
                                     String formattedValue = value.trim();
 
-                                    // Validate transaction status
+
+                                    // Validates transaction status
                                     if (filterField.equals("status")
                                             && !formattedValue.equalsIgnoreCase("PENDING")
                                             && !formattedValue.equalsIgnoreCase("COMPLETED")
@@ -258,7 +295,8 @@ public class AdminController {
                                         );
                                     }
 
-                                    // Validate booking type
+
+                                    // Validates booking type
                                     if (filterField.equals("bookingType")
                                             && !formattedValue.equalsIgnoreCase("ONLINE")
                                             && !formattedValue.equalsIgnoreCase("WALK_IN")) {
@@ -307,7 +345,7 @@ public class AdminController {
                         new Transaction[1];
 
 
-                    // Repeats until transaction ID exists
+                    // Repeats until an existing transaction ID is entered
                     LoopUtility.retryUntilValid(
 
                         new Supplier<String>() {
@@ -362,24 +400,25 @@ public class AdminController {
                 default:
 
                     historyView.showError(
-                        "Invalid menu option."
+                        "Invalid menu option. Please try again."
                     );
             }
         }
     }
 
     // Reprints an existing receipt
- public void reprintReceipt() {
+    public void reprintReceipt() {
 
         if (history == null || receiptView == null) {
             return;
         }
 
+
         final Transaction[] transactionHolder =
             new Transaction[1];
 
 
-        // Repeats until transaction has an available receipt
+        // Repeats until a transaction with an available receipt is found
         LoopUtility.retryUntilValid(
 
             new Supplier<String>() {
@@ -401,6 +440,7 @@ public class AdminController {
                         );
                     }
 
+
                     Transaction transaction =
                         history.findByID(transactionID.trim());
 
@@ -409,6 +449,7 @@ public class AdminController {
                             "Transaction not found. Please try again."
                         );
                     }
+
 
                     if (!InputValidator.isNotBlank(
                             transaction.getReceiptNo())) {
@@ -449,15 +490,15 @@ public class AdminController {
             receiptView.showError(e.getMessage());
         }
     }
-
     // Voids a transaction
- public void voidTransaction() {
+    public void voidTransaction() {
 
         if (history == null || historyView == null
                 || checkoutService == null) {
 
             return;
         }
+
 
         final Transaction[] transactionHolder =
             new Transaction[1];
@@ -485,6 +526,7 @@ public class AdminController {
                         );
                     }
 
+
                     Transaction transaction =
                         history.findByID(transactionID.trim());
 
@@ -494,7 +536,11 @@ public class AdminController {
                         );
                     }
 
-                    if (transaction.getStatus().equalsIgnoreCase("CANCELLED")) {
+
+                    // Checks if the transaction was already voided
+                    if ("CANCELLED".equalsIgnoreCase(
+                            transaction.getStatus())) {
+
                         throw new IllegalArgumentException(
                             "This transaction has already been voided. Enter another transaction ID."
                         );
@@ -552,12 +598,14 @@ public class AdminController {
 
 
     // Views sales reports
-  public void viewSalesReports() {
+    public void viewSalesReports() {
 
         if (salesRepo == null || salesView == null) {
             return;
         }
 
+
+        // Repeats the sales menu until the admin chooses to go back
         while (true) {
 
             int choice = salesView.showSalesMenu();
@@ -582,14 +630,23 @@ public class AdminController {
                 // View sales by date
                 case 2: {
 
-                    LocalDate date = salesView.promptDate();
+                    LocalDate date;
 
-                    if (date == null) {
+
+                    // Repeats the same date field until valid
+                    while (true) {
+
+                        date = salesView.promptDate();
+
+                        if (date != null) {
+                            break;
+                        }
+
                         salesView.showError(
-                            "Invalid date."
+                            "Invalid date. Please enter the date again."
                         );
-                        break;
                     }
+
 
                     Sales dailySales =
                         salesRepo.getSalesByDate(date);
@@ -615,27 +672,49 @@ public class AdminController {
                     LocalDate startDate;
                     LocalDate endDate;
 
+
+                    // Repeats only the start date field if invalid
                     while (true) {
 
                         startDate = salesView.promptDate();
+
+                        if (startDate != null) {
+                            break;
+                        }
+
+                        salesView.showError(
+                            "Invalid start date. Please try again."
+                        );
+                    }
+
+
+                    // Repeats only the end date field if invalid
+                    while (true) {
+
                         endDate = salesView.promptDate();
 
-                        if (startDate == null || endDate == null) {
+                        if (endDate == null) {
+
                             salesView.showError(
-                                "Invalid date range."
+                                "Invalid end date. Please try again."
                             );
+
                             continue;
                         }
 
+
                         if (endDate.isBefore(startDate)) {
+
                             salesView.showError(
                                 "End date cannot be earlier than start date."
                             );
+
                             continue;
                         }
 
                         break;
                     }
+
 
                     salesView.displaySales(
                         salesRepo.getSalesByRange(
@@ -667,7 +746,7 @@ public class AdminController {
                 default:
 
                     salesView.showError(
-                        "Invalid menu option."
+                        "Invalid menu option. Please try again."
                     );
             }
         }
