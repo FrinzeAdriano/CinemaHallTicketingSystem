@@ -10,6 +10,7 @@ public class TransactionHistoryView extends BaseView {
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public int showHistoryMenu() {
+        showMessage("");
         showMessage("========== TRANSACTION HISTORY ==========");
         showMessage("[1] View All Transactions");
         showMessage("[2] Filter Transactions");
@@ -17,10 +18,11 @@ public class TransactionHistoryView extends BaseView {
         showMessage("[0] Back");
         showMessage("----------------------------------------");
 
-        return readInt("Choice: ", 0, 3);
+        return readInt("Choose an option (0 to go back): ", 0, 3);
     }
 
     public int promptFilterOption() {
+        showMessage("");
         showMessage("========== FILTER TRANSACTIONS ==========");
         showMessage("[1] Status");
         showMessage("[2] Booking Type");
@@ -30,7 +32,7 @@ public class TransactionHistoryView extends BaseView {
         showMessage("[0] Back");
         showMessage("----------------------------------------");
 
-        return readInt("Choice: ", 0, 5);
+        return readInt("Choose an option (0 to go back): ", 0, 5);
     }
 
     public void displayTransactions(LinkedList<Transaction> transactions) {
