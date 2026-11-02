@@ -30,11 +30,11 @@ public class VoucherController {
                         Voucher voucher = new Voucher(voucherRepo.generateVoucherCode());
 
                         if (voucher != null
-                                && LoopUtility.retryUntilValid(voucherView::promptDescription, voucher::setDescription, voucherView::showError, "0")
-                                && LoopUtility.retryUntilValid(voucherView::promptDiscountMode, voucher::setDiscountMode, voucherView::showError, "0")
-                                && LoopUtility.retryUntilValid(voucherView::promptValue, voucher::setValue, voucherView::showError, "0")
-                                && LoopUtility.retryUntilValid(voucherView::promptExpiryDate, voucher::setExpiryDate, voucherView::showError, "0")
-                                && LoopUtility.retryUntilValid(voucherView::promptMaxUses, voucher::setMaxUses, voucherView::showError, "0")) {
+                            && LoopUtility.retryUntilValid(voucherView::promptDiscountMode, voucher::setDiscountMode, voucherView::showError, "0")
+                            && LoopUtility.retryUntilValid(() -> voucherView.promptValue(voucher.getDiscountMode()), voucher::setValue, voucherView::showError, "0")
+                            && LoopUtility.retryUntilValid(voucherView::promptDescription, voucher::setDescription, voucherView::showError, "0")
+                            && LoopUtility.retryUntilValid(voucherView::promptExpiryDate, voucher::setExpiryDate, voucherView::showError, "0")
+                            && LoopUtility.retryUntilValid(voucherView::promptMaxUses, voucher::setMaxUses, voucherView::showError, "0")) {
                             voucher.setActive(true);
                             voucherRepo.addVoucher(voucher);
                             voucherView.showMessage("Voucher " + voucher.getVoucherCode() + " was added.");
