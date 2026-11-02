@@ -35,7 +35,15 @@ public class CinemaView extends BaseView {
     }
 
     public String promptCinemaID() {
-        return readString("Enter cinema ID: ");
+        return readString("Enter cinema ID (0 to go back): ");
+    }
+
+    public String promptCinemaName() {
+        return readString("Cinema name (0 to go back): ");
+    }
+
+    public String promptCinemaLocation() {
+        return readString("Location (0 to go back): ");
     }
 
     public int showEditCinemaMenu(Cinema cinema) {
