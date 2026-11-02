@@ -11,7 +11,7 @@ public class ReceiptView extends BaseView {
 
     // Displays a receipt
 
-    public void displayReceipt(Receipt receipt) {
+     public void displayReceipt(Receipt receipt) {
 
         if (receipt == null) {
             showError("Receipt not found.");
@@ -30,7 +30,6 @@ public class ReceiptView extends BaseView {
         showMessage("Date Issued: " + receipt.getDateTimeIssued());
         showMessage("Transaction ID: " + transaction.getTransactionID());
         showMessage("Booking Type: " + transaction.getBookingType());
-
 
         // Displays tickets
 
@@ -60,7 +59,6 @@ public class ReceiptView extends BaseView {
                 + " - " + ticket.getPrice()
             );
         }
-
 
         // Displays products
 
@@ -92,10 +90,9 @@ public class ReceiptView extends BaseView {
             );
         }
 
-
         // Displays transaction summary
 
-        showMessage("-----------------------------");
+        showMessage("----------------------------------------");
         showMessage("Subtotal: " + transaction.getSubtotal());
         showMessage("Discount: " + transaction.getDiscountAmount());
         showMessage("Tax: " + transaction.getTaxAmount());

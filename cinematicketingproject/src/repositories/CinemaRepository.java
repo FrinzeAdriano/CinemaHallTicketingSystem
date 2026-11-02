@@ -44,11 +44,13 @@ public class CinemaRepository {
         return cinemas;
     }
 
-    // Rules: the name must not be blank. Exact name match, case-insensitive.
-    // Returns the first match, or null if no cinema has that name (this includes an empty
-    // list, so the controller can still use it as a duplicate-name check before adding the
-    // first cinema). Throws IllegalArgumentException for a blank name.
+    // Rules: there must be at least one cinema, the name must not be blank, and a cinema
+    // with that name must exist (exact match, case-insensitive).
+    // Returns the first match; throws IllegalArgumentException otherwise.
     public Cinema findCinema(String cinemaName) {
+        if (cinemas.size() == 0) {
+            throw new IllegalArgumentException("Invalid input. There are no cinemas yet.");
+        }
         if (!InputValidator.isNotBlank(cinemaName)) {
             throw new IllegalArgumentException("Invalid input. Cinema name cannot be blank.");
         }
@@ -60,7 +62,7 @@ public class CinemaRepository {
             }
             node = node.getNext();
         }
-        return null;
+        throw new IllegalArgumentException("Invalid input. Cinema " + name + " was not found.");
     }
 
     // Rules: there must be at least one cinema, the ID must not be blank, and it must

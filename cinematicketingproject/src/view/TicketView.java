@@ -10,11 +10,19 @@ public class TicketView extends BaseView {
 
     // Requests the number of tickets
 
-    public int promptTicketCount() {
+     public int promptTicketCount() {
 
         while (true) {
 
-            String input = readString("Enter ticket quantity: ");
+            showMessage("----------------------------------------");
+
+            String input = readString(
+                "Enter ticket quantity (0 to go back): "
+            );
+
+            if (input.equals("0")) {
+                return 0;
+            }
 
             if (InputValidator.isPositiveInt(input)) {
                 return Integer.parseInt(input.trim());
@@ -72,5 +80,4 @@ public class TicketView extends BaseView {
             displayTicket(tickets.get(i));
         }
     }
-
 }
