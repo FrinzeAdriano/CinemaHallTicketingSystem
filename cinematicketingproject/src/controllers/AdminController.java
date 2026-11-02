@@ -1,6 +1,9 @@
 package controllers;
 import datastructures.*;
 import java.time.LocalDate;
+import java.util.Locale;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import models.*;
 import repositories.*;
 import view.*;
@@ -119,6 +122,7 @@ public class AdminController {
 
 
     // Manages transaction history (Member C)
+ // Manages transaction history (Member C)
     public void manageTransactionHistory() {
 
         if (historyView == null || history == null) {
@@ -152,7 +156,6 @@ public class AdminController {
                     int filterChoice =
                         historyView.promptFilterOption();
 
-                    // Back to transaction history menu
                     if (filterChoice == 0) {
                         break;
                     }
@@ -161,30 +164,40 @@ public class AdminController {
                     // Filter by date range
                     if (filterChoice == 5) {
 
-                        LocalDate startDate = historyView.readDate(
-                            "Enter start date (yyyy-MM-dd): "
-                        );
+                        LocalDate startDate;
+                        LocalDate endDate;
 
-                        LocalDate endDate = historyView.readDate(
-                            "Enter end date (yyyy-MM-dd): "
-                        );
+                        while (true) {
 
-                        if (startDate == null || endDate == null) {
-                            historyView.showError(
-                                "Invalid date range."
+                            startDate = historyView.readDate(
+                                "Enter start date (yyyy-MM-dd): "
                             );
-                            break;
-                        }
 
-                        if (endDate.isBefore(startDate)) {
-                            historyView.showError(
-                                "End date cannot be earlier than start date."
+                            endDate = historyView.readDate(
+                                "Enter end date (yyyy-MM-dd): "
                             );
+
+                            if (startDate == null || endDate == null) {
+                                historyView.showError(
+                                    "Invalid date range."
+                                );
+                                continue;
+                            }
+
+                            if (endDate.isBefore(startDate)) {
+                                historyView.showError(
+                                    "End date cannot be earlier than start date."
+                                );
+                                continue;
+                            }
+
                             break;
                         }
 
                         historyView.displayTransactions(
-                            history.filterByDateRange(startDate, endDate)
+                            history.filterByDateRange(
+                                startDate, endDate
+                            )
                         );
 
                     } else {
@@ -206,23 +219,74 @@ public class AdminController {
                             break;
                         }
 
+                        final String filterField = field;
+                        final String[] filterValue = new String[1];
 
-                        String value = historyView.readString(
-                            "Enter filter value: "
+
+                        // Repeats until filter value is valid
+                        LoopUtility.retryUntilValid(
+
+                            new Supplier<String>() {
+                                @Override
+                                public String get() {
+                                    return historyView.readString(
+                                        "Enter filter value: "
+                                    );
+                                }
+                            },
+
+                            new Consumer<String>() {
+                                @Override
+                                public void accept(String value) {
+
+                                    if (!InputValidator.isNotBlank(value)) {
+                                        throw new IllegalArgumentException(
+                                            "Filter value cannot be blank."
+                                        );
+                                    }
+
+                                    String formattedValue = value.trim();
+
+                                    // Validate transaction status
+                                    if (filterField.equals("status")
+                                            && !formattedValue.equalsIgnoreCase("PENDING")
+                                            && !formattedValue.equalsIgnoreCase("COMPLETED")
+                                            && !formattedValue.equalsIgnoreCase("CANCELLED")) {
+
+                                        throw new IllegalArgumentException(
+                                            "Invalid status. Enter PENDING, COMPLETED, or CANCELLED."
+                                        );
+                                    }
+
+                                    // Validate booking type
+                                    if (filterField.equals("bookingType")
+                                            && !formattedValue.equalsIgnoreCase("ONLINE")
+                                            && !formattedValue.equalsIgnoreCase("WALK_IN")) {
+
+                                        throw new IllegalArgumentException(
+                                            "Invalid booking type. Enter ONLINE or WALK_IN."
+                                        );
+                                    }
+
+                                    filterValue[0] = formattedValue;
+                                }
+                            },
+
+                            new Consumer<String>() {
+                                @Override
+                                public void accept(String message) {
+                                    historyView.showError(message);
+                                }
+                            }
                         );
 
-                        if (!InputValidator.isNotBlank(value)) {
-                            historyView.showError(
-                                "Filter value cannot be blank."
-                            );
-                            break;
-                        }
 
+                        // Displays filtered transactions
                         try {
 
                             historyView.displayTransactions(
                                 history.filterTransactionHistory(
-                                    field, value.trim()
+                                    filterField, filterValue[0]
                                 )
                             );
 
@@ -239,32 +303,57 @@ public class AdminController {
                 // Search transaction
                 case 3: {
 
-                    String transactionID = historyView.readString(
-                        "Enter transaction ID: "
+                    final Transaction[] transactionHolder =
+                        new Transaction[1];
+
+
+                    // Repeats until transaction ID exists
+                    LoopUtility.retryUntilValid(
+
+                        new Supplier<String>() {
+                            @Override
+                            public String get() {
+                                return historyView.readString(
+                                    "Enter transaction ID: "
+                                );
+                            }
+                        },
+
+                        new Consumer<String>() {
+                            @Override
+                            public void accept(String transactionID) {
+
+                                if (!InputValidator.isNotBlank(transactionID)) {
+                                    throw new IllegalArgumentException(
+                                        "Transaction ID cannot be blank."
+                                    );
+                                }
+
+                                Transaction transaction =
+                                    history.findByID(transactionID.trim());
+
+                                if (transaction == null) {
+                                    throw new IllegalArgumentException(
+                                        "Transaction not found. Please try again."
+                                    );
+                                }
+
+                                transactionHolder[0] = transaction;
+                            }
+                        },
+
+                        new Consumer<String>() {
+                            @Override
+                            public void accept(String message) {
+                                historyView.showError(message);
+                            }
+                        }
                     );
 
-                    if (!InputValidator.isNotBlank(transactionID)) {
-                        historyView.showError(
-                            "Transaction ID cannot be blank."
-                        );
-                        break;
-                    }
 
-                    Transaction transaction =
-                        history.findByID(transactionID.trim());
-
-                    if (transaction == null) {
-
-                        historyView.showError(
-                            "Transaction not found."
-                        );
-
-                    } else {
-
-                        historyView.displayTransactionDetails(
-                            transaction
-                        );
-                    }
+                    historyView.displayTransactionDetails(
+                        transactionHolder[0]
+                    );
 
                     break;
                 }
@@ -278,52 +367,74 @@ public class AdminController {
             }
         }
     }
+
     // Reprints an existing receipt
-public void reprintReceipt() {
+ public void reprintReceipt() {
 
         if (history == null || receiptView == null) {
             return;
         }
 
+        final Transaction[] transactionHolder =
+            new Transaction[1];
 
-        // Requests transaction ID
-        String transactionID = receiptView.readString(
-            "Enter transaction ID: "
+
+        // Repeats until transaction has an available receipt
+        LoopUtility.retryUntilValid(
+
+            new Supplier<String>() {
+                @Override
+                public String get() {
+                    return receiptView.readString(
+                        "Enter transaction ID: "
+                    );
+                }
+            },
+
+            new Consumer<String>() {
+                @Override
+                public void accept(String transactionID) {
+
+                    if (!InputValidator.isNotBlank(transactionID)) {
+                        throw new IllegalArgumentException(
+                            "Transaction ID cannot be blank."
+                        );
+                    }
+
+                    Transaction transaction =
+                        history.findByID(transactionID.trim());
+
+                    if (transaction == null) {
+                        throw new IllegalArgumentException(
+                            "Transaction not found. Please try again."
+                        );
+                    }
+
+                    if (!InputValidator.isNotBlank(
+                            transaction.getReceiptNo())) {
+
+                        throw new IllegalArgumentException(
+                            "No receipt is available for this transaction."
+                        );
+                    }
+
+                    transactionHolder[0] = transaction;
+                }
+            },
+
+            new Consumer<String>() {
+                @Override
+                public void accept(String message) {
+                    receiptView.showError(message);
+                }
+            }
         );
-
-        if (!InputValidator.isNotBlank(transactionID)) {
-            receiptView.showError(
-                "Transaction ID cannot be blank."
-            );
-            return;
-        }
-
-
-        // Searches for the transaction
-        Transaction transaction =
-            history.findByID(transactionID.trim());
-
-        if (transaction == null) {
-            receiptView.showError(
-                "Transaction not found."
-            );
-            return;
-        }
-
-
-        // Checks receipt availability
-        if (!InputValidator.isNotBlank(
-                transaction.getReceiptNo())) {
-
-            receiptView.showError(
-                "No receipt is available for this transaction."
-            );
-            return;
-        }
 
 
         // Reconstructs the receipt
         try {
+
+            Transaction transaction = transactionHolder[0];
 
             Receipt receipt = new Receipt(
                 transaction.getReceiptNo(),
@@ -348,39 +459,61 @@ public void reprintReceipt() {
             return;
         }
 
+        final Transaction[] transactionHolder =
+            new Transaction[1];
 
-        // Requests transaction ID
-        String transactionID = historyView.readString(
-            "Enter transaction ID to void: "
+
+        // Repeats until a valid, non-cancelled transaction is found
+        LoopUtility.retryUntilValid(
+
+            new Supplier<String>() {
+                @Override
+                public String get() {
+                    return historyView.readString(
+                        "Enter transaction ID to void: "
+                    );
+                }
+            },
+
+            new Consumer<String>() {
+                @Override
+                public void accept(String transactionID) {
+
+                    if (!InputValidator.isNotBlank(transactionID)) {
+                        throw new IllegalArgumentException(
+                            "Transaction ID cannot be blank."
+                        );
+                    }
+
+                    Transaction transaction =
+                        history.findByID(transactionID.trim());
+
+                    if (transaction == null) {
+                        throw new IllegalArgumentException(
+                            "Transaction not found. Please try again."
+                        );
+                    }
+
+                    if (transaction.getStatus().equalsIgnoreCase("CANCELLED")) {
+                        throw new IllegalArgumentException(
+                            "This transaction has already been voided. Enter another transaction ID."
+                        );
+                    }
+
+                    transactionHolder[0] = transaction;
+                }
+            },
+
+            new Consumer<String>() {
+                @Override
+                public void accept(String message) {
+                    historyView.showError(message);
+                }
+            }
         );
 
-        if (!InputValidator.isNotBlank(transactionID)) {
-            historyView.showError(
-                "Transaction ID cannot be blank."
-            );
-            return;
-        }
 
-
-        // Searches for the transaction
-        Transaction transaction =
-            history.findByID(transactionID.trim());
-
-        if (transaction == null) {
-            historyView.showError(
-                "Transaction not found."
-            );
-            return;
-        }
-
-
-        // Checks transaction status
-        if (transaction.getStatus().equalsIgnoreCase("CANCELLED")) {
-            historyView.showError(
-                "This transaction has already been voided."
-            );
-            return;
-        }
+        Transaction transaction = transactionHolder[0];
 
 
         // Requests confirmation
@@ -417,8 +550,9 @@ public void reprintReceipt() {
     }
 
 
+
     // Views sales reports
- public void viewSalesReports() {
+  public void viewSalesReports() {
 
         if (salesRepo == null || salesView == null) {
             return;
@@ -478,20 +612,28 @@ public void reprintReceipt() {
                 // View sales by date range
                 case 3: {
 
-                    LocalDate startDate = salesView.promptDate();
-                    LocalDate endDate = salesView.promptDate();
+                    LocalDate startDate;
+                    LocalDate endDate;
 
-                    if (startDate == null || endDate == null) {
-                        salesView.showError(
-                            "Invalid date range."
-                        );
-                        break;
-                    }
+                    while (true) {
 
-                    if (endDate.isBefore(startDate)) {
-                        salesView.showError(
-                            "End date cannot be earlier than start date."
-                        );
+                        startDate = salesView.promptDate();
+                        endDate = salesView.promptDate();
+
+                        if (startDate == null || endDate == null) {
+                            salesView.showError(
+                                "Invalid date range."
+                            );
+                            continue;
+                        }
+
+                        if (endDate.isBefore(startDate)) {
+                            salesView.showError(
+                                "End date cannot be earlier than start date."
+                            );
+                            continue;
+                        }
+
                         break;
                     }
 
@@ -513,7 +655,9 @@ public void reprintReceipt() {
 
                     salesView.showMessage(
                         "Total Revenue: "
-                        + String.format("%.2f", totalRevenue)
+                        + String.format(
+                            Locale.ROOT, "%.2f", totalRevenue
+                        )
                     );
 
                     break;
