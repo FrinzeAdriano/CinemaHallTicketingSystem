@@ -3,6 +3,7 @@ package view;
 import datastructures.LinkedList;
 import datastructures.Node;
 import models.Cinema;
+import java.util.ArrayList;
 
 public class CinemaView extends BaseView {
 
@@ -16,12 +17,13 @@ public class CinemaView extends BaseView {
     public int showCinemaMenu() {
         System.out.println();
         System.out.println("===== CINEMA MANAGEMENT =====");
-        System.out.println("1. Add cinema");
-        System.out.println("2. Edit cinema");
-        System.out.println("3. Remove cinema");
-        System.out.println("4. Find cinema by name");
-        System.out.println("5. View all cinemas");
-        System.out.println("0. Back");
+        System.out.println("[1] Add cinema");
+        System.out.println("[2] Edit cinema");
+        System.out.println("[3] Remove cinema");
+        System.out.println("[4] Find cinema by name");
+        System.out.println("[5] View all cinemas");
+        System.out.println("[0] Back");
+        System.out.println("----------------------------------------");
         return readInt("Choose an option: ", 0, 5);
     }
 
@@ -49,9 +51,10 @@ public class CinemaView extends BaseView {
     public int showEditCinemaMenu(Cinema cinema) {
         System.out.println();
         System.out.println("===== EDIT CINEMA " + cinema.getCinemaID() + " =====");
-        System.out.println("1. Name     (" + cinema.getName() + ")");
-        System.out.println("2. Location (" + cinema.getLocation() + ")");
-        System.out.println("0. Back");
+        System.out.println("[1] Name     (" + cinema.getName() + ")");
+        System.out.println("[2] Location (" + cinema.getLocation() + ")");
+        System.out.println("[0] Back");
+        System.out.println("----------------------------------------");
         return readInt("Choose a field to edit: ", 0, 2);
     }
 
@@ -67,13 +70,14 @@ public class CinemaView extends BaseView {
     public void displayCinemas(LinkedList<Cinema> list) {
         System.out.println();
         System.out.println("===== ALL CINEMAS =====");
-        System.out.printf("%-8s %-25s %-40s %-6s%n", "ID", "Name", "Location", "Rooms");
+        ArrayList<String[]> rows = new ArrayList<>();
         Node<Cinema> node = list.getHead();
         while (node != null) {
             Cinema c = node.getData();
-            System.out.printf("%-8s %-25s %-40s %-6d%n", c.getCinemaID(), c.getName(), c.getLocation(),
-                    c.getCinemaRooms().size());
+            rows.add(new String[] {c.getCinemaID(), c.getName(), c.getLocation(),
+                    String.valueOf(c.getCinemaRooms().size())});
             node = node.getNext();
         }
+        printTable(new String[] {"ID", "Name", "Location", "Rooms"}, rows);
     }
 }

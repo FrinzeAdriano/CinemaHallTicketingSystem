@@ -26,7 +26,12 @@ public class CinemaTicketManagementSystem {
  
     // System Methods
     public static void main(String[]ARGS){
-       new CinemaTicketManagementSystem().start();
+        CinemaManagementController controller = new CinemaManagementController(
+                new CinemaRepository(), new MovieRepository(),
+                new CinemaView(), new CinemaRoomListView(),
+                new SeatView(), new ScheduleView());
+
+        controller.manageCinemas();
     }
     
     public void start() {
