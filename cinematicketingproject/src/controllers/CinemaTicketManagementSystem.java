@@ -209,46 +209,46 @@ public class CinemaTicketManagementSystem {
         cinema.setLocation("Downtown Mall");
         cinemaRepo.addCinema(cinema);
         // Movie
-Movie movie = new Movie(movieRepo.generateMovieID());
-movie.setTitle("Test Movie");
-movie.setGenre("Action");
-movie.setDuration("120");
-movie.setRating("PG");
-movie.setDescription("Sample movie for booking tests.");
-movie.setReleaseDate(LocalDate.now().toString());
-movieRepo.addMovie(movie);
+        Movie movie = new Movie(movieRepo.generateMovieID());
+        movie.setTitle("Test Movie");
+        movie.setGenre("Action");
+        movie.setDuration("120");
+        movie.setRating("PG");
+        movie.setDescription("Sample movie for booking tests.");
+        movie.setReleaseDate(LocalDate.now().toString());
+        movieRepo.addMovie(movie);
 
-// Cinema room
-CinemaRoom room = new CinemaRoom(
-    CinemaRoom.generateRoomID(cinema)
-);
+        // Cinema room
+        CinemaRoom room = new CinemaRoom(
+            CinemaRoom.generateRoomID(cinema)
+        );
 
-room.setRoomName("Room 1");
-room.setRows("3");
-room.setSeatsPerRow("5");
-room.setStatus(true);
-room.generateSeatLayout();
+        room.setRoomName("Room 1");
+        room.setRows("3");
+        room.setSeatsPerRow("5");
+        room.setStatus(true);
+        room.generateSeatLayout();
 
-cinema.addRoom(room);
+        cinema.addRoom(room);
 
-// Schedule
-Schedule schedule = new Schedule("SCH001");
-schedule.setMovie(movie);
-schedule.setRoom(room);
+        // Schedule
+        Schedule schedule = new Schedule("SCH001");
+        schedule.setMovie(movie);
+        schedule.setRoom(room);
 
-LocalDateTime showTime = LocalDateTime.now()
-    .plusDays(1)
-    .withHour(18)
-    .withMinute(0)
-    .withSecond(0)
-    .withNano(0);
+        LocalDateTime showTime = LocalDateTime.now()
+            .plusDays(1)
+            .withHour(18)
+            .withMinute(0)
+            .withSecond(0)
+            .withNano(0);
 
-schedule.setShowDateTime(
-    showTime.format(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"))
-);
+        schedule.setShowDateTime(
+            showTime.format(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"))
+        );
 
-schedule.setPrice("250");
-room.addSchedule(schedule);
+        schedule.setPrice("250");
+        room.addSchedule(schedule);
         // Inventory (Soda is deliberately low on stock so the low-stock report has something to show)
         Food popcorn = new Food(inventoryRepo.generateProductID());
         popcorn.setName("Popcorn (Large)");
