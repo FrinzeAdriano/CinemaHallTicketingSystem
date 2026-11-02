@@ -7,7 +7,7 @@ import models.Seat;
 
 public class SeatView extends BaseView {
 
-    private static final int AISLE_CELLS = 3;   // width of an aisle, counted in seat cells
+    private static final int AISLE_CELLS = 1;   // width of an aisle, counted in seat cells (1 = same width as [A1])
 
     // Constructor (no ID needed, inherits the scanner from BaseView)
     public SeatView() {
