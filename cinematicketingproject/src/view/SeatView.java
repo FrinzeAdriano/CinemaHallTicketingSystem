@@ -21,13 +21,13 @@ public class SeatView extends BaseView {
     public String showSeatMenu() {
         System.out.println();
         System.out.println("=========== SEAT MANAGEMENT ============");
-        System.out.println("1. View room layout");
-        System.out.println("2. Add seat");
-        System.out.println("3. Remove seat");
-        System.out.println("4. Edit seat");
-        System.out.println("5. Filter seats");
-        System.out.println("6. Add or remove aisle");
-        System.out.println("0. Back");
+        System.out.println("[1] View room layout");
+        System.out.println("[2] Add seat");
+        System.out.println("[3] Remove seat");
+        System.out.println("[4] Edit seat");
+        System.out.println("[5] Filter seats");
+        System.out.println("[6] Add or remove aisle");
+        System.out.println("[0] Back");
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
@@ -35,10 +35,10 @@ public class SeatView extends BaseView {
     public String showSeatFilterMenu() {
         System.out.println();
         System.out.println("============= FILTER SEATS =============");
-        System.out.println("1. By row (e.g. A)");
-        System.out.println("2. By type (Regular, Premium, VIP, Wheelchair)");
-        System.out.println("3. By status (Available, Out of service)");
-        System.out.println("0. Back");
+        System.out.println("[1] By row (e.g. A)");
+        System.out.println("[2] By type (Regular, Premium, VIP, Wheelchair)");
+        System.out.println("[3] By status (Available, Out of service)");
+        System.out.println("[0] Back");
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
@@ -47,10 +47,10 @@ public class SeatView extends BaseView {
         displaySeat(seat);
         System.out.println();
         System.out.println("============== EDIT SEAT ===============");
-        System.out.println("1. Seat type");
-        System.out.println("2. Seat status");
-        System.out.println("3. Price modifier");
-        System.out.println("0. Back");
+        System.out.println("[1] Seat type");
+        System.out.println("[2] Seat status");
+        System.out.println("[3] Price modifier");
+        System.out.println("[0] Back");
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
@@ -60,7 +60,7 @@ public class SeatView extends BaseView {
     }
 
     public String promptSeatType() {
-        return readString("Enter seat type (Regular, Premium, VIP, Wheelchair): ");
+        return readString("Enter seat type (Regular, Premium, VIP, Wheelchair) (0 to go back): ");
     }
 
     public String promptSearchValue() {

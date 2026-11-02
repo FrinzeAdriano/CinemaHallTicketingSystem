@@ -19,32 +19,35 @@ public class ScheduleView extends BaseView {
     public String showScheduleMenu() {
         System.out.println();
         System.out.println("===== SCHEDULE MANAGEMENT =====");
-        System.out.println("1. View schedules");
-        System.out.println("2. Add schedule");
-        System.out.println("3. Remove schedule");
-        System.out.println("4. Edit schedule");
-        System.out.println("5. Filter schedules");
-        System.out.println("0. Back");
-        return readString("Choose an option: ").trim();
+        System.out.println("[1] View schedules");
+        System.out.println("[2] Add schedule");
+        System.out.println("[3] Remove schedule");
+        System.out.println("[4] Edit schedule");
+        System.out.println("[5] Filter schedules");
+        System.out.println("[0] Back");
+        System.out.println("----------------------------------------");
+        return readString("Choose an option (0 to go back): ").trim();
     }
 
     public String showEditScheduleMenu(Schedule schedule) {
         System.out.println();
         System.out.println("===== EDIT SCHEDULE " + schedule.getScheduleID() + " =====");
-        System.out.println("1. Price  (" + String.format("%.2f", schedule.getPrice()) + ")");
-        System.out.println("2. Status (" + (schedule.isActive() ? "Open" : "Closed") + ", choose to switch)");
-        System.out.println("0. Back");
-        return readString("Choose a field to edit: ").trim();
+        System.out.println("[1] Price  (" + String.format("%.2f", schedule.getPrice()) + ")");
+        System.out.println("[2] Status (" + (schedule.isActive() ? "Open" : "Closed") + ", choose to switch)");
+        System.out.println("[0] Back");
+        System.out.println("----------------------------------------");
+        return readString("Choose a field to edit (0 to go back): ").trim();
     }
 
     public String showScheduleFilterMenu() {
         System.out.println();
         System.out.println("===== FILTER SCHEDULES =====");
-        System.out.println("1. By movie title");
-        System.out.println("2. By date (yyyy-MM-dd)");
-        System.out.println("3. By status (true = open, false = closed)");
-        System.out.println("0. Back");
-        return readString("Choose a filter: ").trim();
+        System.out.println("[1] By movie title");
+        System.out.println("[2] By date (yyyy-MM-dd)");
+        System.out.println("[3] By status (true = open, false = closed)");
+        System.out.println("[0] Back");
+        System.out.println("----------------------------------------");
+        return readString("Choose a filter (0 to go back): ").trim();
     }
     public Schedule selectSchedule(LinkedList<Schedule> list) {
         displaySchedules(list);

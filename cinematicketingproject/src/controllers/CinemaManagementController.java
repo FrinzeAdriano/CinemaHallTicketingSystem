@@ -42,10 +42,10 @@ public class CinemaManagementController {
                         break;
                     }
                     case 2: {
-                        // Edit cinema (found by name, 0 to go back)
-                        cinemaRepo.viewCinemas();   // throws if there are no cinemas
-                        Cinema cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaName,
-                                cinemaRepo::findCinema, cinemaView::showError, "0");
+                        // Edit cinema (table first, then found by ID, 0 to go back)
+                        cinemaView.displayCinemas(cinemaRepo.viewCinemas());   // throws if there are no cinemas
+                        Cinema cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaID,
+                                cinemaRepo::findCinemaByID, cinemaView::showError, "0");
                         if (cinema != null) {
                             int editChoice = -1;
                             while (editChoice != 0) {
