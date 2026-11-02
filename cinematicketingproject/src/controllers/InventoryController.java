@@ -50,7 +50,11 @@ public class InventoryController {
                     break;
 
                 case 6:
-                    activateProduct();
+                    try {
+                        activateProduct();
+                    } catch (IllegalArgumentException | IllegalStateException e) {
+                        inventoryView.showError(e.getMessage());
+                    }
                     break;
 
                 case 7:

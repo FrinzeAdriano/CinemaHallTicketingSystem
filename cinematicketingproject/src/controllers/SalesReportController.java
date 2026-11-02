@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.Locale;
 import models.*;
 import repositories.SalesRepository;
+import utility.InputValidator;
+import utility.LoopUtility;
 import view.SalesView;
 
 public class SalesReportController {
@@ -21,151 +23,80 @@ public class SalesReportController {
             return;
         }
 
+        int choice = -1;
+        while (choice != 0) {
+            choice = salesView.showSalesMenu();
 
-        // Repeats the sales menu until the admin chooses to go back
-        while (true) {
-
-            int choice = salesView.showSalesMenu();
+            // Every option needs at least one sales record.
+            if (choice >= 1 && choice <= 4 && salesRepo.viewSales().size() == 0) {
+                salesView.showError("Invalid input. There are no sales records yet.");
+                continue;
+            }
 
             switch (choice) {
-
-                // Back
-                case 0:
-                    return;
-
-
-                // View all sales
                 case 1:
-
-                    salesView.displaySales(
-                        salesRepo.viewSales()
-                    );
-
+                    salesView.displaySales(salesRepo.viewSales());
                     break;
 
-
-                // View sales by date
-                case 2: {
-
-                    LocalDate date;
-
-
-                    // Repeats the same date field until valid
-                    while (true) {
-
-                        date = salesView.promptDate();
-
-                        if (date != null) {
-                            break;
-                        }
-
-                        salesView.showError(
-                            "Invalid date. Please enter the date again."
-                        );
-                    }
-
-
-                    Sales dailySales =
-                        salesRepo.getSalesByDate(date);
-
-                    if (dailySales == null) {
-
-                        salesView.showMessage(
-                            "No sales records found for this date."
-                        );
-
-                    } else {
-
-                        salesView.displaySalesSummary(dailySales);
-                    }
-
+                case 2:
+                    LoopUtility.retryUntilValidResult(
+                        () -> salesView.promptDateText("Date"),
+                        input -> {
+                            LocalDate date = parseDate(input, "Date");
+                            Sales dailySales = salesRepo.getSalesByDate(date);
+                            if (dailySales == null) {
+                                throw new IllegalArgumentException(
+                                    "Invalid input. No sales records found for " + date + ".");
+                            }
+                            salesView.displaySalesSummary(dailySales);
+                            return true;
+                        }, salesView::showError, "0");
                     break;
-                }
 
-
-                // View sales by date range
                 case 3: {
+                    LocalDate startDate = LoopUtility.retryUntilValidResult(
+                        () -> salesView.promptDateText("Start date"),
+                        input -> parseDate(input, "Start date"),
+                        salesView::showError, "0");
 
-                    LocalDate startDate;
-                    LocalDate endDate;
-
-
-                    // Repeats only the start date field if invalid
-                    while (true) {
-
-                        startDate = salesView.promptDate();
-
-                        if (startDate != null) {
-                            break;
-                        }
-
-                        salesView.showError(
-                            "Invalid start date. Please try again."
-                        );
-                    }
-
-
-                    // Repeats only the end date field if invalid
-                    while (true) {
-
-                        endDate = salesView.promptDate();
-
-                        if (endDate == null) {
-
-                            salesView.showError(
-                                "Invalid end date. Please try again."
-                            );
-
-                            continue;
-                        }
-
-
-                        if (endDate.isBefore(startDate)) {
-
-                            salesView.showError(
-                                "End date cannot be earlier than start date."
-                            );
-
-                            continue;
-                        }
-
+                    if (startDate == null) {
                         break;
                     }
 
+                    LocalDate endDate = LoopUtility.retryUntilValidResult(
+                        () -> salesView.promptDateText("End date"),
+                        input -> {
+                            LocalDate parsed = parseDate(input, "End date");
+                            if (parsed.isBefore(startDate)) {
+                                throw new IllegalArgumentException(
+                                    "Invalid input. End date cannot be earlier than start date.");
+                            }
+                            return parsed;
+                        }, salesView::showError, "0");
 
-                    salesView.displaySales(
-                        salesRepo.getSalesByRange(
-                            startDate, endDate
-                        )
-                    );
-
+                    if (endDate != null) {
+                        salesView.displaySales(salesRepo.getSalesByRange(startDate, endDate));
+                    }
                     break;
                 }
 
-
-                // View total revenue
-                case 4: {
-
-                    double totalRevenue =
-                        salesRepo.getTotalRevenue();
-
-                    salesView.showMessage(
-                        "Total Revenue: "
-                        + String.format(
-                            Locale.ROOT, "%.2f", totalRevenue
-                        )
-                    );
-
+                case 4:
+                    salesView.showMessage("Total Revenue: "
+                        + String.format(Locale.ROOT, "%.2f", salesRepo.getTotalRevenue()));
                     break;
-                }
-
 
                 default:
-
-                    salesView.showError(
-                        "Invalid menu option. Please try again."
-                    );
+                    break;   // 0 exits the loop
             }
         }
+    }
+
+    // Throws IllegalArgumentException when the text is not a real yyyy-MM-dd date.
+    private LocalDate parseDate(String input, String label) {
+        if (!InputValidator.isValidDate(input)) {
+            throw new IllegalArgumentException(
+                "Invalid input. " + label + " must be a real date as yyyy-MM-dd.");
+        }
+        return LocalDate.parse(input.trim());
     }
 }
