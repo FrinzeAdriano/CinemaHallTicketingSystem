@@ -381,5 +381,138 @@ public class CinemaManagementController {
     }
 
     public void manageSchedules() {
+        Cinema cinema;
+        CinemaRoom room;
+        try {
+            cinemaView.displayCinemas(cinemaRepo.viewCinemas());
+            cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaID, cinemaRepo::findCinema,
+                    cinemaView::showError, "0");
+            if (cinema == null) {
+                return;
+            }
+            roomView.displayRooms(cinema.getCinemaRooms());
+            room = LoopUtility.retryUntilValidResult(roomView::promptRoomID, cinema::findRoom,
+                    roomView::showError, "0");
+            if (room == null) {
+                return;
+            }
+        } catch (IllegalArgumentException e) {
+            cinemaView.showError(e.getMessage());
+            return;
+        }
+
+        boolean running = true;
+        while (running) {
+            String choice = scheduleView.showScheduleMenu();
+            try {
+                switch (choice) {
+                    case "1":
+                        scheduleView.displaySchedules(room.getSchedules());
+                        break;
+                    case "2": {
+                        Schedule schedule = new Schedule(room.generateScheduleID());
+                        Movie movie = LoopUtility.retryUntilValidResult(scheduleView::promptMovieID,
+                                movieRepo::findMovie, scheduleView::showError, "0");
+                        if (movie != null) {
+                            schedule.setMovie(movie);
+                            schedule.setRoom(room);
+                            if (LoopUtility.retryUntilValid(scheduleView::promptPrice, schedule::setPrice,
+                                    scheduleView::showError, "0")
+                                    && LoopUtility.retryUntilValid(scheduleView::promptShowDateTime,
+                                    schedule::setShowDateTime, scheduleView::showError, "0")) {
+                                room.addSchedule(schedule);
+                                scheduleView.showMessage("Schedule " + schedule.getScheduleID()
+                                        + " added to room " + room.getRoomID() + ".");
+                            }
+                        }
+                        break;
+                    }
+                    case "3": {
+                        scheduleView.displaySchedules(room.getSchedules());
+                        Boolean removed = LoopUtility.retryUntilValidResult(scheduleView::promptScheduleID,
+                                id -> scheduleView.confirm("Remove schedule " + id.trim() + "?")
+                                        && room.removeSchedule(id),
+                                scheduleView::showError, "0");
+                        if (removed != null) {
+                            scheduleView.showMessage(removed ? "Schedule removed." : "Removal cancelled.");
+                        }
+                        break;
+                    }
+                    case "4": {
+                        scheduleView.displaySchedules(room.getSchedules());
+                        Schedule schedule = LoopUtility.retryUntilValidResult(scheduleView::promptScheduleID,
+                                id -> {
+                                    Schedule found = room.findSchedule(id);
+                                    if (found == null) {
+                                        throw new IllegalArgumentException("Invalid input. Schedule " + id.trim()
+                                                + " was not found in room " + room.getRoomID() + ".");
+                                    }
+                                    return found;
+                                }, scheduleView::showError, "0");
+                        boolean editing = schedule != null;
+                        while (editing) {
+                            switch (scheduleView.showEditScheduleMenu(schedule)) {
+                                case "1":
+                                    if (LoopUtility.retryUntilValid(scheduleView::promptPrice, schedule::setPrice,
+                                            scheduleView::showError, "0")) {
+                                        scheduleView.showMessage("Price updated.");
+                                    }
+                                    break;
+                                case "2":
+                                    schedule.setActive(!schedule.isActive());
+                                    scheduleView.showMessage("Schedule " + schedule.getScheduleID() + " is now "
+                                            + (schedule.isActive() ? "open for booking." : "closed for booking."));
+                                    break;
+                                case "0":
+                                    editing = false;
+                                    break;
+                                default:
+                                    scheduleView.showError("Invalid choice. Enter a number from 0 to 2.");
+                                    break;
+                            }
+                        }
+                        break;
+                    }
+                    case "5": {
+                        String category = null;
+                        switch (scheduleView.showScheduleFilterMenu()) {
+                            case "1":
+                                category = "MOVIE";
+                                break;
+                            case "2":
+                                category = "DATE";
+                                break;
+                            case "3":
+                                category = "ACTIVE";
+                                break;
+                            case "0":
+                                break;
+                            default:
+                                scheduleView.showError("Invalid choice. Enter a number from 0 to 3.");
+                                break;
+                        }
+                        if (category != null) {
+                            final String filterCategory = category;
+                            LinkedList<Schedule> found = LoopUtility.retryUntilValidResult(
+                                    scheduleView::promptSearchValue,
+                                    value -> room.filterSchedule(filterCategory, value),
+                                    scheduleView::showError, "0");
+                            if (found != null) {
+                                scheduleView.displaySchedules(found);
+                            }
+                        }
+                        break;
+                    }
+                    case "0":
+                        running = false;
+                        break;
+                    default:
+                        scheduleView.showError("Invalid choice. Enter a number from 0 to 5.");
+                        break;
+                }
+            } catch (IllegalArgumentException e) {
+                scheduleView.showError(e.getMessage());
+            }
+        }
     }
 }
