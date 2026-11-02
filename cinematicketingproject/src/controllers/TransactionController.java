@@ -50,6 +50,8 @@ public class TransactionController {
                     break;
 
                 case 2: {
+                    // Show the table first so the admin can see what to filter.
+                    historyView.displayTransactions(history.viewTransactionHistory());
                     int filterChoice = historyView.promptFilterOption();
 
                     if (filterChoice == 0) {
@@ -116,6 +118,8 @@ public class TransactionController {
                 }
 
                 case 3:
+                    // Show the table first so the admin can see the IDs.
+                    historyView.displayTransactions(history.viewTransactionHistory());
                     LoopUtility.retryUntilValidResult(
                         () -> historyView.readString("Transaction ID (0 to go back): "),
                         id -> {

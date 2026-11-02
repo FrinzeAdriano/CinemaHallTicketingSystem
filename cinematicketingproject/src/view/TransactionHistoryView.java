@@ -3,6 +3,8 @@ package view;
 import models.*;
 import datastructures.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class TransactionHistoryView extends BaseView {
 
@@ -35,19 +37,31 @@ public class TransactionHistoryView extends BaseView {
         return readInt("Choose an option (0 to go back): ", 0, 5);
     }
 
+    // Shows the transactions as a table. Used by View All, Filter, Search and the void/reprint screens.
     public void displayTransactions(LinkedList<Transaction> transactions) {
         if (transactions == null || transactions.size() == 0) {
             showMessage("No transactions found.");
             return;
         }
 
-        showMessage("========== TRANSACTIONS ==========");
-
+        ArrayList<String[]> rows = new ArrayList<>();
         for (int i = 0; i < transactions.size(); i++) {
-            displayTransactionDetails(transactions.get(i));
+            Transaction t = transactions.get(i);
+            rows.add(new String[] {
+                t.getTransactionID(),
+                String.valueOf(t.getBookingType()),
+                t.getCustomerID() == null ? "N/A" : t.getCustomerID(),
+                t.getCashierID() == null ? "N/A" : t.getCashierID(),
+                t.getDateTime() == null ? "N/A" : t.getDateTime().format(DATE_FORMAT),
+                String.format(Locale.ROOT, "%.2f", t.getTotalAmount()),
+                String.valueOf(t.getStatus()),
+                t.getReceiptNo() == null ? "N/A" : t.getReceiptNo()
+            });
         }
 
-        showMessage("========== END OF TRANSACTIONS ==========");
+        printTable("TRANSACTIONS",
+            new String[] {"ID", "Booking Type", "Customer", "Cashier", "Date", "Total", "Status", "Receipt No."},
+            rows);
     }
 
     public void displayTransactionDetails(Transaction transaction) {
