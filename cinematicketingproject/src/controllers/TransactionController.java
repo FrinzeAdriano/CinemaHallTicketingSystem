@@ -120,7 +120,6 @@ public class TransactionController {
             }
         }
     }
-
     // Cashier: reprint a receipt
     public void reprintReceipt(Cashier cashier) {
         if (cashier == null || history == null || receiptView == null || historyView == null) return;

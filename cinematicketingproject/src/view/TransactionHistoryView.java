@@ -103,15 +103,15 @@ public class TransactionHistoryView extends BaseView {
         showMessage("Status: " + ticket.getStatus());
         showMessage("==========================================");
     }
-
+    
     // Admin and cashier transaction lists
     public void displayTransactions(LinkedList<Transaction> transactions) {
         if (transactions == null || transactions.size() == 0) {
             showMessage("No transactions found.");
             return;
         }
-
-        ArrayList<String[]> rows = new ArrayList<>();
+        ArrayList<String[]> rows = new ArrayList<String[]>();
+        showMessage("============== TRANSACTIONS ==============");
 
         for (int i = 0; i < transactions.size(); i++) {
             Transaction t = transactions.get(i);
