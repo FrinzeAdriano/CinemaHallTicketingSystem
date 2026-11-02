@@ -342,19 +342,30 @@ public class CinemaManagementController {
                         break;
                     }
                     case "6": {
-                        // Add aisle: the seat becomes blank space and keeps its ID (removing a seat shifts the row instead).
+                        // Add or remove an aisle after a seat (the seat IDs do not change).
                         seatView.displayRoomLayout(room);
-                        Boolean added = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
+                        String result = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
                                 id -> {
                                     Seat target = room.findSeat(id);   // throws for a blank or badly formatted ID
                                     if (target == null) {
                                         throw new IllegalArgumentException("Invalid input. Seat " + id.trim() + " was not found in this room.");
                                     }
-                                    return seatView.confirm("Make seat " + target.getSeatID() + " an aisle?") && room.addAisle(id);
+                                    if (target.hasAisleAfter()) {
+                                        if (!seatView.confirm("Remove the aisle after seat " + target.getSeatID() + "?")) {
+                                            return "";
+                                        }
+                                        target.setAisleAfter(false);
+                                        return "Aisle removed.";
+                                    }
+                                    if (!seatView.confirm("Put an aisle after seat " + target.getSeatID() + "?")) {
+                                        return "";
+                                    }
+                                    room.addAisle(id);
+                                    return "Aisle added.";
                                 },
                                 seatView::showError, "0");
-                        if (added != null && added) {
-                            seatView.showMessage("Aisle added.");
+                        if (result != null && !result.isEmpty()) {
+                            seatView.showMessage(result);
                         }
                         break;
                     }

@@ -7,13 +7,15 @@ import models.Seat;
 
 public class SeatView extends BaseView {
 
+    private static final int AISLE_CELLS = 3;   // width of an aisle, counted in seat cells
+
     // Constructor (no ID needed, inherits the scanner from BaseView)
     public SeatView() {
         super();
     }
 
     // Menus and prompts
-    
+
     public String showSeatMenu() {
         System.out.println();
         System.out.println("=========== SEAT MANAGEMENT ============");
@@ -22,12 +24,12 @@ public class SeatView extends BaseView {
         System.out.println("3. Remove seat");
         System.out.println("4. Edit seat");
         System.out.println("5. Filter seats");
-        System.out.println("6. Add aisle");
+        System.out.println("6. Add or remove aisle");
         System.out.println("0. Back");
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
- 
+
     public String showSeatFilterMenu() {
         System.out.println();
         System.out.println("============= FILTER SEATS =============");
@@ -38,7 +40,7 @@ public class SeatView extends BaseView {
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
- 
+
     public String showEditSeatMenu(Seat seat) {
         displaySeat(seat);
         System.out.println();
@@ -50,30 +52,30 @@ public class SeatView extends BaseView {
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
- 
+
     public String promptSeatID() {
         return readString("Enter seat ID (e.g. A1) (0 to go back): ");
     }
- 
+
     public String promptSeatType() {
         return readString("Enter seat type (Regular, Premium, VIP, Wheelchair): ");
     }
- 
+
     public String promptSearchValue() {
         return readString("Enter search value (0 to go back): ");
     }
- 
+
     public String promptPriceModifier() {
         return readString("Enter price modifier (0 to go back): ");
     }
- 
+
     // Display methods
- 
- 
+
+
     // Shows the room's seats for one schedule. All widths are worked out from the seats themselves.
     public void displaySeatGrid(Schedule schedule) {
         CinemaRoom room = schedule.getRoom();
- 
+
         // Measure the room: longest row and longest seat label
         int maxPerRow = 0;
         int inRow = 0;
@@ -84,11 +86,16 @@ public class SeatView extends BaseView {
             Seat seat = measure.getData();
             inRow = (seat.getSeatRow() == previousRow) ? inRow + 1 : 1;
             previousRow = seat.getSeatRow();
+            // An aisle only takes space when another seat of the same row follows it.
+            if (seat.hasAisleAfter() && measure.getNext() != null
+                    && measure.getNext().getData().getSeatRow() == seat.getSeatRow()) {
+                inRow += AISLE_CELLS;
+            }
             maxPerRow = Math.max(maxPerRow, inRow);
             longestCell = Math.max(longestCell, seat.getSeatID().length() + 2);   // + 2 for the brackets
             measure = measure.getNext();
         }
- 
+
         String title = "SEATS FOR SCHEDULE " + schedule.getScheduleID();
         int labelWidth = "Row X".length() + 3;
         int cellWidth = longestCell;   // cells touch: no gap between them
@@ -99,7 +106,7 @@ public class SeatView extends BaseView {
         String cellFormat = "%-" + cellWidth + "s";
         // The seats sit to the right of the row label; the screen is centered over them.
         int screenPadding = labelWidth + (maxPerRow * cellWidth - "SCREEN".length()) / 2;
- 
+
         System.out.println();
         System.out.println(title);
         System.out.println(equalsLine);
@@ -112,9 +119,7 @@ public class SeatView extends BaseView {
             while (node != null && node.getData().getSeatRow() == rowLetter) {
                 Seat seat = node.getData();
                 String cell;
-                if (seat.getSeatType().equals("Aisle")) {
-                    cell = "";   // aisle: blank space
-                } else if (schedule.getBookedSeatIDs().contains(seat.getSeatID())) {
+                if (schedule.getBookedSeatIDs().contains(seat.getSeatID())) {
                     cell = "[XX]";
                 } else if (!seat.getStatus()) {
                     cell = "[--]";
@@ -123,6 +128,10 @@ public class SeatView extends BaseView {
                 }
                 cells.append(String.format(cellFormat, cell));
                 count++;
+                if (seat.hasAisleAfter() && node.getNext() != null && node.getNext().getData().getSeatRow() == rowLetter) {
+                    cells.append(" ".repeat(cellWidth * AISLE_CELLS));   // aisle: blank space before the next seat
+                    count += AISLE_CELLS;
+                }
                 node = node.getNext();
             }
             int indent = (maxPerRow - count) * cellWidth / 2;
@@ -138,9 +147,9 @@ public class SeatView extends BaseView {
         System.out.println("  [A1]  Available seat");
         System.out.println("  [XX]  Already booked for this schedule");
         System.out.println("  [--]  Unavailable seat (cannot be booked)");
-        System.out.println("  (blank)  Aisle");
+        System.out.println("  (gap)  Aisle");
     }
- 
+
     // Shows every seat of the room. All widths are worked out from the seats themselves.
     public void displayRoomLayout(CinemaRoom room) {
         // Measure the room: longest row and longest seat label
@@ -153,11 +162,16 @@ public class SeatView extends BaseView {
             Seat seat = measure.getData();
             inRow = (seat.getSeatRow() == previousRow) ? inRow + 1 : 1;
             previousRow = seat.getSeatRow();
+            // An aisle only takes space when another seat of the same row follows it.
+            if (seat.hasAisleAfter() && measure.getNext() != null
+                    && measure.getNext().getData().getSeatRow() == seat.getSeatRow()) {
+                inRow += AISLE_CELLS;
+            }
             maxPerRow = Math.max(maxPerRow, inRow);
             longestCell = Math.max(longestCell, seat.getSeatID().length() + 2);   // + 2 for the brackets
             measure = measure.getNext();
         }
- 
+
         String title = "LAYOUT OF " + room.getRoomName() + " (" + room.getRoomID() + ")";
         int labelWidth = "Row X".length() + 3;
         int cellWidth = longestCell;   // cells touch: no gap between them
@@ -168,7 +182,7 @@ public class SeatView extends BaseView {
         String cellFormat = "%-" + cellWidth + "s";
         // The seats sit to the right of the row label; the screen is centered over them.
         int screenPadding = labelWidth + (maxPerRow * cellWidth - "SCREEN".length()) / 2;
- 
+
         System.out.println();
         System.out.println(title);
         System.out.println(equalsLine);
@@ -180,9 +194,13 @@ public class SeatView extends BaseView {
             int count = 0;
             while (node != null && node.getData().getSeatRow() == rowLetter) {
                 Seat seat = node.getData();
-                String cell = seat.getSeatType().equals("Aisle") ? "" : seat.getStatus() ? "[" + seat.getSeatID() + "]" : "[--]";
+                String cell = seat.getStatus() ? "[" + seat.getSeatID() + "]" : "[--]";
                 cells.append(String.format(cellFormat, cell));
                 count++;
+                if (seat.hasAisleAfter() && node.getNext() != null && node.getNext().getData().getSeatRow() == rowLetter) {
+                    cells.append(" ".repeat(cellWidth * AISLE_CELLS));   // aisle: blank space before the next seat
+                    count += AISLE_CELLS;
+                }
                 node = node.getNext();
             }
             int indent = (maxPerRow - count) * cellWidth / 2;
@@ -197,9 +215,9 @@ public class SeatView extends BaseView {
         System.out.println("Legend:");
         System.out.println("  [A1]  Available seat");
         System.out.println("  [--]  Unavailable seat (cannot be booked)");
-        System.out.println("  (blank)  Aisle");
+        System.out.println("  (gap)  Aisle");
     }
- 
+
     public void displaySeat(Seat seat) {
         System.out.println();
         System.out.println("============= SEAT DETAILS =============");

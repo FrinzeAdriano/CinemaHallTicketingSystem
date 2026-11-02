@@ -160,7 +160,7 @@ public class CinemaRoom {
     // Rules: the room must have seats, the seat must exist, and neither it nor any seat after it
     // in the same row may be booked in a schedule of this room (those seats get new IDs).
     // The seats after it in the row move down one number, so removing A3 gives A1 A2 A3 A4,
-    // not A1 A2 A4. An aisle is made with addAisle, not by removing a seat.
+    // not A1 A2 A4. A walkway is made with addAisle, not by removing a seat.
     // Returns true when removed; throws IllegalArgumentException otherwise.
     public boolean removeSeat(String seatID) {
         if (seats.size() == 0) {
@@ -186,42 +186,55 @@ public class CinemaRoom {
         }
         seats.remove(seat);
         // Close the gap: every later seat in the row takes the previous number and keeps its settings.
+        Seat before = null;   // the seat just before the removed one, in the same row
         Node<Seat> shift = seats.getHead();
         while (shift != null) {
             Seat later = shift.getData();
+            if (later.getSeatRow() == seat.getSeatRow() && later.getSeatNumber() < seat.getSeatNumber()) {
+                before = later;
+            }
             if (later.getSeatRow() == seat.getSeatRow() && later.getSeatNumber() > seat.getSeatNumber()) {
                 Seat moved = new Seat(String.valueOf(later.getSeatRow()) + (later.getSeatNumber() - 1));
                 moved.setSeatType(later.getSeatType());
                 moved.setStatus(later.getStatus());
                 moved.setPriceModifier(java.math.BigDecimal.valueOf(later.getPriceModifier()).toPlainString());
+                moved.setAisleAfter(later.hasAisleAfter());
                 shift.setData(moved);
             }
             shift = shift.getNext();
         }
+        // An aisle that sat after the removed seat now sits after the seat before it.
+        if (seat.hasAisleAfter() && before != null) {
+            before.setAisleAfter(true);
+        }
         return true;
     }
  
-    // Rules: the seat must exist, must not already be an aisle, and must not be booked in any
-    // schedule of this room. The seat becomes an aisle (type Aisle, out of service) and keeps its ID,
-    // so the row stays A1 A2 A3 A4 and the layout prints A3 as blank space.
+    // Rules: the seat must exist, must not already have an aisle after it, and must have another seat
+    // after it in its row. The seat IDs do not change: putting an aisle after A3 makes the layout
+    // print A1 A2 A3, a gap, then A4 A5 A6.
     // Returns true when the aisle is added; throws IllegalArgumentException otherwise.
     public boolean addAisle(String seatID) {
         Seat seat = findSeat(seatID);   // throws for a blank or badly formatted ID
         if (seat == null) {
             throw new IllegalArgumentException("Invalid input. Seat " + seatID.trim() + " was not found in this room.");
         }
-        if (seat.getSeatType().equals("Aisle")) {
-            throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " is already an aisle.");
+        if (seat.hasAisleAfter()) {
+            throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " already has an aisle after it.");
         }
-        Node<Schedule> node = schedules.getFront();
+        boolean seatAfter = false;
+        Node<Seat> node = seats.getHead();
         while (node != null) {
-            if (node.getData().getBookedSeatIDs().contains(seat.getSeatID())) {
-                throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " is booked and cannot become an aisle.");
+            Seat other = node.getData();
+            if (other.getSeatRow() == seat.getSeatRow() && other.getSeatNumber() > seat.getSeatNumber()) {
+                seatAfter = true;
             }
             node = node.getNext();
         }
-        seat.setSeatType("Aisle");
-        seat.setStatus(false);
+        if (!seatAfter) {
+            throw new IllegalArgumentException("Invalid input. There is no seat after " + seat.getSeatID() + " in its row.");
+        }
+        seat.setAisleAfter(true);
         return true;
     }
  
