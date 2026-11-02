@@ -12,9 +12,9 @@ public class CinemaTicketManagementSystemView extends BaseView{
     // 1 = Login, 2 = Register as customer, 0 = Exit
     public int showMainMenu() {
         System.out.println();
-        System.out.println("==========================================");
+        System.out.println("========================================");
         System.out.println("      CINEMA TICKET MANAGEMENT SYSTEM");
-        System.out.println("==========================================");
+        System.out.println("========================================");
         System.out.println("[1] Login");
         System.out.println("[2] Register as a Customer");
         System.out.println("[0] Exit");
@@ -27,7 +27,7 @@ public class CinemaTicketManagementSystemView extends BaseView{
     // 5 Sales and Records, 0 Logout
     public int showAdminMenu() {
         System.out.println();
-        System.out.println("===== ADMIN MENU =====");
+        System.out.println("============== ADMIN MENU ==============");
         System.out.println("[1] Account");
         System.out.println("[2] Movies and Showtimes");
         System.out.println("[3] Cinema Setup");
@@ -42,7 +42,10 @@ public class CinemaTicketManagementSystemView extends BaseView{
     // 0 = Back. readInt keeps asking until the number is in range.
     public int showSubMenu(String title, String first, String second, String third) {
         System.out.println();
-        System.out.println("===== " + title + " =====");
+        // The title changes per call, so the "=" padding is worked out here to total 40 characters.
+        int left = Math.max(2, (38 - title.length()) / 2);
+        int right = Math.max(2, 38 - title.length() - left);
+        System.out.println("=".repeat(left) + " " + title + " " + "=".repeat(right));
         System.out.println("[1] " + first);
         System.out.println("[2] " + second);
         int max = 2;
@@ -57,7 +60,7 @@ public class CinemaTicketManagementSystemView extends BaseView{
 
     public int showCashierMenu() {
         System.out.println();
-        System.out.println("===== CASHIER MENU =====");
+        System.out.println("============= CASHIER MENU =============");
         System.out.println("[1] Browse movies");
         System.out.println("[2] Sell tickets");
         System.out.println("[3] Void a transaction");
@@ -72,7 +75,7 @@ public class CinemaTicketManagementSystemView extends BaseView{
 
     public int showCustomerMenu() {
         System.out.println();
-        System.out.println("===== CUSTOMER MENU =====");
+        System.out.println("============ CUSTOMER MENU =============");
         System.out.println("[1] Browse movies");
         System.out.println("[2] Book tickets");
         System.out.println("[3] Cancel a booking");
