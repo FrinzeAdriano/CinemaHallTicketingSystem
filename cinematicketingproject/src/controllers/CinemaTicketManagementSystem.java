@@ -32,8 +32,8 @@ public class CinemaTicketManagementSystem {
  
     // System Methods
     public static void main(String[] args) {
-    new CinemaTicketManagementSystem().start();
-}
+        new CinemaTicketManagementSystem().start();
+    }
     
     public void start() {
         // Build the shared repositories once.
@@ -47,20 +47,20 @@ public class CinemaTicketManagementSystem {
         checkoutService = new CheckoutService(history, salesRepo, inventoryRepo, voucherRepo, 0);
  
         // Views
-       view = new CinemaTicketManagementSystemView();
-    UserView userView = new UserView();
-    MovieView movieView = new MovieView();
-    movieListView = new MovieRepositoryView();
-    CinemaView cinemaView = new CinemaView();
-    CinemaRoomListView roomView = new CinemaRoomListView();
-    SeatView seatView = new SeatView();
-    ScheduleView scheduleView = new ScheduleView();
-    TicketView ticketView = new TicketView();
-    inventoryView = new InventoryView();
-    VoucherView voucherView = new VoucherView();
-    TransactionHistoryView historyView = new TransactionHistoryView();
-    ReceiptView receiptView = new ReceiptView();
-    SalesView salesView = new SalesView();
+        view = new CinemaTicketManagementSystemView();
+        UserView userView = new UserView();
+        MovieView movieView = new MovieView();
+        movieListView = new MovieRepositoryView();
+        CinemaView cinemaView = new CinemaView();
+        CinemaRoomListView roomView = new CinemaRoomListView();
+        SeatView seatView = new SeatView();
+        ScheduleView scheduleView = new ScheduleView();
+        TicketView ticketView = new TicketView();
+        inventoryView = new InventoryView();
+        VoucherView voucherView = new VoucherView();
+        TransactionHistoryView historyView = new TransactionHistoryView();
+        ReceiptView receiptView = new ReceiptView();
+        SalesView salesView = new SalesView();
  
         // Feature controllers
         profileController = new ProfileController(userRepo, userView);
@@ -107,18 +107,28 @@ public class CinemaTicketManagementSystem {
             int choice = view.showMainMenu();
             if (choice == 1) {
                 // Business rule: 3 login attempts, then back to the main menu.
+                // Typing 0 at the username or password prompt goes back to the main menu.
                 int attempts = 0;
                 boolean loggedIn = false;
-                while (attempts < 3 && !loggedIn) {
+                boolean cancelled = false;
+                while (attempts < 3 && !loggedIn && !cancelled) {
                     String username = view.promptUsername();
+                    if (username.trim().equals("0")) {
+                        cancelled = true;
+                        break;
+                    }
                     String password = view.promptPassword();
+                    if (password.trim().equals("0")) {
+                        cancelled = true;
+                        break;
+                    }
                     loggedIn = login(username, password);
                     attempts++;
                 }
                 if (loggedIn) {
                     route(currentUser);
                     logout();
-                } else {
+                } else if (!cancelled) {
                     view.showError("Too many failed login attempts. Returning to the main menu.");
                 }
             } else if (choice == 2) {
@@ -152,7 +162,8 @@ public class CinemaTicketManagementSystem {
         }
         currentUser = user;
         view.showMessage("Welcome, " + user.getFullName() + " (" + user.getRole() + ")!");
-        return true;}
+        return true;
+    }
  
     public boolean logout() {
         if (currentUser == null) {
