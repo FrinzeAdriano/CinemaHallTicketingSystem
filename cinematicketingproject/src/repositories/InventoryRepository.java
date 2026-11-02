@@ -13,20 +13,55 @@ public class InventoryRepository {
  
     // Product Management Methods
  
-    // Fails on null or if the product ID already exists.
+    // Fails on null, duplicate ID, or same name in the same category.
     public boolean addProduct(Product product) {
+        if (product == null || hasDuplicate(product)) {
+            return false;
+        }
+        inventory.insertAtEnd(product);
+        return true;
+    }
+
+    // True if another product has the same ID, or the same name + category (case-insensitive).
+    public boolean hasDuplicate(Product product) {
         if (product == null) {
             return false;
         }
         Node<Product> n = inventory.getHead();
         while (n != null) {
-            if (n.getData().getProductID().equalsIgnoreCase(product.getProductID())) {
-                return false;
+            Product p = n.getData();
+            if (p != product) {
+                if (p.getProductID().equalsIgnoreCase(product.getProductID())) {
+                    return true;
+                }
+                if (p.getName() != null && product.getName() != null
+                        && p.getCategory().equalsIgnoreCase(product.getCategory())
+                        && p.getName().trim().equalsIgnoreCase(product.getName().trim())) {
+                    return true;
+                }
             }
             n = n.getNext();
         }
-        inventory.insertAtEnd(product);
-        return true;}
+        return false;
+    }
+
+    // Used when renaming: is this name already taken by ANOTHER product of the same category?
+    public boolean isNameTaken(Product self, String newName) {
+        if (self == null || newName == null) {
+            return false;
+        }
+        Node<Product> n = inventory.getHead();
+        while (n != null) {
+            Product p = n.getData();
+            if (p != self && p.getName() != null
+                    && p.getCategory().equalsIgnoreCase(self.getCategory())
+                    && p.getName().trim().equalsIgnoreCase(newName.trim())) {
+                return true;
+            }
+            n = n.getNext();
+        }
+        return false;
+    }
  
     public LinkedList viewProducts() {
         return inventory;}
@@ -62,6 +97,27 @@ public class InventoryRepository {
             n = n.getNext();
         }
         return false;}
+
+    // Reverse of deactivateProduct. True only if the product exists and was INACTIVE.
+    // Status goes to OUT_OF_STOCK if stock is 0, otherwise ACTIVE.
+    public boolean activateProduct(String productID) {
+        if (productID == null) {
+            return false;
+        }
+        Node<Product> n = inventory.getHead();
+        while (n != null) {
+            Product p = n.getData();
+            if (p.getProductID().equalsIgnoreCase(productID.trim())) {
+                if (!"INACTIVE".equals(p.getStatus())) {
+                    return false;
+                }
+                p.setStatus(p.getStockQuantity() <= 0 ? "OUT_OF_STOCK" : "ACTIVE");
+                return true;
+            }
+            n = n.getNext();
+        }
+        return false;
+    }
  
     // Adds qty to the product's stock (qty must be above 0). Product.addStock updates the status.
     public boolean restock(String id, int qty) {
