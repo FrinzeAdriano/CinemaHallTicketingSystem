@@ -29,14 +29,14 @@ public class InventoryView extends BaseView {
 
     // Product Ordering Menu
 
-    public int showProductOrderMenu() {
+     public int showProductOrderMenu() {
         System.out.println();
-        System.out.println("===== PRODUCT ORDERING =====");
+        System.out.println("============ PRODUCT ORDERING ============");
         System.out.println("[1] Add product");
         System.out.println("[2] Finish and continue");
         System.out.println("[3] Cancel booking");
         System.out.println("[0] Go back");
-        System.out.println("----------------------------------------");
+        System.out.println("------------------------------------------");
         return readInt("Choose an option (0 to go back): ", 0, 3);
     }
 
