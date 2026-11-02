@@ -14,6 +14,11 @@ public final class Ticket {
     private double price;
     private String status;
     
+    private String discountType;
+    private double discountAmount;
+
+private static final double DISCOUNT_RATE = 0.20;
+    
    public Ticket(String ticketID, Schedule schedule, Seat seat,
                   double price, String status) {
 
@@ -80,6 +85,8 @@ public final class Ticket {
         }
 
         this.status = formattedStatus;
+        this.discountType = "NONE";
+        this.discountAmount = 0;
     }
    
    
@@ -106,7 +113,50 @@ public final class Ticket {
         this.status = formattedStatus;
     }
     
-    
+    // Applies a Senior Citizen or PWD discount to this ticket
+        public void applyDiscount(String discountType) {
+
+            if (!InputValidator.isNotBlank(discountType)) {
+                throw new IllegalArgumentException(
+                    "Discount type cannot be blank."
+                );
+            }
+
+            String formattedType = discountType.trim().toUpperCase();
+
+            if (!formattedType.equals("SENIOR")
+                    && !formattedType.equals("PWD")) {
+                throw new IllegalArgumentException(
+                    "Discount type must be SENIOR or PWD."
+                );
+            }
+
+            if (!status.equals("BOOKED")) {
+                throw new IllegalStateException(
+                    "Discount can only be applied to booked tickets."
+                );
+            }
+
+            this.discountType = formattedType;
+            this.discountAmount = Math.round(
+                price * DISCOUNT_RATE * 100.0
+            ) / 100.0;
+        }
+
+        // Gets the discount type
+        public String getDiscountType() {
+            return discountType;
+        }
+
+        // Gets the discount amount
+        public double getDiscountAmount() {
+            return discountAmount;
+        }
+
+        // Gets the ticket price after discount
+        public double getNetPrice() {
+            return price - discountAmount;
+        }
    // Getters
     public String getTicketID() {
     return ticketID;}

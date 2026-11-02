@@ -231,35 +231,52 @@ public class TransactionController {
     }
 
 
-     public void reprintReceipt() {
+       public void reprintReceipt(Cashier cashier) {
 
-        if (history == null || receiptView == null) {
+        if (cashier == null || history == null
+                || receiptView == null || historyView == null) {
             return;
         }
+
+        LinkedList<Transaction> transactions =
+            history.getByCashier(cashier.getUserID());
+
+        if (transactions == null || transactions.size() == 0) {
+
+            receiptView.showMessage("You have no transactions.");
+            return;
+        }
+
+        historyView.displayTransactions(transactions);
 
         while (true) {
 
             String transactionID = receiptView.readString(
-                "Enter transaction ID: "
+                "Enter transaction ID to reprint (0 to go back): "
             );
 
-            if (!InputValidator.isNotBlank(transactionID)) {
-
-                receiptView.showError(
-                    "Transaction ID cannot be blank. Please try again."
-                );
-
-                continue;
+            if (transactionID.trim().equals("0")) {
+                return;
             }
 
-            Transaction transaction = history.findByID(
-                transactionID.trim()
-            );
+            Transaction transaction = null;
+
+            for (int i = 0; i < transactions.size(); i++) {
+
+                Transaction current = transactions.get(i);
+
+                if (current.getTransactionID()
+                        .equalsIgnoreCase(transactionID.trim())) {
+
+                    transaction = current;
+                    break;
+                }
+            }
 
             if (transaction == null) {
 
                 receiptView.showError(
-                    "Transaction not found. Please try again."
+                    "Transaction not found under your account."
                 );
 
                 continue;
@@ -268,7 +285,7 @@ public class TransactionController {
             if (!InputValidator.isNotBlank(transaction.getReceiptNo())) {
 
                 receiptView.showError(
-                    "No receipt is available for this transaction. Please try another transaction."
+                    "No receipt is available for this transaction."
                 );
 
                 continue;
@@ -292,22 +309,21 @@ public class TransactionController {
             }
         }
     }
-     public void voidTransaction() {
+     
+     
+      public void voidTransaction() {
 
         if (history == null || historyView == null
                 || checkoutService == null) {
-
             return;
         }
 
-        // Displays transactions before requesting an ID
         historyView.displayTransactions(
             history.viewTransactionHistory()
         );
 
         Transaction transaction;
 
-        // Repeats the transaction ID field until a valid transaction is found
         while (true) {
 
             String transactionID = historyView.readString(
@@ -337,7 +353,7 @@ public class TransactionController {
             if ("CANCELLED".equalsIgnoreCase(transaction.getStatus())) {
 
                 historyView.showError(
-                    "This transaction has already been voided. Please try another transaction."
+                    "This transaction has already been voided."
                 );
 
                 continue;
@@ -346,14 +362,11 @@ public class TransactionController {
             break;
         }
 
-        // Requests confirmation
         if (!historyView.confirm(
                 "Are you sure you want to void this transaction?")) {
-
             return;
         }
 
-        // Cancels the transaction through the service
         try {
 
             boolean cancelled =
@@ -375,6 +388,152 @@ public class TransactionController {
         } catch (IllegalArgumentException | IllegalStateException e) {
 
             historyView.showError(e.getMessage());
+        }
+    }
+
+    // CASHIER: Void own walk-in transactions only
+    public void voidTransaction(Cashier cashier) {
+
+        if (cashier == null || history == null
+                || historyView == null || checkoutService == null) {
+            return;
+        }
+
+        LinkedList<Transaction> transactions =
+            history.getByCashier(cashier.getUserID());
+
+        if (transactions == null || transactions.size() == 0) {
+
+            historyView.showMessage(
+                "You have no transactions to void."
+            );
+
+            return;
+        }
+
+        historyView.displayTransactions(transactions);
+
+        while (true) {
+
+            String transactionID = historyView.readString(
+                "Enter transaction ID to void (0 to go back): "
+            );
+
+            if (transactionID.trim().equals("0")) {
+                return;
+            }
+
+            Transaction transaction = null;
+
+            for (int i = 0; i < transactions.size(); i++) {
+
+                Transaction current = transactions.get(i);
+
+                if (current.getTransactionID()
+                        .equalsIgnoreCase(transactionID.trim())) {
+
+                    transaction = current;
+                    break;
+                }
+            }
+
+            if (transaction == null) {
+
+                historyView.showError(
+                    "Transaction not found under your account."
+                );
+
+                continue;
+            }
+
+            if (!transaction.getBookingType().equalsIgnoreCase("WALK_IN")) {
+
+                historyView.showError(
+                    "Only walk-in transactions can be voided here."
+                );
+
+                continue;
+            }
+
+            if (!transaction.getStatus().equalsIgnoreCase("COMPLETED")) {
+
+                historyView.showError(
+                    "Only completed transactions can be voided."
+                );
+
+                continue;
+            }
+
+            // Checks whether tickets have been used or the show has started
+            boolean canVoid = true;
+
+            LinkedList<Ticket> tickets = transaction.getTickets();
+
+            for (int i = 0; i < tickets.size(); i++) {
+
+                Ticket ticket = tickets.get(i);
+
+                if (ticket.getStatus().equalsIgnoreCase("USED")) {
+
+                    historyView.showError(
+                        "Used tickets cannot be voided."
+                    );
+
+                    canVoid = false;
+                    break;
+                }
+
+                if (ticket.getSchedule() == null
+                        || ticket.getSchedule().getShowDateTime() == null
+                        || !ticket.getSchedule().getShowDateTime()
+                            .isAfter(java.time.LocalDateTime.now())) {
+
+                    historyView.showError(
+                        "The show has already started. This transaction cannot be voided."
+                    );
+
+                    canVoid = false;
+                    break;
+                }
+            }
+
+            if (!canVoid) {
+                return;
+            }
+
+            historyView.displayTransactionDetails(transaction);
+
+            if (!historyView.confirm(
+                    "Are you sure you want to void this transaction?")) {
+
+                historyView.showMessage(
+                    "Transaction void cancelled."
+                );
+
+                return;
+            }
+
+            try {
+
+                if (checkoutService.cancelTransaction(transaction)) {
+
+                    historyView.showMessage(
+                        "Transaction successfully voided."
+                    );
+
+                } else {
+
+                    historyView.showError(
+                        "Unable to void transaction."
+                    );
+                }
+
+            } catch (IllegalArgumentException | IllegalStateException e) {
+
+                historyView.showError(e.getMessage());
+            }
+
+            return;
         }
     }
 
