@@ -134,7 +134,7 @@ public class CinemaTicketManagementSystem {
             } else if (choice == 2) {
                 customerController.register();
             } else {
-                view.showMessage("Thank you for using the Cinema Ticket Management System. Goodbye!");
+                view.showMessage("Thank you for visiting! Exiting Cinema Ticket Management System...");
                 running = false;
             }
         }
