@@ -72,26 +72,7 @@ public class UserRepository {
         }
         user.setStatus("Inactive");
         return true;
-    }
- 
-    // Returns true only if the user exists and was Inactive.
-    public boolean reactivateUser(String userID) {
-        User user = findUser(userID);
-        if (user == null || user.getStatus().equalsIgnoreCase("Active")) {
-            return false;
-        }
-        user.setStatus("Active");
-        return true;
-    }
- 
-    // The controller should check history.hasTransactionsBy(userID) before calling this.
-    public boolean deleteUser(String userID) {
-        User user = findUser(userID);
-        if (user == null) {
-            return false;
-        }
-        return users.remove(user);}
- 
+    } 
     // ADM001, CSH001, CUS001, ... (next free number for that role's prefix)
     public String generateUserID(String role) {
         String prefix = prefixFor(role);
