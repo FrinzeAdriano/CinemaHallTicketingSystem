@@ -92,14 +92,13 @@ public class TransactionController {
                         historyView.displayTransactionDetails(transaction);
                         break;
                     }
-                    break;
-
+                    break;               
+                }
                 default:
                     historyView.showError("Invalid menu option. Please try again.");
             }
         }
     }
-
     // Cashier: reprint a receipt
     public void reprintReceipt(Cashier cashier) {
         if (cashier == null || history == null || receiptView == null || historyView == null) return;
