@@ -454,33 +454,57 @@ public class CinemaManagementController {
                         break;
                     case "2": {
                         movieListView.displayMovieList(movieRepo.viewMovies());   // throws if there are no movies to schedule
-                        Schedule schedule = new Schedule(room.generateScheduleID());
-                        Movie movie = LoopUtility.retryUntilValidResult(scheduleView::promptMovieID,
-                                id -> {
-                                    if (!InputValidator.isValidMovieID(id)) {
-                                        throw new IllegalArgumentException("Invalid input. Movie ID format MOV001.");
-                                    }
-                                    Movie match = movieRepo.findByID(id);
-                                    if (match == null) {
-                                        throw new IllegalArgumentException("Invalid input. Movie " + id.trim().toUpperCase() + " was not found.");
-                                    }
-                                    return match;
-                                },
-                                scheduleView::showError, "0");
-                        if (movie != null) {
-                            schedule.setMovie(movie);
-                            schedule.setRoom(room);
-                            if (LoopUtility.retryUntilValid(scheduleView::promptPrice, schedule::setPrice,
-                                    scheduleView::showError, "0")
-                                    && LoopUtility.retryUntilValid(scheduleView::promptShowDateTime,
-                                    schedule::setShowDateTime, scheduleView::showError, "0")) {
-                                room.addSchedule(schedule);
-                                scheduleView.showMessage("Schedule " + schedule.getScheduleID()
-                                        + " added to room " + room.getRoomID() + ".");
-                            }
+                        if (!room.getSchedules().isEmpty()) {
+                            scheduleView.displaySchedules(room.getSchedules());   // schedules already set in this room
                         }
-                        break;
+                    Schedule schedule = new Schedule(room.generateScheduleID());
+                    System.out.println("----------------------------------------");
+                    Movie movie = LoopUtility.retryUntilValidResult(scheduleView::promptMovieID,
+                            id -> {
+                                if (!InputValidator.isValidMovieID(id)) {
+                                    throw new IllegalArgumentException("Invalid input. Movie ID format MOV001.");
+                                }
+                                Movie match = movieRepo.findByID(id);
+                                if (match == null) {
+                                    throw new IllegalArgumentException("Invalid input. Movie " + id.trim().toUpperCase() + " was not found.");
+                                }
+                                return match;
+                            },
+                            scheduleView::showError, "0");
+                    if (movie != null) {
+                        schedule.setMovie(movie);
+                        schedule.setRoom(room);
+                        String[] showDate = new String[1];   // holds the valid date so the time step can combine with it
+                        if (LoopUtility.retryUntilValid(scheduleView::promptPrice, schedule::setPrice,
+                                scheduleView::showError, "0")
+                                && LoopUtility.retryUntilValid(scheduleView::promptShowDate,
+                                d -> {
+                                    if (!InputValidator.isValidDate(d)) {
+                                        throw new IllegalArgumentException("Invalid input. Use a real date as yyyy-MM-dd.");
+                                    }
+                                    if (movie.getReleaseDate() == null) {
+                                        throw new IllegalArgumentException("Invalid input. " + movie.getTitle() + " has no release date yet, so it cannot be scheduled.");
+                                    }
+                                    if (java.time.LocalDate.parse(d.trim()).isBefore(movie.getReleaseDate())) {
+                                        throw new IllegalArgumentException("Invalid input. " + movie.getTitle() + " releases on "
+                                                + movie.getReleaseDate() + ". Choose that date or later.");
+                                    }
+                                    showDate[0] = d.trim();
+                                }, scheduleView::showError, "0")
+                                && LoopUtility.retryUntilValid(scheduleView::promptShowTime,
+                                t -> {
+                                    if (!t.trim().matches("([01][0-9]|2[0-3]):[0-5][0-9]")) {
+                                        throw new IllegalArgumentException("Invalid input. Use a real time as HH:mm, for example 14:30.");
+                                    }
+                                    schedule.setShowDateTime(showDate[0] + " " + t.trim());
+                                }, scheduleView::showError, "0")) {
+                            room.addSchedule(schedule);
+                            scheduleView.showMessage("Schedule " + schedule.getScheduleID()
+                                    + " added to room " + room.getRoomID() + ".");
+                        }
                     }
+                    break;
+                }
                     case "3": {
                         scheduleView.displaySchedules(room.getSchedules());
                         Boolean removed = LoopUtility.retryUntilValidResult(scheduleView::promptScheduleID,
