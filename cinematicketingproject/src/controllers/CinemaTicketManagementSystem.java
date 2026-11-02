@@ -97,8 +97,8 @@ public class CinemaTicketManagementSystem {
         // Role controllers
         adminController = new AdminController(view, profileController, userController, movieController,
                 cinemaController, inventoryController, voucherController, transactionController, salesController);
-        customerController = new CustomerController(userRepo, movieRepo, userView, movieListView, view,
-                profileController, bookingController, transactionController);
+        customerController = new CustomerController(userRepo,movieRepo,userView,
+    movieListView,view,profileController,bookingController,transactionController,inventoryRepo,inventoryView);
  
         loadSampleData();
  
@@ -167,7 +167,7 @@ public class CinemaTicketManagementSystem {
         if (user instanceof Admin) {
             adminController.start((Admin) user);
         } else if (user instanceof Cashier) {
-            view.showError("The cashier menu is not available yet.");
+            customerController.start((Cashier) user);
         } else if (user instanceof Customer) {
             customerController.start((Customer) user);
         } else {

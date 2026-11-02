@@ -22,7 +22,9 @@ public class Transaction {
     private double discountRate;
     private double discountFixed;
     private String voucherCode;
-    private double taxRate;
+    public static final double CULTURAL_TAX_PER_TICKET = 0.25;  // CulturalTax = 0.25 x number of tickets
+    public static final double AMUSEMENT_TAX_RATE = 0.10;       // AmusementTax = 0.1 x (ticket price x tickets)
+    public static final double VAT_RATE = 0.12;                 // VAT = 0.12 x total cost of products
     private String paymentMethod;
     private double amountPaid;
     private String status;
@@ -36,8 +38,7 @@ public class Transaction {
 
     public Transaction(String transactionID, String bookingType, String customerID, String cashierID,
                        LocalDateTime dateTime, LinkedList<Ticket> tickets, LinkedList<OrderProduct> products,
-                       String discountType, double discountRate, double discountFixed, String voucherCode,
-                       double taxRate, String paymentMethod, double amountPaid, String status,
+                       String discountType, double discountRate, double discountFixed, String voucherCode, String paymentMethod, double amountPaid, String status,
                        String bookingCode, String approvedBy, String receiptNo) {
 
         // Transaction ID validation
@@ -95,12 +96,7 @@ public class Transaction {
             );
         }
 
-        // Tax rate validation
-        if (!Double.isFinite(taxRate) || taxRate < 0 || taxRate > 1) {
-            throw new IllegalArgumentException(
-                "Invalid input. Tax rate must be between 0 and 1."
-            );
-        }
+     
 
         // Amount paid validation
         if (!Double.isFinite(amountPaid) || amountPaid < 0) {
@@ -210,7 +206,6 @@ public class Transaction {
         this.discountRate = discountRate;
         this.discountFixed = discountFixed;
         this.voucherCode = voucherCode == null ? null : voucherCode.trim().toUpperCase();
-        this.taxRate = taxRate;
         this.paymentMethod = paymentMethod == null ? null : paymentMethod.trim();
         this.amountPaid = amountPaid;
         this.status = status.trim().toUpperCase();
@@ -428,40 +423,76 @@ public class Transaction {
    // Calculates the discount
 
    public double getDiscountAmount() {
+    double subtotal = getSubtotal();
+    double ticketDiscount = 0;
 
-        double subtotal = getSubtotal();
-        double discount;
-
-        // Apply percentage discount when a discount rate is provided
-        if (discountRate > 0) {
-            discount = subtotal * discountRate;
-        } else {
-            discount = discountFixed;
-        }
-
-        // Discount cannot exceed the subtotal
-        if (discount > subtotal) {
-            discount = subtotal;
-        }
-
-        if (!Double.isFinite(discount)) {
-            throw new IllegalStateException(
-                "Operation cannot be completed. Discount amount is invalid."
-            );
-        }
-
-        return discount;
+    // Get discounts applied to individual tickets
+    for (int i = 0; i < tickets.size(); i++) {
+        ticketDiscount += tickets.get(i).getDiscountAmount();
     }
+
+    // Apply any additional transaction-level discount
+    double remainingSubtotal = subtotal - ticketDiscount;
+    double additionalDiscount;
+
+    if (discountRate > 0) {
+        additionalDiscount = remainingSubtotal * discountRate;
+    } else {
+        additionalDiscount = discountFixed;
+    }
+
+    if (additionalDiscount > remainingSubtotal) {
+        additionalDiscount = remainingSubtotal;
+    }
+
+    return ticketDiscount + additionalDiscount;
+}
 
 
 
 
      // Calculates the tax
 
-     public double getTaxAmount() {
+   
 
-        double taxableAmount = getSubtotal() - getDiscountAmount();
-        double taxAmount = taxableAmount * taxRate;
+    private static double round2(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
+    // Sum of the ticket prices (price x number of tickets)
+    public double getTicketTotal() {
+        double total = 0;
+        for (int i = 0; i < tickets.size(); i++) {
+            total += tickets.get(i).getPrice();
+        }
+        return total;
+    }
+
+    // Total cost of the ordered products
+    public double getProductTotal() {
+        double total = 0;
+        for (int i = 0; i < products.size(); i++) {
+            total += products.get(i).getSubtotal();
+        }
+        return total;
+    }
+
+    public double getCulturalTax() {
+        return round2(CULTURAL_TAX_PER_TICKET * tickets.size());
+    }
+
+    public double getAmusementTax() {
+        return round2(AMUSEMENT_TAX_RATE * getTicketTotal());
+    }
+
+    public double getVat() {
+        return round2(VAT_RATE * getProductTotal());
+    }
+
+    // Total of all three taxes. Receipts, history and checkout already call this name.
+    public double getTaxAmount() {
+
+        double taxAmount = getCulturalTax() + getAmusementTax() + getVat();
 
         if (!Double.isFinite(taxAmount)) {
             throw new IllegalStateException(
@@ -783,9 +814,6 @@ public class Transaction {
         return voucherCode;
     }
 
-    public double getTaxRate() {
-        return taxRate;
-    }
 
     public String getPaymentMethod() {
         return paymentMethod;
