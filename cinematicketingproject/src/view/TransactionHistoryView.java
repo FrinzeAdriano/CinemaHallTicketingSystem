@@ -110,13 +110,11 @@ public class TransactionHistoryView extends BaseView {
             showMessage("No transactions found.");
             return;
         }
-         ArrayList<String[]> rows = new ArrayList<String[]>();
-        showMessage("============== TRANSACTIONS ==============");
+
+        ArrayList<String[]> rows = new ArrayList<>();
 
         for (int i = 0; i < transactions.size(); i++) {
-
             Transaction t = transactions.get(i);
-           
             rows.add(new String[] {
                 t.getTransactionID(),
                 String.valueOf(t.getBookingType()),
@@ -127,9 +125,6 @@ public class TransactionHistoryView extends BaseView {
                 String.valueOf(t.getStatus()),
                 t.getReceiptNo() == null ? "N/A" : t.getReceiptNo()
             });
-
-            displayTransactionDetails(transactions.get(i));
-
         }
 
         printTable("TRANSACTIONS",

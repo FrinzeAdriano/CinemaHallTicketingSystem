@@ -1,28 +1,22 @@
 package view;
-import controllers.*;
 import models.*;
 import datastructures.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Locale;
-import repositories.*;
 import utility.*;
-import service.*;
+
 public class SalesView extends BaseView {
 
-
     // Displays the sales menu
-
-     public int showSalesMenu() {
-
-        showMessage("");
-        showMessage("========== SALES REPORTS ==========");
+    public int showSalesMenu() {
+        showMessage("\n============= SALES REPORTS ==============");
         showMessage("[1] View All Sales");
         showMessage("[2] View Sales by Date");
         showMessage("[3] View Sales by Date Range");
         showMessage("[4] View Total Revenue");
         showMessage("[0] Back");
-        showMessage("----------------------------------------");
-
+        showMessage("------------------------------------------");
         return readInt("Choose an option (0 to go back): ", 0, 4);
     }
 
@@ -31,81 +25,59 @@ public class SalesView extends BaseView {
         return readString(label + ", yyyy-MM-dd (0 to go back): ");
     }
 
-    // Requests a valid date
-    // Enter 0 to go back.
-
+    // Requests a valid date. Enter 0 to go back.
     public LocalDate promptDate() {
-
         while (true) {
+            showMessage("------------------------------------------");
+            String input = readString("Enter date (YYYY-MM-DD, 0 to go back): ");
 
-            showMessage("----------------------------------------");
+            if (input.equals("0")) return null;
+            if (InputValidator.isValidDate(input)) return LocalDate.parse(input.trim());
 
-            String input = readString(
-                "Enter date (YYYY-MM-DD, 0 to go back): "
-            );
-
-            if (input.equals("0")) {
-                return null;
-            }
-
-            if (InputValidator.isValidDate(input)) {
-                return LocalDate.parse(input.trim());
-            }
-
-            showError(
-                "Invalid date. Please use YYYY-MM-DD."
-            );
+            showError("Invalid date. Please use YYYY-MM-DD.");
         }
     }
 
-
-    // Displays a list of sales records
-
-     public void displaySales(LinkedList<Sales> sales) {
-
+    // Displays the sales records as a table, one row per transaction
+    public void displaySales(LinkedList<Sales> sales) {
         if (sales == null || sales.size() == 0) {
             showMessage("No sales records found.");
             return;
         }
 
-        showMessage("========== SALES RECORDS ==========");
+        String[] headers = {"Sales ID", "Transaction", "Date", "Ticket Revenue", "Product Revenue", "Discount", "Total Revenue"};
+        ArrayList<String[]> rows = new ArrayList<String[]>();
 
         for (int i = 0; i < sales.size(); i++) {
-            displaySalesSummary(sales.get(i));
+            Sales s = sales.get(i);
+
+            rows.add(new String[] {
+                s.getSalesID(), "T" + s.getSalesID().substring(1), String.valueOf(s.getDate()),
+                String.format(Locale.ROOT, "%.2f", s.getTicketRevenue()),
+                String.format(Locale.ROOT, "%.2f", s.getProductRevenue()),
+                String.format(Locale.ROOT, "%.2f", s.getDiscountTotal()),
+                String.format(Locale.ROOT, "%.2f", s.getTotalRevenue())
+            });
         }
 
-        showMessage("========== END OF SALES RECORDS ==========");
+        printTable("SALES RECORDS", headers, rows);
     }
 
-
     // Displays one sales summary
-
-     public void displaySalesSummary(Sales sales) {
-
+    public void displaySalesSummary(Sales sales) {
         if (sales == null) {
             showError("Sales record not found.");
             return;
         }
 
-        showMessage("----------------------------------------");
+        showMessage("------------------------------------------");
         showMessage("Sales ID: " + sales.getSalesID());
         showMessage("Date: " + sales.getDate());
-
-        showMessage("Ticket Revenue: " +
-            String.format(Locale.ROOT, "%.2f", sales.getTicketRevenue()));
-
-        showMessage("Product Revenue: " +
-            String.format(Locale.ROOT, "%.2f", sales.getProductRevenue()));
-
-        showMessage("Discount Total: " +
-            String.format(Locale.ROOT, "%.2f", sales.getDiscountTotal()));
-
+        showMessage("Ticket Revenue: " + String.format(Locale.ROOT, "%.2f", sales.getTicketRevenue()));
+        showMessage("Product Revenue: " + String.format(Locale.ROOT, "%.2f", sales.getProductRevenue()));
+        showMessage("Discount Total: " + String.format(Locale.ROOT, "%.2f", sales.getDiscountTotal()));
         showMessage("Transactions: " + sales.getTransactionCount());
-
-        showMessage("Total Revenue: " +
-            String.format(Locale.ROOT, "%.2f", sales.getTotalRevenue()));
-
-        showMessage("----------------------------------------");
+        showMessage("Total Revenue: " + String.format(Locale.ROOT, "%.2f", sales.getTotalRevenue()));
+        showMessage("------------------------------------------");
     }
-
 }
