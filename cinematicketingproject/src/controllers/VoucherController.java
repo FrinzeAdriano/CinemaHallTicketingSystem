@@ -13,5 +13,6 @@ public class VoucherController {
     }
 
     public void manageVouchers() {
+        
     }
 }

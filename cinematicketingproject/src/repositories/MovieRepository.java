@@ -1,33 +1,41 @@
 package repositories;
 
 import java.time.LocalDate;
-import datastructures.*;
+import datastructures.LinkedList;
 import models.Movie;
 import utility.InputValidator;
 
 public class MovieRepository {
     private LinkedList<Movie> movies;
+    private int highestIssuedNumber;      // highest MOV number ever added, never goes down
 
     // Constructor (no ID needed, the repository starts with an empty list)
     public MovieRepository() {
         this.movies = new LinkedList<Movie>();
+        this.highestIssuedNumber = 0;
     }
 
     // Behavior methods
 
     // Rules: movie must not be null and its ID must not already be used.
     // Titles can repeat because the ID tells movies apart.
+    // Remembers the ID number so it is never issued again, even after the movie is removed.
     // Returns true when added; throws IllegalArgumentException otherwise.
     public boolean addMovie(Movie movie) {
         if (movie == null) {
             throw new IllegalArgumentException("Invalid input. No movie was provided.");
         }
-        for (int i = 0; i < movies.size(); i++) {
-            if (movies.get(i).getMovieID().equals(movie.getMovieID())) {
-                throw new IllegalArgumentException("Invalid input. A movie with ID " + movie.getMovieID() + " already exists.");
-            }
+        if (findByID(movie.getMovieID()) != null) {
+            throw new IllegalArgumentException("Invalid input. A movie with ID " + movie.getMovieID() + " already exists.");
         }
         movies.insertAtEnd(movie);
+        String id = movie.getMovieID();
+        if (id.startsWith("MOV") && id.substring(3).matches("\\d+")) {
+            int number = Integer.parseInt(id.substring(3));
+            if (number > highestIssuedNumber) {
+                highestIssuedNumber = number;
+            }
+        }
         return true;
     }
 
@@ -39,42 +47,50 @@ public class MovieRepository {
         return movies;
     }
 
-    // Rules: there must be movies and the title must not be blank.
-    // Exact title match, case-insensitive. Returns the first match; throws if none.
+    // Exact title match, case-insensitive. Returns the first match, or null if none.
     public Movie findMovie(String movieName) {
-        if (movies.size() == 0) {
-            throw new IllegalArgumentException("Invalid input. There are no movies yet.");
+        if (movieName == null) {
+            return null;
         }
-        if (!InputValidator.isNotBlank(movieName)) {
-            throw new IllegalArgumentException("Invalid input. Movie title cannot be blank.");
-        }
-        String name = movieName.trim();
-        Node<Movie> node = movies.getHead();
-        while (node != null) {
-            if (node.getData().getTitle().equalsIgnoreCase(name)) {
-                return node.getData();
+        for (int i = 0; i < movies.size(); i++) {
+            Movie movie = movies.get(i);
+            if (movie.getTitle().equalsIgnoreCase(movieName.trim())) {
+                return movie;
             }
-            node = node.getNext();
         }
-        throw new IllegalArgumentException("Invalid input. Movie " + name + " was not found.");
+        return null;
+    }
+
+    // Exact ID match, case-insensitive. Returns null if no movie has that ID.
+    public Movie findByID(String id) {
+        if (id == null) {
+            return null;
+        }
+        for (int i = 0; i < movies.size(); i++) {
+            Movie movie = movies.get(i);
+            if (movie.getMovieID().equalsIgnoreCase(id.trim())) {
+                return movie;
+            }
+        }
+        return null;
     }
 
     // Rules: there must be movies, and one with that ID must exist.
+    // Removing a movie does not lower highestIssuedNumber, so its ID is never reused.
     // Returns true when removed; throws IllegalArgumentException otherwise.
     public boolean removeMovie(String id) {
         if (movies.size() == 0) {
             throw new IllegalArgumentException("Invalid input. There are no movies to remove.");
         }
-        if (id != null) {
-            for (int i = 0; i < movies.size(); i++) {
-                Movie movie = movies.get(i);
-                if (movie.getMovieID().equalsIgnoreCase(id.trim())) {
-                    movies.remove(movie);
-                    return true;
-                }
-            }
+        if (!InputValidator.isValidMovieID(id)) {
+            throw new IllegalArgumentException("Invalid input. Movie ID format MOV001.");
         }
-        throw new IllegalArgumentException("Invalid input. Movie " + id + " was not found.");
+        Movie movie = findByID(id);
+        if (movie == null) {
+            throw new IllegalArgumentException("Invalid input. Movie ID not found.");
+        }
+        movies.remove(movie);
+        return true;
     }
 
     // Movies whose release date is after today. Movies with no release date are skipped.
@@ -94,20 +110,11 @@ public class MovieRepository {
         return result;
     }
 
-    // Next ID in the form MOV001, MOV002, ... (highest existing number + 1,
-    // so removing a movie never causes an ID to be reused).
+    // Next ID in the form MOV001, MOV002, ... based on the highest number ever added,
+    // so a removed movie's ID is never reused. Backing out of "Add movie" doesn't
+    // use up a number, because the number is only recorded when the movie is added.
     public String generateMovieID() {
-        int highest = 0;
-        for (int i = 0; i < movies.size(); i++) {
-            String id = movies.get(i).getMovieID();
-            if (id.startsWith("MOV") && id.substring(3).matches("\\d+")) {
-                int number = Integer.parseInt(id.substring(3));
-                if (number > highest) {
-                    highest = number;
-                }
-            }
-        }
-        return String.format("MOV%03d", highest + 1);
+        return String.format("MOV%03d", highestIssuedNumber + 1);
     }
 
     // Categories: "GENRE", "RATING", "TITLE", "RELEASEDATE".
@@ -187,6 +194,25 @@ public class MovieRepository {
         }
         if (result.size() == 0) {
             throw new IllegalArgumentException("Invalid input. No movies found with title containing " + keyword.trim() + ".");
+        }
+        return result;
+    }
+
+    // Duration from minMinutes to maxMinutes, inclusive.
+    // Throws if the range is invalid or nothing matches.
+    public LinkedList<Movie> filterByDuration(int minMinutes, int maxMinutes) {
+        if (minMinutes < 0 || maxMinutes < minMinutes) {
+            throw new IllegalArgumentException("Invalid input. Minimum duration must be 0 or more and not greater than the maximum.");
+        }
+        LinkedList<Movie> result = new LinkedList<Movie>();
+        for (int i = 0; i < movies.size(); i++) {
+            Movie movie = movies.get(i);
+            if (InputValidator.inRange(movie.getDuration(), minMinutes, maxMinutes)) {
+                result.insertAtEnd(movie);
+            }
+        }
+        if (result.size() == 0) {
+            throw new IllegalArgumentException("Invalid input. No movies found between " + minMinutes + " and " + maxMinutes + " minutes.");
         }
         return result;
     }
