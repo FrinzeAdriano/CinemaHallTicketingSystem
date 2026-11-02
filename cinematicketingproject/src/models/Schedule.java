@@ -33,7 +33,7 @@ public class Schedule {
     // Behavior methods
 
     // Rules: schedule must be active with a movie, room and showtime set, the room must have seats,
-   // the show must not have started, the seat must exist in the room and be in service,
+   // the show must not have started, the seat must exist in the room and be available,
    // and not already booked.
    // Returns true when booked; throws IllegalArgumentException otherwise.
    public boolean bookSeat(String seatID) {
@@ -54,7 +54,7 @@ public class Schedule {
            throw new IllegalArgumentException("Invalid input. Seat " + seatID + " does not exist in this room.");
        }
        if (!seat.getStatus()) {
-           throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " is out of service.");
+           throw new IllegalArgumentException("Invalid input. Seat " + seat.getSeatID() + " is unavailable.");
        }
         // Booking check: the seat must not already be booked in this schedule.
         if (bookedSeatIDs.contains(seat.getSeatID())) {

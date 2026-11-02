@@ -291,7 +291,7 @@ room.addSchedule(schedule);
         coffee.setCold(false);
         inventoryRepo.addProduct(coffee);
  
-        // Vouchers (discount mode can't be set until Voucher has a setDiscountMode)
+        // Vouchers
         Voucher welcome = new Voucher("WELCOME10");
         welcome.setDescription("10% off for new customers");
         welcome.setDiscountMode("PERCENT");
@@ -314,4 +314,3 @@ room.addSchedule(schedule);
     }
  
 }
-

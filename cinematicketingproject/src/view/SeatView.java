@@ -1,6 +1,8 @@
 package view;
 
+import datastructures.LinkedList;
 import datastructures.Node;
+import java.util.ArrayList;
 import models.CinemaRoom;
 import models.Schedule;
 import models.Seat;
@@ -19,13 +21,13 @@ public class SeatView extends BaseView {
     public String showSeatMenu() {
         System.out.println();
         System.out.println("=========== SEAT MANAGEMENT ============");
-        System.out.println("1. View room layout");
-        System.out.println("2. Add seat");
-        System.out.println("3. Remove seat");
-        System.out.println("4. Edit seat");
-        System.out.println("5. Filter seats");
-        System.out.println("6. Add or remove aisle");
-        System.out.println("0. Back");
+        System.out.println("[1] View room layout");
+        System.out.println("[2] Add seat");
+        System.out.println("[3] Remove seat");
+        System.out.println("[4] Edit seat");
+        System.out.println("[5] Filter seats");
+        System.out.println("[6] Add or remove aisle");
+        System.out.println("[0] Back");
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
@@ -33,10 +35,10 @@ public class SeatView extends BaseView {
     public String showSeatFilterMenu() {
         System.out.println();
         System.out.println("============= FILTER SEATS =============");
-        System.out.println("1. By row");
-        System.out.println("2. By type");
-        System.out.println("3. By status");
-        System.out.println("0. Back");
+        System.out.println("[1] By row (e.g. A)");
+        System.out.println("[2] By type (Regular, Premium, VIP, Wheelchair)");
+        System.out.println("[3] By status (Available, Unavailable)");
+        System.out.println("[0] Back");
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
@@ -45,10 +47,10 @@ public class SeatView extends BaseView {
         displaySeat(seat);
         System.out.println();
         System.out.println("============== EDIT SEAT ===============");
-        System.out.println("1. Seat type");
-        System.out.println("2. Seat status");
-        System.out.println("3. Price modifier");
-        System.out.println("0. Back");
+        System.out.println("[1] Seat type");
+        System.out.println("[2] Seat status");
+        System.out.println("[3] Price modifier");
+        System.out.println("[0] Back");
         System.out.println("----------------------------------------");
         return readString("Choice (0 to go back): ");
     }
@@ -58,7 +60,7 @@ public class SeatView extends BaseView {
     }
 
     public String promptSeatType() {
-        return readString("Enter seat type (Regular, Premium, VIP, Wheelchair): ");
+        return readString("Enter seat type (Regular, Premium, VIP, Wheelchair) (0 to go back): ");
     }
 
     public String promptSearchValue() {
@@ -147,7 +149,7 @@ public class SeatView extends BaseView {
         System.out.println("  [A1]  Available seat");
         System.out.println("  [XX]  Already booked for this schedule");
         System.out.println("  [--]  Unavailable seat (cannot be booked)");
-        System.out.println("  (gap)  Aisle");
+        System.out.println("  (blank column)  Aisle");
     }
 
     // Shows every seat of the room. All widths are worked out from the seats themselves.
@@ -215,18 +217,27 @@ public class SeatView extends BaseView {
         System.out.println("Legend:");
         System.out.println("  [A1]  Available seat");
         System.out.println("  [--]  Unavailable seat (cannot be booked)");
-        System.out.println("  (gap)  Aisle");
+        System.out.println("  (blank column)  Aisle");
     }
 
+    // Table of seats (used for the filter results).
+    public void displaySeats(LinkedList<Seat> seats) {
+        ArrayList<String[]> rows = new ArrayList<>();
+        Node<Seat> node = seats.getHead();
+        while (node != null) {
+            Seat seat = node.getData();
+            rows.add(new String[] {seat.getSeatID(), String.valueOf(seat.getSeatRow()), String.valueOf(seat.getSeatNumber()),
+                    seat.getSeatType(), seat.getStatus() ? "Available" : "Unavailable",
+                    String.valueOf(seat.getPriceModifier()), seat.hasAisleAfter() ? "Yes" : "No"});
+            node = node.getNext();
+        }
+        printTable("SEATS", new String[] {"ID", "Row", "Number", "Type", "Status", "Price modifier", "Aisle after"}, rows);
+    }
+
+    // One seat shown as a one-row table (used by the edit seat menu).
     public void displaySeat(Seat seat) {
-        System.out.println();
-        System.out.println("============= SEAT DETAILS =============");
-        System.out.println("ID             : " + seat.getSeatID());
-        System.out.println("Row            : " + seat.getSeatRow());
-        System.out.println("Number         : " + seat.getSeatNumber());
-        System.out.println("Type           : " + seat.getSeatType());
-        System.out.println("Status         : " + seat.getStatus());
-        System.out.println("Price modifier : " + seat.getPriceModifier());
-        System.out.println("----------------------------------------");
+        LinkedList<Seat> single = new LinkedList<Seat>();
+        single.insertAtEnd(seat);
+        displaySeats(single);
     }
 }

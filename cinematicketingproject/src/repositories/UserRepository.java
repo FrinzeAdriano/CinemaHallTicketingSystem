@@ -1,40 +1,35 @@
 package repositories;
-import controllers.*;
-import models.*;
-import datastructures.*;
-import view.*;
-import utility.*;
-import service.*;
+
+import datastructures.LinkedList;
+import datastructures.Node;
+import models.User;
 
 public class UserRepository {
+    private LinkedList<User> users = new LinkedList<User>();
 
-    private LinkedList users = new LinkedList();
+    // User management methods
 
-
-    // User Management Methods
-
-    // Fails on null, duplicate user ID or duplicate username.
+    // Rules: the user must not be null, and the user ID and username must not already exist.
+    // Returns true when added; throws IllegalArgumentException otherwise.
     public boolean addUser(User user) {
         if (user == null) {
-            return false;
+            throw new IllegalArgumentException("Invalid input. No user was provided.");
         }
         if (findUser(user.getUserID()) != null) {
-            return false;
+            throw new IllegalArgumentException("Invalid input. User ID " + user.getUserID() + " already exists.");
         }
-        Node<User> n = users.getHead();
-        while (n != null) {
-            if (n.getData().getUserName().equalsIgnoreCase(user.getUserName())) {
-                return false;
-            }
-            n = n.getNext();
+        if (isUsernameTaken(user.getUserName())) {
+            throw new IllegalArgumentException("Invalid input. Username " + user.getUserName() + " is already taken.");
         }
         users.insertAtEnd(user);
-        return true;}
- 
-    public LinkedList viewUsers() {
+        return true;
+    }
+
+    public LinkedList<User> viewUsers() {
         return users;
     }
- 
+
+    // Returns null when the ID is not found.
     public User findUser(String userID) {
         if (userID == null) {
             return null;
@@ -48,8 +43,34 @@ public class UserRepository {
         }
         return null;
     }
- 
-    public LinkedList filterByRole(String role) {
+
+    // Same as findUser, but throws IllegalArgumentException when the ID is not found
+    // (so it can be used with LoopUtility.retryUntilValidResult).
+    public User findUserByID(String userID) {
+        User user = findUser(userID);
+        if (user == null) {
+            throw new IllegalArgumentException("Invalid input. User " + (userID == null ? "" : userID.trim()) + " was not found.");
+        }
+        return user;
+    }
+
+    // Case-insensitive check used before a username is accepted.
+    public boolean isUsernameTaken(String username) {
+        if (username == null) {
+            return false;
+        }
+        Node<User> n = users.getHead();
+        while (n != null) {
+            if (n.getData().getUserName().equalsIgnoreCase(username.trim())) {
+                return true;
+            }
+            n = n.getNext();
+        }
+        return false;
+    }
+
+    // Returns a new list with only the users of that role (empty when there are none).
+    public LinkedList<User> filterByRole(String role) {
         LinkedList<User> result = new LinkedList<User>();
         if (role == null) {
             return result;
@@ -63,16 +84,18 @@ public class UserRepository {
         }
         return result;
     }
- 
-    // Returns true only if the user exists and was Active.
+
+    // Rules: the user must exist and must still be Active.
+    // Returns true when deactivated; throws IllegalArgumentException otherwise.
     public boolean deactivateUser(String userID) {
-        User user = findUser(userID);
-        if (user == null || user.getStatus().equalsIgnoreCase("Inactive")) {
-            return false;
+        User user = findUserByID(userID);
+        if (user.getStatus().equalsIgnoreCase("Inactive")) {
+            throw new IllegalArgumentException("Invalid input. User " + user.getUserID() + " is already inactive.");
         }
         user.setStatus("Inactive");
         return true;
-    } 
+    }
+
     // ADM001, CSH001, CUS001, ... (next free number for that role's prefix)
     public String generateUserID(String role) {
         String prefix = prefixFor(role);
@@ -92,8 +115,9 @@ public class UserRepository {
             }
             n = n.getNext();
         }
-        return prefix + String.format("%03d", max + 1);}
- 
+        return prefix + String.format("%03d", max + 1);
+    }
+
     private String prefixFor(String role) {
         if (role == null) {
             return "USR";

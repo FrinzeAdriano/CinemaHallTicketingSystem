@@ -42,10 +42,10 @@ public class CinemaManagementController {
                         break;
                     }
                     case 2: {
-                        // Edit cinema (found by name, 0 to go back)
-                        cinemaRepo.viewCinemas();   // throws if there are no cinemas
-                        Cinema cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaName,
-                                cinemaRepo::findCinema, cinemaView::showError, "0");
+                        // Edit cinema (table first, then found by ID, 0 to go back)
+                        cinemaView.displayCinemas(cinemaRepo.viewCinemas());   // throws if there are no cinemas
+                        Cinema cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaID,
+                                cinemaRepo::findCinemaByID, cinemaView::showError, "0");
                         if (cinema != null) {
                             int editChoice = -1;
                             while (editChoice != 0) {
@@ -117,10 +117,16 @@ public class CinemaManagementController {
     }
  
     public void manageRooms() {
-        // Pick the cinema first (0 to go back)
-        cinemaView.displayCinemas(cinemaRepo.viewCinemas());   // throws if there are no cinemas
-        Cinema cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaName,
-                cinemaRepo::findCinema, cinemaView::showError, "0");
+        // Pick the cinema first (by ID, 0 to go back)
+        Cinema cinema;
+        try {
+            cinemaView.displayCinemas(cinemaRepo.viewCinemas());   // throws if there are no cinemas
+            cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaID,
+                    cinemaRepo::findCinemaByID, cinemaView::showError, "0");
+        } catch (IllegalArgumentException e) {
+            cinemaView.showError(e.getMessage());
+            return;
+        }
         if (cinema == null) {
             return;
         }
@@ -129,6 +135,10 @@ public class CinemaManagementController {
         while (choice != 0) {
             choice = roomView.showRoomMenu();
             try {
+                // Edit, remove, generate layout and view all need at least one room.
+                if (cinema.getCinemaRooms().size() == 0 && choice >= 2 && choice <= 5) {
+                    throw new IllegalArgumentException("Invalid input. This cinema has no rooms yet.");
+                }
                 switch (choice) {
                     case 1: {
                         // Add room (ID is auto-generated; 0 at any prompt goes back without adding)
@@ -215,18 +225,36 @@ public class CinemaManagementController {
     }
 
     public void manageSeats() {
-        Cinema cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaName,
-                cinemaRepo::findCinema, cinemaView::showError, "0");
-        if (cinema == null) {
-            return;
-        }
-        CinemaRoom room = LoopUtility.retryUntilValidResult(roomView::promptRoomID,
-                cinema::findRoom, roomView::showError, "0");
-        if (room == null) {
+        Cinema cinema;
+        CinemaRoom room;
+        try {
+            cinemaView.displayCinemas(cinemaRepo.viewCinemas());   // throws if there are no cinemas
+            cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaID,
+                    cinemaRepo::findCinemaByID, cinemaView::showError, "0");
+            if (cinema == null) {
+                return;
+            }
+            if (cinema.getCinemaRooms().size() == 0) {
+                throw new IllegalArgumentException("Invalid input. This cinema has no rooms yet.");
+            }
+            roomView.displayRooms(cinema.getCinemaRooms());
+            room = LoopUtility.retryUntilValidResult(roomView::promptRoomID,
+                    cinema::findRoom, roomView::showError, "0");
+            if (room == null) {
+                return;
+            }
+        } catch (IllegalArgumentException e) {
+            cinemaView.showError(e.getMessage());
             return;
         }
  
         while (LoopUtility.retryUntilValid(seatView::showSeatMenu, choice -> {
+            String option = choice.trim();
+            // Everything except "Add seat" needs at least one seat in the room.
+            if (room.getSeats().size() == 0 && (option.equals("1") || option.equals("3") || option.equals("4")
+                    || option.equals("5") || option.equals("6"))) {
+                throw new IllegalArgumentException("Invalid input. Room " + room.getRoomID() + " has no seats yet.");
+            }
             try {
                 switch (choice.trim()) {
                     case "1":
@@ -257,7 +285,9 @@ public class CinemaManagementController {
                         break;
                     }
                     case "4": {
-                        // Edit seat: an ID that is not in the room shows an error instead of silently going back.
+                        // Edit seat: show every seat first, then ask for the ID.
+                        // An ID that is not in the room shows an error instead of silently going back.
+                        seatView.displaySeats(room.getSeats());
                         Seat seat = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
                                 id -> {
                                     Seat found = room.findSeat(id);
@@ -301,11 +331,7 @@ public class CinemaManagementController {
                                     LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
                                             value -> room.filterSeat("ROW", value), seatView::showError, "0");
                                     if (found != null) {
-                                        Node<Seat> node = found.getHead();
-                                        while (node != null) {
-                                            seatView.displaySeat(node.getData());
-                                            node = node.getNext();
-                                        }
+                                        seatView.displaySeats(found);
                                     }
                                     break;
                                 }
@@ -313,11 +339,7 @@ public class CinemaManagementController {
                                     LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
                                             value -> room.filterSeat("TYPE", value), seatView::showError, "0");
                                     if (found != null) {
-                                        Node<Seat> node = found.getHead();
-                                        while (node != null) {
-                                            seatView.displaySeat(node.getData());
-                                            node = node.getNext();
-                                        }
+                                        seatView.displaySeats(found);
                                     }
                                     break;
                                 }
@@ -325,11 +347,7 @@ public class CinemaManagementController {
                                     LinkedList<Seat> found = LoopUtility.retryUntilValidResult(seatView::promptSearchValue,
                                             value -> room.filterSeat("STATUS", value), seatView::showError, "0");
                                     if (found != null) {
-                                        Node<Seat> node = found.getHead();
-                                        while (node != null) {
-                                            seatView.displaySeat(node.getData());
-                                            node = node.getNext();
-                                        }
+                                        seatView.displaySeats(found);
                                     }
                                     break;
                                 }
@@ -342,7 +360,7 @@ public class CinemaManagementController {
                         break;
                     }
                     case "6": {
-                        // Add or remove an aisle after a seat (the seat IDs do not change).
+                        // Add or remove an aisle after a seat number, through every row (the seat IDs do not change).
                         seatView.displayRoomLayout(room);
                         String result = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
                                 id -> {
@@ -350,14 +368,29 @@ public class CinemaManagementController {
                                     if (target == null) {
                                         throw new IllegalArgumentException("Invalid input. Seat " + id.trim() + " was not found in this room.");
                                     }
-                                    if (target.hasAisleAfter()) {
-                                        if (!seatView.confirm("Remove the aisle after seat " + target.getSeatID() + "?")) {
+                                    // An aisle is one line through the room, so check the whole column (seat number).
+                                    boolean columnHasAisle = false;
+                                    Node<Seat> n = room.getSeats().getHead();
+                                    while (n != null) {
+                                        if (n.getData().getSeatNumber() == target.getSeatNumber() && n.getData().hasAisleAfter()) {
+                                            columnHasAisle = true;
+                                        }
+                                        n = n.getNext();
+                                    }
+                                    if (columnHasAisle) {
+                                        if (!seatView.confirm("Remove the aisle after seat number " + target.getSeatNumber() + "?")) {
                                             return "";
                                         }
-                                        target.setAisleAfter(false);
+                                        n = room.getSeats().getHead();
+                                        while (n != null) {
+                                            if (n.getData().getSeatNumber() == target.getSeatNumber()) {
+                                                n.getData().setAisleAfter(false);
+                                            }
+                                            n = n.getNext();
+                                        }
                                         return "Aisle removed.";
                                     }
-                                    if (!seatView.confirm("Put an aisle after seat " + target.getSeatID() + "?")) {
+                                    if (!seatView.confirm("Put an aisle after seat number " + target.getSeatNumber() + "?")) {
                                         return "";
                                     }
                                     room.addAisle(id);
@@ -385,10 +418,13 @@ public class CinemaManagementController {
         CinemaRoom room;
         try {
             cinemaView.displayCinemas(cinemaRepo.viewCinemas());
-            cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaID, cinemaRepo::findCinema,
+            cinema = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaID, cinemaRepo::findCinemaByID,
                     cinemaView::showError, "0");
             if (cinema == null) {
                 return;
+            }
+            if (cinema.getCinemaRooms().size() == 0) {
+                throw new IllegalArgumentException("Invalid input. This cinema has no rooms yet.");
             }
             roomView.displayRooms(cinema.getCinemaRooms());
             room = LoopUtility.retryUntilValidResult(roomView::promptRoomID, cinema::findRoom,
@@ -405,6 +441,11 @@ public class CinemaManagementController {
         while (running) {
             String choice = scheduleView.showScheduleMenu();
             try {
+                // Everything except "Add schedule" needs at least one schedule in the room.
+                if (room.getSchedules().isEmpty() && (choice.equals("1") || choice.equals("3")
+                        || choice.equals("4") || choice.equals("5"))) {
+                    throw new IllegalArgumentException("Invalid input. Room " + room.getRoomID() + " has no schedules yet.");
+                }
                 switch (choice) {
                     case "1":
                         scheduleView.displaySchedules(room.getSchedules());

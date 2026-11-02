@@ -18,7 +18,7 @@ public class InputValidator {
 
     // At least 6 characters and not just whitespace.
     public static boolean isValidPassword(String s) {
-        return isNotBlank(s) && s.length() >= 6;
+        return isNotBlank(s) && s.length() >= 6 && s.matches(".*\\d.*");
     }
 
     // Whole number from 1 to 999,999,999 (digits only).
@@ -66,5 +66,8 @@ public class InputValidator {
     public static boolean inRange(int n, int min, int max) {
         return n >= min && n <= max;
     }
-
+    // Movie ID: MOV followed by at least 3 digits, for example MOV001.
+    public static boolean isValidMovieID(String s) {
+        return s != null && s.trim().toUpperCase().matches("MOV\\d{3,}");
+    }
 }
