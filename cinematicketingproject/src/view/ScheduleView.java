@@ -46,7 +46,11 @@ public class ScheduleView extends BaseView {
         System.out.println("0. Back");
         return readString("Choose a filter: ").trim();
     }
-
+    public Schedule selectSchedule(LinkedList<Schedule> list) {
+        displaySchedules(list);
+        int choice = readInt("Select a schedule number: ", 1, list.size());
+        return list.get(choice - 1);
+    }
     public String promptScheduleID() {
         return readString("Enter schedule ID (0 to go back): ");
     }
