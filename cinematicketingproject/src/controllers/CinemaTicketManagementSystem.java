@@ -27,19 +27,10 @@ public class CinemaTicketManagementSystem {
     // System Methods
     public static void main(String[]ARGS){
         VoucherController vcontrol = new VoucherController(new VoucherRepository(), new VoucherView());
-        
-        vcontrol.manageVouchers();
-        
-        CinemaManagementController controller = new CinemaManagementController(
-                new CinemaRepository(), new MovieRepository(),
-                new CinemaView(), new CinemaRoomListView(),
-                new SeatView(), new ScheduleView());
+        CinemaTicketManagementSystem s = new CinemaTicketManagementSystem();
+        s.start();
         
         
-        controller.manageCinemas();
-        controller.manageRooms();
-        controller.manageSeats();
-        controller.manageSchedules();
         
     }
     

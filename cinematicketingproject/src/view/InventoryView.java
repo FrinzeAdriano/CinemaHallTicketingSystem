@@ -129,4 +129,13 @@ public class InventoryView extends BaseView {
             n = n.getNext();
         }
     }
+    public int showProductOrderMenu() {
+        System.out.println("\n===== PRODUCT ORDERING =====");
+        System.out.println("1. Add product");
+        System.out.println("2. Finish and continue");
+        System.out.println("3. Cancel booking");
+        System.out.println("0. Go back");
+        showMessage("----------------------------------------");
+        return readInt("Choice: ", 0, 3);
+    }
 }

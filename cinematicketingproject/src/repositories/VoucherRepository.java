@@ -50,14 +50,6 @@ public class VoucherRepository {
         return true;
     }
 
-    public boolean removeVoucher(String code) {
-        Voucher v = findByCode(code);
-        if (v == null) {
-            return false;
-        }
-        return vouchers.remove(v);
-    }
-
     // Generates the next voucher code in the format VCH001, VCH002, ... (highest existing number + 1).
     // An empty list is valid and gives VCH001.
     public String generateVoucherCode() {
