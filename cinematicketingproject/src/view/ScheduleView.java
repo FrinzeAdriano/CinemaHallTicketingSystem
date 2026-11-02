@@ -90,15 +90,20 @@ public class ScheduleView extends BaseView {
     }
 
     public String promptMovieID() {
-        return readString("Enter movie (0 to go back): ");
+        return readString("Enter movie ID, e.g. MOV001 (0 to go back): ");
     }
 
     public String promptPrice() {
         return readString("Ticket price (0 to go back): ");
     }
 
-    public String promptShowDateTime() {
-        return readString("Show date and time, yyyy-MM-dd HH:mm (0 to go back): ");
+    
+    public String promptShowDate() {
+        return readString("Show date, yyyy-MM-dd (0 to go back): ");
+    }
+
+    public String promptShowTime() {
+        return readString("Show time, HH:mm in 24-hour format (0 to go back): ");
     }
 
     public String promptSearchValue() {
