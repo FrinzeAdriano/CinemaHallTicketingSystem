@@ -6,8 +6,6 @@ import java.util.function.Supplier;
 
 public class LoopUtility {
 
-  
-
     // Same as above, with a back option.
     // cancelInput : the input that means "go back" (e.g. "0")
     // Returns true when the setter accepted the input, false when the user typed cancelInput.
