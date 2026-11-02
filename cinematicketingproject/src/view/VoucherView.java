@@ -19,27 +19,10 @@ public class VoucherView extends BaseView {
         System.out.println("===== VOUCHER MANAGEMENT =====");
         System.out.println("[1] Add voucher");
         System.out.println("[2] View all vouchers");
-        System.out.println("[3] Edit voucher");
-        System.out.println("[4] Deactivate voucher");
-        System.out.println("[5] Remove voucher");
+        System.out.println("[3] Deactivate voucher");
         System.out.println("[0] Back");
         System.out.println("----------------------------------------");
-        return readInt("Choose an option (0 to go back): ", 0, 5);
-    }
-
-    // Shows which fields of the voucher can be edited. 0 = back.
-    // 1 = description, 2 = discount type, 3 = value, 4 = expiry date, 5 = maximum uses.
-    public int showEditVoucherMenu(Voucher voucher) {
-        System.out.println();
-        System.out.println("===== EDIT VOUCHER " + voucher.getVoucherCode() + " =====");
-        System.out.println("[1] Description   (" + voucher.getDescription() + ")");
-        System.out.println("[2] Discount type (" + voucher.getDiscountMode() + ")");
-        System.out.println("[3] Value         (" + voucher.getValue() + ")");
-        System.out.println("[4] Expiry date   (" + voucher.getExpiryDate() + ")");
-        System.out.println("[5] Maximum uses  (" + voucher.getMaxUses() + ", used " + voucher.getTimesUsed() + ")");
-        System.out.println("[0] Back");
-        System.out.println("----------------------------------------");
-        return readInt("Choose a field to edit (0 to go back): ", 0, 5);
+        return readInt("Choose an option (0 to go back): ", 0, 3);
     }
 
     public String promptVoucherCode() {
