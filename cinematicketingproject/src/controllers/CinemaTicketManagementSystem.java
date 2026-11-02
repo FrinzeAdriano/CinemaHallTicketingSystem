@@ -73,7 +73,7 @@ public class CinemaTicketManagementSystem {
         // Feature controllers
         ProfileController profileController = new ProfileController(userRepo, userView);
         UserManagementController userController = new UserManagementController(userRepo, userView);
-        MovieManagementController movieController = new MovieManagementController(movieRepo, movieView);
+        MovieManagementController movieController = new MovieManagementController(movieRepo, movieView, movieListView);
         CinemaManagementController cinemaController = new CinemaManagementController(cinemaRepo, movieRepo,
                 cinemaView, roomView, seatView, scheduleView);
         InventoryController inventoryController = new InventoryController(inventoryRepo, inventoryView);
