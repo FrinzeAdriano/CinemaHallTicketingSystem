@@ -33,6 +33,30 @@ public class CinemaTicketManagementSystem {
     // System Methods
     public static void main(String[] args) {
     new CinemaTicketManagementSystem().start();
+//    
+//        ProfileController pcontrol = new ProfileController(new UserRepository(), new UserView());
+//    
+//        pcontrol.manageProfile();
+//        
+//        UserManagementController ucontrol = new UserManagementController(new UserRepository(), new UserView());
+//        
+//        ucontrol.manageUsers();
+//        
+//        VoucherController vcontrol = new VoucherController(new VoucherRepository(), new VoucherView());
+//        
+//        vcontrol.manageVouchers();
+//        
+//        CinemaManagementController controller = new CinemaManagementController(
+//                new CinemaRepository(), new MovieRepository(),
+//                new CinemaView(), new CinemaRoomListView(),
+//                new SeatView(), new ScheduleView());
+//        
+//        
+//        controller.manageCinemas();
+//        controller.manageRooms();
+//        controller.manageSeats();
+//        controller.manageSchedules();
+//        
 }
     
     public void start() {
