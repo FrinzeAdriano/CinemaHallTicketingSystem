@@ -12,7 +12,7 @@ public class SalesView extends BaseView {
 
     // Displays the sales menu
 
-    public int showSalesMenu() {
+     public int showSalesMenu() {
 
         showMessage("========== SALES REPORTS ==========");
         showMessage("[1] View All Sales");
@@ -20,31 +20,42 @@ public class SalesView extends BaseView {
         showMessage("[3] View Sales by Date Range");
         showMessage("[4] View Total Revenue");
         showMessage("[0] Back");
+        showMessage("----------------------------------------");
 
-        return readInt("Choose an option: ", 0, 4);
+        return readInt("Choice: ", 0, 4);
     }
 
-
     // Requests a valid date
+    // Enter 0 to go back.
 
     public LocalDate promptDate() {
 
         while (true) {
 
-            String input = readString("Enter date (YYYY-MM-DD): ");
+            showMessage("----------------------------------------");
+
+            String input = readString(
+                "Enter date (YYYY-MM-DD, 0 to go back): "
+            );
+
+            if (input.equals("0")) {
+                return null;
+            }
 
             if (InputValidator.isValidDate(input)) {
                 return LocalDate.parse(input.trim());
             }
 
-            showError("Invalid date. Please use YYYY-MM-DD.");
+            showError(
+                "Invalid date. Please use YYYY-MM-DD."
+            );
         }
     }
 
 
     // Displays a list of sales records
 
-    public void displaySales(LinkedList<Sales> sales) {
+     public void displaySales(LinkedList<Sales> sales) {
 
         if (sales == null || sales.size() == 0) {
             showMessage("No sales records found.");
@@ -54,7 +65,6 @@ public class SalesView extends BaseView {
         showMessage("========== SALES RECORDS ==========");
 
         for (int i = 0; i < sales.size(); i++) {
-
             displaySalesSummary(sales.get(i));
         }
 
@@ -64,7 +74,7 @@ public class SalesView extends BaseView {
 
     // Displays one sales summary
 
-    public void displaySalesSummary(Sales sales) {
+     public void displaySalesSummary(Sales sales) {
 
         if (sales == null) {
             showError("Sales record not found.");

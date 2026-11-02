@@ -12,6 +12,7 @@ public class TransactionHistoryView extends BaseView {
 
    // Displays the transaction history menu
 
+   
     public int showHistoryMenu() {
 
         showMessage("========== TRANSACTION HISTORY ==========");
@@ -19,14 +20,16 @@ public class TransactionHistoryView extends BaseView {
         showMessage("[2] Filter Transactions");
         showMessage("[3] Search Transaction");
         showMessage("[0] Back");
+        showMessage("----------------------------------------");
 
-        return readInt("Choose an option: ", 0, 3);
+        return readInt("Choice: ", 0, 3);
     }
+
 
 
     // Requests a filter option
 
-    public int promptFilterOption() {
+     public int promptFilterOption() {
 
         showMessage("========== FILTER TRANSACTIONS ==========");
         showMessage("[1] Status");
@@ -35,14 +38,16 @@ public class TransactionHistoryView extends BaseView {
         showMessage("[4] Cashier ID");
         showMessage("[5] Date Range");
         showMessage("[0] Back");
+        showMessage("----------------------------------------");
 
-        return readInt("Choose a filter: ", 0, 5);
+        return readInt("Choice: ", 0, 5);
     }
+
 
 
     // Displays a list of transactions
 
-    public void displayTransactions(
+     public void displayTransactions(
             LinkedList<Transaction> transactions) {
 
         if (transactions == null || transactions.size() == 0) {
@@ -53,12 +58,12 @@ public class TransactionHistoryView extends BaseView {
         showMessage("========== TRANSACTIONS ==========");
 
         for (int i = 0; i < transactions.size(); i++) {
-
             displayTransactionDetails(transactions.get(i));
         }
 
         showMessage("========== END OF TRANSACTIONS ==========");
     }
+
 
 
     // Displays one transaction's details
@@ -115,5 +120,4 @@ public class TransactionHistoryView extends BaseView {
 
         showMessage("----------------------------------------");
     }
-
 }
