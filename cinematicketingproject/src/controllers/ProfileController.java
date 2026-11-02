@@ -1,3 +1,4 @@
+
 package controllers;
 
 import datastructures.LinkedList;
@@ -7,6 +8,7 @@ import repositories.UserRepository;
 import view.UserView;
 
 public class ProfileController {
+
     private UserRepository userRepo;
     private UserView userView;
 
@@ -15,7 +17,7 @@ public class ProfileController {
         this.userView = userView;
     }
 
-    // Shared by Admin, Cashier and Customer. The user is passed in, not stored.
+    // Manages the profile of the currently logged-in user.
     public void manageProfile(User user) {
 
         if (user == null || userRepo == null || userView == null) {
@@ -24,7 +26,6 @@ public class ProfileController {
             }
             return;
         }
-
         boolean running = true;
 
         while (running) {
@@ -34,7 +35,6 @@ public class ProfileController {
             int choice = userView.showProfileMenu();
 
             switch (choice) {
-
                 case 1:
                     editProfile(user);
                     break;
@@ -53,88 +53,80 @@ public class ProfileController {
             }
         }
     }
-
-       public void editProfile(User user) {
+    // Allows the user to edit their full name or username.
+    public void editProfile(User user) {
 
         if (user == null) {
             userView.showError("User not found.");
             return;
         }
-
         boolean editing = true;
 
         while (editing) {
-
             int choice = userView.showEditProfileMenu(user);
-
             switch (choice) {
 
                 case 1:
-
-                    // Edit full name
+                    // Edit full name.
                     while (true) {
 
+                        String fullName = userView.promptFullName();
+
+                        // Return to the edit profile menu without making changes.
+                        if (fullName != null && fullName.trim().equals("0")) {
+                            break;
+                        }
                         try {
-
-                            String fullName = userView.promptFullName();
-
                             user.setFullName(fullName);
-
                             userView.showMessage(
                                 "Full name successfully updated."
                             );
-
                             break;
-
                         } catch (IllegalArgumentException e) {
-
                             userView.showError(e.getMessage());
                         }
                     }
-
                     break;
 
-
                 case 2:
-
-                    // Edit username
+                    // Edit username.
                     while (true) {
-
                         String username = userView.promptUsername();
-
-                        // Check whether another user already has this username.
-                        if (isUsernameTaken(username, user)) {
-
+                        // Return to the edit profile menu without making changes.
+                        if (username != null && username.trim().equals("0")) {
+                            break;
+                        }
+                        // Validate username format.
+                        if (username == null
+                                || !username.matches("[a-zA-Z0-9]{4,20}")) {
                             userView.showError(
-                                "Username already exists. Please enter another username."
+                                "Invalid input. Username must be 4-20 letters or digits."
                             );
-
                             continue;
                         }
 
+                        // Check for duplicate usernames before updating.
+                        if (isUsernameTaken(username, user)) {
+                            userView.showError(
+                                "Username already exists. Please enter another username."
+                            );
+                            continue;
+                        }
                         try {
-
                             user.setUserName(username);
-
                             userView.showMessage(
                                 "Username successfully updated."
                             );
-
                             break;
-
                         } catch (IllegalArgumentException e) {
-
                             userView.showError(e.getMessage());
                         }
                     }
-
                     break;
-
 
                 case 0:
                     editing = false;
                     break;
-
 
                 default:
                     userView.showError("Invalid option.");
@@ -143,99 +135,77 @@ public class ProfileController {
         }
     }
 
-       //pina add para no duplication of username
-       private boolean isUsernameTaken(String username, User currentUser) {
+    // Checks whether another user already uses the specified username.
+    private boolean isUsernameTaken(String username, User currentUser) {
 
         LinkedList<User> users = userRepo.viewUsers();
 
+        if (users == null) {
+            return false;
+        }
         Node<User> node = users.getHead();
-
         while (node != null) {
-
             User existingUser = node.getData();
-
-            // Do not compare the current user's username against itself.
-            if (!existingUser.getUserID().equalsIgnoreCase(
-                    currentUser.getUserID())) {
-
-                if (existingUser.getUserName().equalsIgnoreCase(username)) {
+            if (existingUser != null
+                    && !existingUser.getUserID().equalsIgnoreCase(
+                        currentUser.getUserID())) {
+                if (existingUser.getUserName() != null
+                        && existingUser.getUserName().equalsIgnoreCase(
+                            username)) {
                     return true;
                 }
             }
-
             node = node.getNext();
         }
-
         return false;
     }
-       
-       
+
+    // Allows the user to change their password.
     public void changePassword(User user) {
 
         if (user == null) {
             userView.showError("User not found.");
             return;
         }
-
         String oldPassword = null;
-
         // Check whether the user already has a password.
         try {
-
             user.getPassword();
-
         } catch (IllegalStateException e) {
-
             // First-time password setup.
             oldPassword = null;
         }
-
         while (true) {
-
             // Verify the current password before asking for a new one.
             if (oldPassword != null || hasExistingPassword(user)) {
-
                 oldPassword = userView.promptOldPassword();
-
                 if (!oldPassword.equals(user.getPassword())) {
-
                     userView.showError(
                         "Incorrect current password. Please try again."
                     );
-
                     continue;
                 }
             }
 
-            // Ask for a new password only after current password verification.
+            // Ask for a new password after current password verification.
             String newPassword = userView.promptNewPassword();
-
             if (user.changePassword(oldPassword, newPassword)) {
-
                 userView.showMessage(
                     "Password successfully changed."
                 );
-
                 return;
-
             } else {
-
                 userView.showError(
                     "Unable to change password. Please try again."
                 );
             }
         }
     }
-    
-    
-      //needed for the change password
-      private boolean hasExistingPassword(User user) {
-
+    // Checks whether the user already has a password.
+    private boolean hasExistingPassword(User user) {
         try {
-
             user.getPassword();
             return true;
-
         } catch (IllegalStateException e) {
 
             return false;
