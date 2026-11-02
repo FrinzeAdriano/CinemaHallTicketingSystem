@@ -12,7 +12,8 @@ public class CinemaRoom {
     private static final int MIN_ROWS = 1;
     private static final int MAX_ROWS = 26;              // one letter per row (A-Z)
     private static final int MIN_SEATS_PER_ROW = 1;      // a row must have at least one seat
-
+    private static final String SCHEDULE_ID_PREFIX = "SCH";
+    
     private final String roomID;
     private String roomName;
     private int rows;
@@ -53,7 +54,25 @@ public class CinemaRoom {
         }
         return String.format("ROM%03d", highest + 1);
     }
-
+    
+        // Generates the next schedule ID in the format SCH001, SCH002, ... (highest number
+    // in this room + 1, so removing a schedule never makes an ID repeat while a higher one exists).
+    // An empty queue is valid and gives SCH001.
+    public String generateScheduleID() {
+        int max = 0;
+        Node<Schedule> node = schedules.getFront();
+        while (node != null) {
+            String id = node.getData().getScheduleID();
+            if (id.startsWith(SCHEDULE_ID_PREFIX) && InputValidator.isPositiveInt(id.substring(SCHEDULE_ID_PREFIX.length()))) {
+                int number = Integer.parseInt(id.substring(SCHEDULE_ID_PREFIX.length()));
+                if (number > max) {
+                    max = number;
+                }
+            }
+            node = node.getNext();
+        }
+        return String.format("%s%03d", SCHEDULE_ID_PREFIX, max + 1);
+    }
     // Behavior methods
 
     // Rules: rows and seats per row must be set first, and the layout cannot be
@@ -211,9 +230,6 @@ public class CinemaRoom {
         return result;
     }
 
-    // Rules: schedule must not be null, must belong to this room, the room must be open
-    // and have seats, the ID must be unique, and the showtime must not overlap another schedule.
-    // Returns true when added; throws IllegalArgumentException otherwise.
     public boolean addSchedule(Schedule schedule) {
         if (schedule == null) {
             throw new IllegalArgumentException("Invalid input. No schedule was provided.");
@@ -243,7 +259,21 @@ public class CinemaRoom {
             }
             node = node.getNext();
         }
-        schedules.enqueue(schedule);
+
+        // Insert in showtime order: rotate the queue once and slip the new schedule in before the first later show.
+        int count = schedules.size();
+        boolean placed = false;
+        for (int i = 0; i < count; i++) {
+            Schedule existing = schedules.dequeue();
+            if (!placed && newStart.isBefore(existing.getShowDateTime())) {
+                schedules.enqueue(schedule);
+                placed = true;
+            }
+            schedules.enqueue(existing);
+        }
+        if (!placed) {
+            schedules.enqueue(schedule);
+        }
         return true;
     }
 
