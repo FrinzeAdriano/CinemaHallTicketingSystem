@@ -200,5 +200,5 @@ public class InventoryRepository {
             n = n.getNext();
         }
         return "PRD" + String.format("%03d", max + 1);}
- 
+    
 }
