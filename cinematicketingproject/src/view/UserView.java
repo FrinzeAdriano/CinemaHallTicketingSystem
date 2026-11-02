@@ -207,8 +207,6 @@ public void displayProfile(User user) {
     }
     System.out.println();
     System.out.println("==================================================");
-    System.out.println("       Manage your account through My Profile     ");
-    System.out.println("==================================================");
 }
 
     public void displayUsers(LinkedList<User> users) {
