@@ -33,6 +33,7 @@ public class CinemaTicketManagementSystem {
 
         controller.manageCinemas();
         controller.manageRooms();
+        controller.manageSeats();
     }
     
     public void start() {

@@ -3,7 +3,7 @@ package models;
 import utility.InputValidator;
 
 public class Seat {
-    private static final String[] VALID_SEAT_TYPES = {"Regular", "Premium", "VIP"};
+    private static final String[] VALID_SEAT_TYPES = {"Regular", "Premium", "VIP", "Wheelchair"};
 
     private final String seatID;
     private final char seatRow;
@@ -11,6 +11,7 @@ public class Seat {
     private String seatType;
     private boolean status;
     private double priceModifier;
+    private boolean aisleAfter;   // true = a walkway is drawn between this seat and the next seat in the row
 
     // Constructor (ID is required because the table has no setters for seatID, seatRow, seatNumber).
     // A valid ID is a letter followed by a number from 1 to 999 (e.g. "A1", "b12" -> "B12").
@@ -60,7 +61,17 @@ public class Seat {
         this.priceModifier = Double.parseDouble(priceModifier.trim());
     }
 
+    // Aisle after: true = a walkway sits between this seat and the next seat in its row.
+    // The seat IDs do not change; the layout only draws the gap.
+    public void setAisleAfter(boolean aisleAfter) {
+        this.aisleAfter = aisleAfter;
+    }
+
     // Getters
+    public boolean hasAisleAfter() {
+        return aisleAfter;
+    }
+
     public String getSeatID() {
         return seatID;
     }

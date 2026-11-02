@@ -64,7 +64,7 @@ public class CinemaRoomListView extends BaseView {
     }
 
     public String promptRoomID() {
-        return readString("Enter room ID: ");
+        return readString("Enter room ID (0 to go back): ");
     }
 
     // For editing and removing: shows the available rooms first, then asks for the ID.
