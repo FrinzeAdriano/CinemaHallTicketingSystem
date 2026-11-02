@@ -16,16 +16,16 @@ public class ScheduleView extends BaseView {
 
     // Menus and prompts
 
-    public String showScheduleMenu() {
+   public String showScheduleMenu() {
         System.out.println();
-        System.out.println("===== SCHEDULE MANAGEMENT =====");
+        System.out.println("========== SCHEDULE MANAGEMENT ===========");
         System.out.println("[1] View schedules");
         System.out.println("[2] Add schedule");
         System.out.println("[3] Remove schedule");
         System.out.println("[4] Edit schedule");
         System.out.println("[5] Filter schedules");
         System.out.println("[0] Back");
-        System.out.println("----------------------------------------");
+        System.out.println("------------------------------------------");
         return readString("Choose an option (0 to go back): ").trim();
     }
 

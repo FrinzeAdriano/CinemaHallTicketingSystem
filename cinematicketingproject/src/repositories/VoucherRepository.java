@@ -3,11 +3,14 @@ package repositories;
 import datastructures.LinkedList;
 import datastructures.Node;
 import models.Voucher;
-import utility.InputValidator;
+import java.security.SecureRandom;
 
 public class VoucherRepository {
 
     private static final String ID_PREFIX = "VCH";
+    private static final String CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final int SUFFIX_LENGTH = 6;
+    private static final SecureRandom RANDOM = new SecureRandom();
     private LinkedList<Voucher> vouchers = new LinkedList<Voucher>();
 
     // Voucher Management Methods
@@ -50,21 +53,18 @@ public class VoucherRepository {
         return true;
     }
 
-    // Generates the next voucher code in the format VCH001, VCH002, ... (highest existing number + 1).
-    // An empty list is valid and gives VCH001.
+    // Generates a random, unique voucher code: VCH + 6 characters (e.g. VCHK7QX4M).
+    // Ambiguous characters (0, O, 1, I) are left out so codes are easy to type.
+    // Retries until the code is not already used. Always valid for the Voucher constructor (3-15 letters/digits).
     public String generateVoucherCode() {
-        int max = 0;
-        Node<Voucher> node = vouchers.getHead();
-        while (node != null) {
-            String id = node.getData().getVoucherCode();
-            if (id.startsWith(ID_PREFIX) && InputValidator.isPositiveInt(id.substring(ID_PREFIX.length()))) {
-                int number = Integer.parseInt(id.substring(ID_PREFIX.length()));
-                if (number > max) {
-                    max = number;
-                }
+        String code;
+        do {
+            StringBuilder sb = new StringBuilder(ID_PREFIX);
+            for (int i = 0; i < SUFFIX_LENGTH; i++) {
+                sb.append(CODE_CHARS.charAt(RANDOM.nextInt(CODE_CHARS.length())));
             }
-            node = node.getNext();
-        }
-        return String.format("%s%03d", ID_PREFIX, max + 1);
+            code = sb.toString();
+        } while (findByCode(code) != null);
+        return code;
     }
 }

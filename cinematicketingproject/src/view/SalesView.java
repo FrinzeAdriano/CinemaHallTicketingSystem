@@ -14,6 +14,7 @@ public class SalesView extends BaseView {
 
      public int showSalesMenu() {
 
+        showMessage("");
         showMessage("========== SALES REPORTS ==========");
         showMessage("[1] View All Sales");
         showMessage("[2] View Sales by Date");
@@ -22,7 +23,12 @@ public class SalesView extends BaseView {
         showMessage("[0] Back");
         showMessage("----------------------------------------");
 
-        return readInt("Choice: ", 0, 4);
+        return readInt("Choose an option (0 to go back): ", 0, 4);
+    }
+
+    // Asks for a date as text; validation and "0" (go back) are handled by LoopUtility.
+    public String promptDateText(String label) {
+        return readString(label + ", yyyy-MM-dd (0 to go back): ");
     }
 
     // Requests a valid date

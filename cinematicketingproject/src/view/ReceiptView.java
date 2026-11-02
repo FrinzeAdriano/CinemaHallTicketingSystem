@@ -22,7 +22,7 @@ public class ReceiptView extends BaseView {
             return;
         }
 
-        showMessage("---------------- RECEIPT ----------------");
+        showMessage("================ RECEIPT =================");
         showMessage("Receipt No.: " + receipt.getReceiptNo());
         showMessage("Date Issued: " + (receipt.getDateTimeIssued() == null ? "N/A" : receipt.getDateTimeIssued().format(DATE_FORMAT)));
         showMessage("Transaction ID: " + transaction.getTransactionID());
@@ -31,7 +31,7 @@ public class ReceiptView extends BaseView {
         showMessage("Customer ID: " + (transaction.getCustomerID() == null ? "N/A" : transaction.getCustomerID()));
 
         // Displays tickets
-        showMessage("---------------- TICKETS ----------------");
+        showMessage("\n---------------- TICKETS -----------------");
         LinkedList<Ticket> tickets = transaction.getTickets();
 
         if (tickets.size() == 0) showMessage("No tickets.");
@@ -52,7 +52,7 @@ public class ReceiptView extends BaseView {
         }
 
         // Displays products
-        showMessage("---------------- PRODUCTS ----------------");
+        showMessage("\n---------------- PRODUCTS ----------------");
         LinkedList<OrderProduct> products = transaction.getProducts();
 
         if (products.size() == 0) {
@@ -76,21 +76,24 @@ public class ReceiptView extends BaseView {
             }
         }
 
+
         // Displays payment summary
-        showMessage("------------ PAYMENT SUMMARY -------------");
-        showMessage(String.format("%-26s %15s", "Voucher Code:", (transaction.getVoucherCode() == null ? "None" : transaction.getVoucherCode())));
-        showMessage(String.format("%-26s %15.2f", "Subtotal:", transaction.getSubtotal()));
-        showMessage(String.format("%-26s %15.2f", "Discount:", transaction.getDiscountAmount()));
-        showMessage(String.format("%-26s %15.2f", "Cultural Tax:", transaction.getCulturalTax()));
-        showMessage(String.format("%-26s %15.2f", "Amusement Tax:", transaction.getAmusementTax()));
-        showMessage(String.format("%-26s %15.2f", "VAT:", transaction.getVat()));
-        showMessage(String.format("%-26s %15.2f", "Total Tax:", transaction.getTaxAmount()));
-        showMessage(String.format("%-26s %15.2f", "Total:", transaction.getTotalAmount()));
-        showMessage(String.format("%-26s %15.2f", "Amount Paid:", transaction.getAmountPaid()));
-        showMessage(String.format("%-26s %15.2f", "Change:", transaction.getChange()));
-        showMessage(String.format("%-26s %15s", "Payment Method:", (transaction.getPaymentMethod() == null ? "N/A" : transaction.getPaymentMethod())));
-        showMessage(String.format("%-26s %15s", "Status:", transaction.getStatus()));
-        showMessage("------------------------------------------");
+        showMessage("\n------------ PAYMENT SUMMARY -------------");
+        showMessage("Voucher Code: " + (transaction.getVoucherCode() == null ? "None" : transaction.getVoucherCode()));
+        showMessage("Subtotal: " + String.format("%.2f", transaction.getSubtotal()));
+        showMessage("Discount: " + String.format("%.2f", transaction.getDiscountAmount()));
+        showMessage("Cultural Tax: " + String.format("%.2f", transaction.getCulturalTax()));
+        showMessage("Amusement Tax: " + String.format("%.2f", transaction.getAmusementTax()));
+        showMessage("VAT: " + String.format("%.2f", transaction.getVat()));
+        showMessage("Total Tax: " + String.format("%.2f", transaction.getTaxAmount()));
+        showMessage("Total: " + String.format("%.2f", transaction.getTotalAmount()));
+        showMessage("Amount Paid: " + String.format("%.2f", transaction.getAmountPaid()));
+        showMessage("Change: " + String.format("%.2f", transaction.getChange()));
+        showMessage("Payment Method: " + (transaction.getPaymentMethod() == null ? "N/A"
+        : transaction.getPaymentMethod()
+        + (transaction.getPaymentProvider() == null ? "" : " (" + transaction.getPaymentProvider() + ")")));
+        showMessage("Status: " + transaction.getStatus());
+        showMessage("==========================================");
     }
 
     // Displays a reprinted receipt
@@ -100,7 +103,7 @@ public class ReceiptView extends BaseView {
             return;
         }
 
-        showMessage("--------- REPRINTED RECEIPT ----------");
+        showMessage("=========== REPRINTED RECEIPT ============");
         displayReceipt(receipt);
     }
 }

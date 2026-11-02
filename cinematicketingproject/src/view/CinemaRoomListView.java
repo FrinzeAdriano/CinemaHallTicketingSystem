@@ -64,13 +64,13 @@ public class CinemaRoomListView extends BaseView {
     }
 
     public String promptRoomID() {
-        return readString("Enter room ID (0 to go back): ");
+        return readString("Enter room ID (0 to go back): ").trim().toUpperCase();
     }
 
     // For editing and removing: shows the available rooms first, then asks for the ID.
     public String promptRoomID(LinkedList<CinemaRoom> rooms) {
         displayRooms(rooms);
-        return readString("Enter room ID (0 to go back): ");
+        return readString("Enter room ID (0 to go back): ").trim().toUpperCase();
     }
 
     public void displayRooms(LinkedList<CinemaRoom> rooms) {
