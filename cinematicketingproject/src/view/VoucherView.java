@@ -16,7 +16,7 @@ public class VoucherView extends BaseView {
 
     public int showVoucherMenu() {
         System.out.println();
-        System.out.println("===== VOUCHER MANAGEMENT =====");
+        System.out.println("========== VOUCHER MANAGEMENT ==========");
         System.out.println("[1] Add voucher");
         System.out.println("[2] View all vouchers");
         System.out.println("[3] Deactivate voucher");
@@ -34,11 +34,27 @@ public class VoucherView extends BaseView {
     }
 
     public String promptDiscountMode() {
-        return readString("Discount type, PERCENT or FIXED (0 to go back): ");
-    }
+      System.out.println();
+      System.out.println("============= VOUCHER TYPE =============");
+      System.out.println("[1] Percent");
+      System.out.println("[2] Fixed");
+      System.out.println("[0] Back");
+      System.out.println("----------------------------------------");
+      switch (readInt("Choose a voucher type: ", 0, 2)) {
+          case 1:
+              return "PERCENT";
+          case 2:
+              return "FIXED";
+          default:
+              return "0";   // LoopUtility treats "0" as go back
+      }
+  }
 
-    public String promptValue() {
-        return readString("Discount value, PERCENT is 1-100 (0 to go back): ");
+    public String promptValue(String discountMode) {
+        if (discountMode.equals("PERCENT")) {
+            return readString("Discount percent, 1-100 (0 to go back): ");
+        }
+        return readString("Discount amount in Pesos - \"100.00 Php\" (0 to go back): ");
     }
 
     public String promptExpiryDate() {
@@ -57,7 +73,7 @@ public class VoucherView extends BaseView {
         System.out.println("Code        : " + voucher.getVoucherCode());
         System.out.println("Description : " + voucher.getDescription());
         System.out.println("Discount    : " + (voucher.getDiscountMode().equals("PERCENT")
-                ? String.format("%.2f%%", voucher.getValue()) : String.format("%.2f off", voucher.getValue())));
+            ? String.format("%.2f%%", voucher.getValue()) : String.format("%.2f Php", voucher.getValue())));
         System.out.println("Expires     : " + voucher.getExpiryDate());
         System.out.println("Uses        : " + voucher.getTimesUsed() + " / " + voucher.getMaxUses());
         System.out.println("Status      : " + (voucher.isActive() ? "Active" : "Inactive"));
@@ -70,7 +86,7 @@ public class VoucherView extends BaseView {
             Voucher v = node.getData();
             rows.add(new String[] {v.getVoucherCode(), v.getDescription(),
                     v.getDiscountMode().equals("PERCENT")
-                            ? String.format("%.2f%%", v.getValue()) : String.format("%.2f off", v.getValue()),
+                            ? String.format("%.2f%%", v.getValue()) : String.format("%.2f Php off", v.getValue()),
                     v.getExpiryDate().toString(), v.getTimesUsed() + "/" + v.getMaxUses(),
                     v.isActive() ? "Active" : "Inactive"});
             node = node.getNext();

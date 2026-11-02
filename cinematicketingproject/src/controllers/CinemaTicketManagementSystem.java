@@ -32,7 +32,10 @@ public class CinemaTicketManagementSystem {
  
     // System Methods
     public static void main(String[] args) {
-    new CinemaTicketManagementSystem().start();
+        CinemaTicketManagementSystem s = new CinemaTicketManagementSystem();
+        
+    
+        
 }
     
     public void start() {
