@@ -16,44 +16,120 @@ public abstract class User {
    private String status;
 
    
-   public User(String userID, String userName,String password, String fullName,String status){
+   public User(String userID){
        this.userID = userID;
-       this.userName = userName;
-       this.password = password;
-       this.fullName = fullName;
-       this.status = status;
        }
    
    public abstract String getRole();
    
+   // Returns false if the old password is wrong or the new one is invalid.
+   // First-time setup: while no password is set yet, pass null as oldPass.
    public boolean changePassword(String oldPass, String newPass){
-       return false;}
-
-
+       if (password != null && !password.equals(oldPass)) {
+           return false;
+       }
+       if (!InputValidator.isValidPassword(newPass)) {
+           return false;
+       }
+       this.password = newPass;
+       return true;}
+ 
+ 
 // Setters =====================================   
    public void setUserName(String userName){
-       this.userName = userName;}
-   
+ 
+       if (!InputValidator.isValidUsername(userName)) {
+           throw new IllegalArgumentException(
+               "Invalid input. Username must be 4-20 letters or digits."
+           );
+       }
+ 
+       this.userName = userName;
+   }
+ 
    public void setFullName(String fullName){
-       this.fullName = fullName;}
-     
+ 
+       if (!InputValidator.isNotBlank(fullName)) {
+           throw new IllegalArgumentException(
+               "Invalid input. No full name was provided."
+           );
+       }
+ 
+       this.fullName = fullName;
+   }
+ 
    public void setStatus(String status){
-       this.status = status;}
+ 
+       if (!InputValidator.isNotBlank(status)) {
+           throw new IllegalArgumentException(
+               "Invalid input. No user status was provided."
+           );
+       }
+ 
+       String formatted = status.trim();
+ 
+       if (formatted.equalsIgnoreCase("Active")) {
+           this.status = "Active";
+       } else if (formatted.equalsIgnoreCase("Inactive")) {
+           this.status = "Inactive";
+       } else {
+           throw new IllegalArgumentException(
+               "Invalid input. User status must be Active or Inactive."
+           );
+       }
+   }
    
-
+ 
  // Getters =====================================  
    public String getUserID(){
-       return userID;}
-   
+       return userID;
+   }
+ 
    public String getUserName(){
-       return userName;}
-   
+ 
+       if (!InputValidator.isNotBlank(userName)) {
+           throw new IllegalStateException(
+               "Username has not been set."
+           );
+       }
+ 
+       return userName;
+   }
+ 
    public String getPassword(){
-       return password;}
-   
+ 
+       if (!InputValidator.isNotBlank(password)) {
+           throw new IllegalStateException(
+               "Password has not been set."
+           );
+       }
+ 
+       return password;
+   }
+ 
    public String getFullName(){
-       return fullName;}
-   
+ 
+       if (!InputValidator.isNotBlank(fullName)) {
+           throw new IllegalStateException(
+               "Full name has not been set."
+           );
+       }
+ 
+       return fullName;
+   }
+ 
    public String getStatus(){
-       return status;}
+
+ 
+       if (!InputValidator.isNotBlank(status)) {
+           throw new IllegalStateException(
+               "User status has not been set."
+           );
+       }
+ 
+       return status;
+   }
 }
+
+
+
