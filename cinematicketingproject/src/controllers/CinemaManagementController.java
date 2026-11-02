@@ -341,8 +341,25 @@ public class CinemaManagementController {
                         }
                         break;
                     }
+                    case "6": {
+                        // Add aisle: the seat becomes blank space and keeps its ID (removing a seat shifts the row instead).
+                        seatView.displayRoomLayout(room);
+                        Boolean added = LoopUtility.retryUntilValidResult(seatView::promptSeatID,
+                                id -> {
+                                    Seat target = room.findSeat(id);   // throws for a blank or badly formatted ID
+                                    if (target == null) {
+                                        throw new IllegalArgumentException("Invalid input. Seat " + id.trim() + " was not found in this room.");
+                                    }
+                                    return seatView.confirm("Make seat " + target.getSeatID() + " an aisle?") && room.addAisle(id);
+                                },
+                                seatView::showError, "0");
+                        if (added != null && added) {
+                            seatView.showMessage("Aisle added.");
+                        }
+                        break;
+                    }
                     default:
-                        throw new IllegalArgumentException("Invalid input. Choose a number from 0 to 5.");
+                        throw new IllegalArgumentException("Invalid input. Choose a number from 0 to 6.");
                 }
             } catch (IllegalStateException e) {
                 seatView.showError(e.getMessage());
