@@ -69,10 +69,25 @@ public class CinemaManagementController {
                         break;
                     }
                     case 3: {
-                        // Remove cinema (by ID, 0 to go back, confirmation before deleting)
+                        // Remove cinema (by ID, 0 to go back). The ID is checked first,
+                        // and the confirmation is only asked when the cinema exists.
                         cinemaView.displayCinemas(cinemaRepo.viewCinemas());   // throws if there are no cinemas
                         Boolean removed = LoopUtility.retryUntilValidResult(cinemaView::promptCinemaID,
-                                id -> cinemaView.confirm("Remove cinema " + id.trim() + "?") && cinemaRepo.removeCinema(id),
+                                id -> {
+                                    boolean exists = false;
+                                    Node<Cinema> node = cinemaRepo.viewCinemas().getHead();
+                                    while (node != null) {
+                                        if (node.getData().getCinemaID().equalsIgnoreCase(id.trim())) {
+                                            exists = true;
+                                            break;
+                                        }
+                                        node = node.getNext();
+                                    }
+                                    if (!exists) {
+                                        throw new IllegalArgumentException("Invalid input. Cinema " + id.trim() + " was not found.");
+                                    }
+                                    return cinemaView.confirm("Remove cinema " + id.trim() + "?") && cinemaRepo.removeCinema(id);
+                                },
                                 cinemaView::showError, "0");
                         if (removed != null && removed) {
                             cinemaView.showMessage("Cinema was removed.");
@@ -100,7 +115,7 @@ public class CinemaManagementController {
             }
         }
     }
-
+ 
     public void manageRooms() {
         // Pick the cinema first (0 to go back)
         cinemaView.displayCinemas(cinemaRepo.viewCinemas());   // throws if there are no cinemas
@@ -109,18 +124,16 @@ public class CinemaManagementController {
         if (cinema == null) {
             return;
         }
-
+ 
         int choice = -1;
         while (choice != 0) {
             choice = roomView.showRoomMenu();
             try {
                 switch (choice) {
                     case 1: {
-                        // Add room (0 at any prompt goes back without adding)
-                        CinemaRoom room = LoopUtility.retryUntilValidResult(roomView::promptRoomID,
-                                CinemaRoom::new, roomView::showError, "0");
-                        if (room != null
-                                && LoopUtility.retryUntilValid(roomView::promptRoomName, room::setRoomName, roomView::showError, "0")
+                        // Add room (ID is auto-generated; 0 at any prompt goes back without adding)
+                        CinemaRoom room = new CinemaRoom(CinemaRoom.generateRoomID(cinema));
+                        if (LoopUtility.retryUntilValid(roomView::promptRoomName, room::setRoomName, roomView::showError, "0")
                                 && LoopUtility.retryUntilValid(roomView::promptRows, room::setRows, roomView::showError, "0")
                                 && LoopUtility.retryUntilValid(roomView::promptSeatsPerRow, room::setSeatsPerRow, roomView::showError, "0")) {
                             room.setStatus(roomView.confirm("Open the room for use now?"));
@@ -164,10 +177,14 @@ public class CinemaManagementController {
                         break;
                     }
                     case 3: {
-                        // Remove room (by ID, 0 to go back, confirmation before deleting)
+                        // Remove room (by ID, 0 to go back). The ID is checked first (findRoom throws
+                        // if it does not exist), and the confirmation is only asked for an existing room.
                         roomView.displayRooms(cinema.getCinemaRooms());
                         Boolean removed = LoopUtility.retryUntilValidResult(roomView::promptRoomID,
-                                id -> roomView.confirm("Remove room " + id.trim() + "?") && cinema.removeRoom(id),
+                                id -> {
+                                    cinema.findRoom(id);   // throws if the room does not exist
+                                    return roomView.confirm("Remove room " + id.trim() + "?") && cinema.removeRoom(id);
+                                },
                                 roomView::showError, "0");
                         if (removed != null && removed) {
                             roomView.showMessage("Room was removed.");
