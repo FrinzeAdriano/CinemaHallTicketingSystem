@@ -118,7 +118,7 @@ public class CinemaRoom {
     }
  
  
-    // Categories: "ROW" (e.g. A), "TYPE" (e.g. VIP), "STATUS" (true or false).
+    // Categories: "ROW" (e.g. A), "TYPE" (e.g. VIP), "STATUS" (Available or Out of service).
     // Throws if the room has no seats, for an unknown category, or when nothing matches.
     public LinkedList<Seat> filterSeat(String category, String value) {
         if (seats.size() == 0) {
@@ -141,7 +141,13 @@ public class CinemaRoom {
             } else if (cat.equals("TYPE")) {
                 match = seat.getSeatType().equalsIgnoreCase(val);
             } else {
-                match = String.valueOf(seat.getStatus()).equalsIgnoreCase(val);
+                // The table shows Available / Out of service, so those words work (true and false too).
+                String wanted = val.toLowerCase();
+                if (seat.getStatus()) {
+                    match = wanted.equals("available") || wanted.equals("true");
+                } else {
+                    match = wanted.equals("out of service") || wanted.equals("unavailable") || wanted.equals("false");
+                }
             }
             if (match) {
                 result.insertAtEnd(seat);
@@ -302,7 +308,6 @@ public class CinemaRoom {
     // Rules: schedule must not be null, must belong to this room, the room must be open
     // and have seats, the ID must be unique, and the showtime must not overlap another schedule.
     // Returns true when added; throws IllegalArgumentException otherwise.
-
     public boolean addSchedule(Schedule schedule) {
         if (schedule == null) {
             throw new IllegalArgumentException("Invalid input. No schedule was provided.");
@@ -332,21 +337,7 @@ public class CinemaRoom {
             }
             node = node.getNext();
         }
-
-        // Insert in showtime order: rotate the queue once and slip the new schedule in before the first later show.
-        int count = schedules.size();
-        boolean placed = false;
-        for (int i = 0; i < count; i++) {
-            Schedule existing = schedules.dequeue();
-            if (!placed && newStart.isBefore(existing.getShowDateTime())) {
-                schedules.enqueue(schedule);
-                placed = true;
-            }
-            schedules.enqueue(existing);
-        }
-        if (!placed) {
-            schedules.enqueue(schedule);
-        }
+        schedules.enqueue(schedule);
         return true;
     }
  
